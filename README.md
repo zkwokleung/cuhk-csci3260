@@ -1,1 +1,1 @@
-# cuhk-csci2360
+# cuhk-csci3260
