@@ -21,7 +21,9 @@ GLint programID;
 	Classes and functions created by me to simplify some codes
 ****************************************************************/
 
-// Rendering related
+/**********************
+	Render related
+***********************/
 class VBO
 {
 public:
@@ -225,6 +227,34 @@ int SetUniformMat4f(const char* name, const glm::mat4& matrix)
 	return 0;
 }
 
+/**********************
+	Camera related
+***********************/
+class Camera
+{
+public:
+	static	glm::mat4 GetViewMatrix();
+	static glm::mat4 GetProjectionMatrix();
+
+	static void OnPaint();
+};
+
+glm::mat4 Camera::GetViewMatrix()
+{
+	return glm::mat4(1.0f);
+}
+
+glm::mat4 Camera::GetProjectionMatrix()
+{
+	return glm::perspective(60.0f, 1.0f, 0.1f, 20.0f);
+}
+
+void Camera::OnPaint()
+{
+	// Set the shader's projection and view uniform
+	SetUniformMat4f("u_viewMatrix", GetViewMatrix());
+	SetUniformMat4f("u_projectionMatrix", GetProjectionMatrix());
+}
 #pragma endregion
 
 
@@ -319,7 +349,15 @@ void installShaders() {
 void sendDataToOpenGL() {
 	// TODO:
 	// create 3D objects and/or 2D objects and/or lines (points) here and bind to VAOs & VBOs
-
+	glm::mat4 m = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 3.0f));
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			std::cout << " " << m[i][j] << " ";
+		}
+		std::cout << std::endl;
+	}
 }
 
 void paintGL(void) {
@@ -327,7 +365,7 @@ void paintGL(void) {
 	// TODO:
 	// render your objects and control the transformation here
 	Renderer::Clear();
-
+	Camera::OnPaint();
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
