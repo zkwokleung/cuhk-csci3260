@@ -16,6 +16,217 @@ Type your name and student ID here
 
 GLint programID;
 
+#pragma region My Classes
+/***************************************************************
+	Classes and functions created by me to simplify some codes
+****************************************************************/
+
+// Rendering related
+class VBO
+{
+public:
+	GLuint ID;
+	VBO(GLfloat* vertices, GLsizeiptr size);
+
+	// Bind the VBO to allow OpenGL to use it
+	void Bind() const;
+	void Unbind() const;
+	void Delete();
+};
+
+class VAO
+{
+public:
+	GLuint ID; // The ID of the VAO
+	VAO();
+
+	// Linking the buffer to this array
+	void LinkVBO(VBO& VBO, GLuint layout);
+
+	// Bind the VAO to allow OpenGL to use it
+	void Bind() const;
+	void Unbind() const;
+	void Delete();
+};
+
+class EBO
+{
+public:
+	GLuint ID; // The ID of the EBO
+	GLuint Count; // The number of indecies
+
+	EBO(GLuint* indices, GLuint count);
+
+	void Bind() const;
+	void Unbind() const;
+	void Delete();
+};
+
+// The Renderer is responsible for drawing things to the window.
+class Renderer
+{
+public:
+	// Clear everything that is currently displayed
+	static void Clear();
+	// Draw an element with the given vertices array and indices array
+	static void Draw(const VAO& vao, const EBO& ebo);
+private:
+
+};
+
+VBO::VBO(GLfloat* vertices, GLsizeiptr size)
+{
+	glGenBuffers(1, &ID);
+	glBindBuffer(GL_ARRAY_BUFFER, ID);
+	glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
+}
+
+void VBO::Bind() const
+{
+	glBindBuffer(GL_ARRAY_BUFFER, ID);
+}
+
+void VBO::Unbind() const
+{
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void VBO::Delete()
+{
+	glDeleteBuffers(1, &ID);
+}
+
+VAO::VAO()
+{
+	glGenVertexArrays(1, &ID);
+}
+
+void VAO::LinkVBO(VBO& VBO, GLuint layout)
+{
+	VBO.Bind();
+	glVertexAttribPointer(layout, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	glEnableVertexAttribArray(layout);
+	VBO.Unbind();
+}
+
+void VAO::Bind() const
+{
+	glBindVertexArray(ID);
+}
+
+void VAO::Unbind() const
+{
+	glBindVertexArray(0);
+}
+
+void VAO::Delete()
+{
+	glDeleteVertexArrays(1, &ID);
+}
+
+EBO::EBO(GLuint* indices, GLuint count)
+{
+	Count = count;
+	glGenBuffers(1, &ID);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ID);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+}
+
+void EBO::Bind() const
+{
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ID);
+}
+
+void EBO::Unbind() const
+{
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+void EBO::Delete()
+{
+	glDeleteBuffers(1, &ID);
+}
+
+void Renderer::Clear()
+{
+	glClearColor(.07f, .13f, .17f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void Renderer::Draw(const VAO& vao, const EBO& ebo)
+{
+	vao.Bind();
+	ebo.Bind();
+	glDrawElements(GL_TRIANGLES, ebo.Count, GL_UNSIGNED_INT, nullptr);
+}
+
+/**********************
+	Shader related
+***********************/
+
+// Retrieve the Uniform location from the shader
+int GetUniformLocation(const char* name)
+{
+	// Try to get the uniform location
+	int loc = glGetUniformLocation(programID, name);
+
+	// Check if the location exist
+	if (loc == -1)
+	{
+		std::cout << "Warning: Cannot find uniform location of [" << name << "]" << std::endl;
+		return -1;
+	}
+
+	return loc;
+}
+
+// Set 1 uniform int value
+int SetUniform1i(const char* name, int value)
+{
+	int loc = GetUniformLocation(name);
+	if (loc == -1)
+		return -1;
+
+	glUniform1i(loc, value);
+
+	return 0;
+}
+
+// Set 1 uniform float value
+int SetUniform1f(const char* name, float value)
+{
+	int loc = GetUniformLocation(name);
+	if (loc == -1)
+		return -1;
+
+	glUniform1f(loc, value);
+	return 0;
+}
+
+// Set 4 uniform float values
+int SetUniform4f(const char* name, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3)
+{
+	int loc = GetUniformLocation(name);
+	if (loc == -1)
+		return -1;
+
+	glUniform4f(loc, v0, v1, v2, v3);
+	return 0;
+}
+
+// Set uniform mat4
+int SetUniformMat4f(const char* name, const glm::mat4& matrix)
+{
+	int loc = GetUniformLocation(name);
+	if (loc == -1)
+		return -1;
+
+	glUniformMatrix4fv(loc, 1, GL_FALSE, &matrix[0][0]);
+	return 0;
+}
+
+#pragma endregion
+
 
 void get_OpenGL_info() {
 	// OpenGL information
@@ -51,8 +262,8 @@ bool checkStatus(
 	return true;
 }
 
-bool checkShaderStatus(GLuint shaderID) {
-	return checkStatus(shaderID, glGetShaderiv, glGetShaderInfoLog, GL_COMPILE_STATUS);
+bool checkShaderStatus(GLuint programID) {
+	return checkStatus(programID, glGetShaderiv, glGetShaderInfoLog, GL_COMPILE_STATUS);
 }
 
 bool checkProgramStatus(GLuint programID) {
@@ -115,6 +326,7 @@ void paintGL(void) {
 	// always run
 	// TODO:
 	// render your objects and control the transformation here
+	Renderer::Clear();
 
 }
 
