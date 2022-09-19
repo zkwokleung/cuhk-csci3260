@@ -255,6 +255,89 @@ void Camera::OnPaint()
 	SetUniformMat4f("u_viewMatrix", GetViewMatrix());
 	SetUniformMat4f("u_projectionMatrix", GetProjectionMatrix());
 }
+
+/**********************
+	Game Object related
+***********************/
+class Transform
+{
+public:
+	Transform();
+	~Transform();
+
+	glm::vec3 GetPosition();
+	void SetPosition(glm::vec3 value);
+
+	glm::vec3 GetRotation();
+	void SetRotation(glm::vec3 value);
+
+	glm::vec3 GetScale();
+	void SetScale(glm::vec3 value);
+
+	void OnPaint();
+	glm::mat4 GetTransformMat4();
+private:
+	glm::vec3 position;
+	glm::vec3 rotation;
+	glm::vec3 scale;
+};
+
+Transform::Transform()
+{
+	position = glm::vec3();
+	rotation = glm::vec3();
+	scale = glm::vec3(1.0f);
+}
+
+Transform::~Transform()
+{
+}
+
+glm::vec3 Transform::GetPosition()
+{
+	return glm::vec3();
+}
+
+void Transform::SetPosition(glm::vec3 value)
+{
+	position = value;
+}
+
+glm::vec3 Transform::GetRotation()
+{
+	return glm::vec3();
+}
+
+void Transform::SetRotation(glm::vec3 value)
+{
+	rotation = value;
+}
+
+glm::vec3 Transform::GetScale()
+{
+	return glm::vec3();
+}
+
+void Transform::SetScale(glm::vec3 value)
+{
+	scale = value;
+}
+
+void Transform::OnPaint()
+{
+	SetUniformMat4f("u_modelMatrix", GetTransformMat4());
+}
+
+glm::mat4 Transform::GetTransformMat4()
+{
+	glm::mat4 t = glm::translate(glm::mat4(1.0f), position);
+	glm::mat4 r_x = glm::rotate(glm::mat4(1.0f), rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+	glm::mat4 r_y = glm::rotate(glm::mat4(1.0f), rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 r_z = glm::rotate(glm::mat4(1.0f), rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::mat4 s = glm::scale(glm::mat4(1.0f), scale);
+	return s * r_z * r_y * r_x * t;
+}
+
 #pragma endregion
 
 
@@ -346,18 +429,60 @@ void installShaders() {
 	glUseProgram(programID);
 }
 
+
+VAO* vaoPyramid;
+VBO* vboPyramid;
+EBO* eboPyramid;
+Transform* tranPyramid;
+
 void sendDataToOpenGL() {
 	// TODO:
 	// create 3D objects and/or 2D objects and/or lines (points) here and bind to VAOs & VBOs
-	glm::mat4 m = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 3.0f));
-	for (int i = 0; i < 4; i++)
+	GLfloat vertCube[] =
 	{
-		for (int j = 0; j < 4; j++)
-		{
-			std::cout << " " << m[i][j] << " ";
-		}
-		std::cout << std::endl;
-	}
+		-0.5f, -0.5f, -0.5f,
+		0.5f, -0.5f, -0.5f,
+		0.5f, 0.5f, -0.5f,
+		-0.5f, 0.5f, -0.5f,
+		-0.5f, -0.5f, 0.5f,
+		0.5f, -0.5f, 0.5f,
+		0.5f, 0.5f, 0.5f,
+		-0.5f, 0.5f, 0.5f,
+	};
+	GLuint idxCube[] =
+	{
+		0, 1, 2,
+		0, 4, 2,
+		1,
+	};
+
+	GLfloat vertPyramid[] =
+	{
+		0.0f, 0.5f, 0.0f,
+		-0.5f, -0.5f, 0.5f,
+		0.5f, -0.5f, 0.5f,
+		0.5f, -0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,
+	};
+	GLuint idxPyramid[] =
+	{
+		0, 1, 2,
+		0, 2, 3,
+		0, 3, 4,
+		0, 4, 1,
+		1, 2, 3,
+		3, 4, 1
+	};
+
+	vaoPyramid = new VAO();
+	vaoPyramid->Bind();
+	vboPyramid = new VBO(vertPyramid, sizeof(vertPyramid));
+	eboPyramid = new EBO(idxPyramid, 18);
+	vaoPyramid->LinkVBO(*vboPyramid, 0);
+	vaoPyramid->Unbind();
+	vboPyramid->Unbind();
+	eboPyramid->Unbind();
+	tranPyramid = new Transform();
 }
 
 void paintGL(void) {
@@ -366,6 +491,10 @@ void paintGL(void) {
 	// render your objects and control the transformation here
 	Renderer::Clear();
 	Camera::OnPaint();
+
+	SetUniform4f("u_Color", 1.0f, .5f, .2f, .0f);
+	tranPyramid->OnPaint();
+	Renderer::Draw(*vaoPyramid, *eboPyramid);
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -380,6 +509,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 void initializedGL(void) {
 	// run only once
 	// TODO:
+	glEnable(GL_DEPTH_TEST);
 	sendDataToOpenGL();
 	installShaders();
 }
