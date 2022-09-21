@@ -12,6 +12,7 @@ Type your name and student ID here
 
 #include <iostream>
 #include <fstream>
+#include <list>
 
 
 GLint programID;
@@ -28,6 +29,7 @@ class VBO
 {
 public:
 	GLuint ID;
+	VBO();
 	VBO(GLfloat* vertices, GLsizeiptr size);
 
 	// Bind the VBO to allow OpenGL to use it
@@ -75,6 +77,10 @@ public:
 private:
 
 };
+
+VBO::VBO() {
+
+}
 
 VBO::VBO(GLfloat* vertices, GLsizeiptr size)
 {
@@ -282,6 +288,39 @@ private:
 	glm::vec3 scale;
 };
 
+#define DEFAULT_COLOR_VALUE 0.8f, 0.8f, 0.8f, 1.0f
+
+class Object
+{
+public:
+	Object(GLfloat vertices[], int vertCount, GLuint indices[], int idxCount);
+	Object(GLfloat vertices[], int vertCount, GLuint indicies[], int idxCount, GLfloat colors[]);
+	~Object();
+
+	Transform GetTransform() const;
+
+
+	void OnPaint();
+
+private:
+	Transform m_transform;
+	VAO m_vao;
+	VBO m_vertVBO, m_colorVBO;
+	EBO m_ebo;
+	int m_verticesCount;
+	bool m_useColorVBO;
+};
+
+class ObjectRenderPipeline
+{
+public:
+	static void AddObject(Object& object);
+	static void RemoveObject(Object& object);
+	static void OnPaint();
+private:
+	static std::list<Object> m_Objects;
+};
+
 Transform::Transform()
 {
 	position = glm::vec3();
@@ -326,6 +365,22 @@ void Transform::SetScale(glm::vec3 value)
 void Transform::OnPaint()
 {
 	SetUniformMat4f("u_modelMatrix", GetTransformMat4());
+
+	static int debugged = 0;
+	static glm::mat4 trans = GetTransformMat4();
+	if (!debugged)
+	{
+		std::cout << "Model Matrix:" << std::endl;
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				std::cout << " " << trans[j][i] << " ";
+			}
+			std::cout << std::endl;
+		}
+		debugged = 1;
+	}
 }
 
 glm::mat4 Transform::GetTransformMat4()
@@ -338,6 +393,62 @@ glm::mat4 Transform::GetTransformMat4()
 	return s * r_z * r_y * r_x * t;
 }
 
+
+Object::Object(GLfloat vertices[], int vertCount, GLuint indices[], int idxCount) :
+	m_vao(), m_vertVBO(vertices, vertCount * sizeof(float)), m_ebo(indices, idxCount), m_verticesCount(vertCount)
+{
+	m_vao.LinkVBO(m_vertVBO, 0);
+	m_useColorVBO = false;
+
+	m_vao.LinkVBO(m_vertVBO, 1);
+}
+
+Object::Object(GLfloat vertices[], int vertCount, GLuint indices[], int idxCount, GLfloat colors[]) :
+	m_vao(), m_vertVBO(vertices, vertCount * sizeof(float)), m_ebo(indices, idxCount), m_verticesCount(vertCount), m_colorVBO(colors, vertCount * sizeof(float))
+{
+	m_vao.LinkVBO(m_vertVBO, 0);
+	m_vao.LinkVBO(m_colorVBO, 1);
+	m_useColorVBO = true;
+}
+
+Object::~Object()
+{
+}
+
+Transform Object::GetTransform() const
+{
+	return m_transform;
+}
+
+void Object::OnPaint()
+{
+	m_transform.OnPaint();
+
+	if (!m_useColorVBO) {
+	}
+	SetUniform4f("u_Color", DEFAULT_COLOR_VALUE);
+	Renderer::Draw(m_vao, m_ebo);
+}
+
+std::list<Object> ObjectRenderPipeline::m_Objects;
+
+void ObjectRenderPipeline::AddObject(Object& object)
+{
+	m_Objects.push_back(object);
+}
+
+void ObjectRenderPipeline::RemoveObject(Object& object)
+{
+	m_Objects.remove(object);
+}
+
+void ObjectRenderPipeline::OnPaint()
+{
+	for (std::list<Object>::iterator it = m_Objects.begin(); it != m_Objects.end(); it++)
+	{
+		it->OnPaint();
+	}
+}
 #pragma endregion
 
 
@@ -430,10 +541,7 @@ void installShaders() {
 }
 
 
-VAO* vaoPyramid;
-VBO* vboPyramid;
-EBO* eboPyramid;
-Transform* tranPyramid;
+Object* pyramid;
 
 void sendDataToOpenGL() {
 	// TODO:
@@ -474,15 +582,7 @@ void sendDataToOpenGL() {
 		3, 4, 1
 	};
 
-	vaoPyramid = new VAO();
-	vaoPyramid->Bind();
-	vboPyramid = new VBO(vertPyramid, sizeof(vertPyramid));
-	eboPyramid = new EBO(idxPyramid, 18);
-	vaoPyramid->LinkVBO(*vboPyramid, 0);
-	vaoPyramid->Unbind();
-	vboPyramid->Unbind();
-	eboPyramid->Unbind();
-	tranPyramid = new Transform();
+	pyramid = new Object(vertPyramid, 15, idxPyramid, 18);
 }
 
 void paintGL(void) {
@@ -491,10 +591,7 @@ void paintGL(void) {
 	// render your objects and control the transformation here
 	Renderer::Clear();
 	Camera::OnPaint();
-
-	SetUniform4f("u_Color", 1.0f, .5f, .2f, .0f);
-	tranPyramid->OnPaint();
-	Renderer::Draw(*vaoPyramid, *eboPyramid);
+	ObjectRenderPipeline::OnPaint();
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
