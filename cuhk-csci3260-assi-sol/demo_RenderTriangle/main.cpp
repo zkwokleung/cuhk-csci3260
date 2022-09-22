@@ -6,11 +6,555 @@
 
 #include <iostream>
 #include <fstream>
+#include <list>
 
 
 GLuint programID;
 float x_delta = 0.1f;
 int x_press_num = 0;
+
+#pragma region My Classes
+/***************************************************************
+	Classes and functions created by me to simplify some codes
+****************************************************************/
+
+/**********************
+	Render related
+***********************/
+class VBO
+{
+public:
+	GLuint ID;
+	VBO();
+	VBO(GLfloat* vertices, GLsizeiptr size);
+	~VBO();
+
+	// Bind the VBO to allow OpenGL to use it
+	void Bind() const;
+	void Unbind() const;
+	void Delete();
+};
+
+class VAO
+{
+public:
+	GLuint ID; // The ID of the VAO
+	VAO();
+	~VAO();
+
+	// Linking the buffer to this array
+	void LinkVBO(VBO& VBO, GLuint layout);
+
+	// Bind the VAO to allow OpenGL to use it
+	void Bind() const;
+	void Unbind() const;
+	void Delete();
+};
+
+class EBO
+{
+public:
+	GLuint ID; // The ID of the EBO
+	GLuint Count; // The number of indecies
+
+	EBO();
+	EBO(GLuint* indices, GLuint count);
+	~EBO();
+
+	void Bind() const;
+	void Unbind() const;
+	void Delete();
+};
+
+// The Renderer is responsible for drawing things to the window.
+class Renderer
+{
+public:
+	// Clear everything that is currently displayed
+	static void Clear();
+	// Draw an element with the given vertices and the specific shape
+	static void Draw(const VAO& vao, GLenum mode, int vertexCount);
+	// Draw an element with the given vertices array and indices array
+	static void Draw(const VAO& vao, const EBO& ebo);
+private:
+
+};
+
+VBO::VBO() {
+}
+
+VBO::VBO(GLfloat* vertices, GLsizeiptr size)
+{
+	std::cout << "Buffer ID before: " << ID << std::endl;
+	glGenBuffers(1, &ID);
+	std::cout << "Buffer ID: " << ID << std::endl;
+	glBindBuffer(GL_ARRAY_BUFFER, ID);
+	glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+VBO::~VBO()
+{
+	Delete();
+}
+
+void VBO::Bind() const
+{
+	glBindBuffer(GL_ARRAY_BUFFER, ID);
+}
+
+void VBO::Unbind() const
+{
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void VBO::Delete()
+{
+	glDeleteBuffers(1, &ID);
+}
+
+VAO::VAO()
+{
+	glGenVertexArrays(1, &ID);
+}
+
+VAO::~VAO()
+{
+	Delete();
+}
+
+void VAO::LinkVBO(VBO& VBO, GLuint layout)
+{
+	VBO.Bind();
+	glEnableVertexAttribArray(layout);
+	glVertexAttribPointer(layout, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	VBO.Unbind();
+}
+
+void VAO::Bind() const
+{
+	glBindVertexArray(ID);
+}
+
+void VAO::Unbind() const
+{
+	glBindVertexArray(0);
+}
+
+void VAO::Delete()
+{
+	glDeleteVertexArrays(1, &ID);
+}
+
+EBO::EBO()
+{
+	Count = 0;
+	glGenBuffers(1, &ID);
+}
+
+EBO::EBO(GLuint* indices, GLuint count)
+{
+	Count = count;
+	glGenBuffers(1, &ID);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ID);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+}
+
+EBO::~EBO()
+{
+	Delete();
+}
+
+void EBO::Bind() const
+{
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ID);
+}
+
+void EBO::Unbind() const
+{
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+void EBO::Delete()
+{
+	glDeleteBuffers(1, &ID);
+}
+
+void Renderer::Clear()
+{
+	glClearColor(.07f, .13f, .17f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void Renderer::Draw(const VAO& vao, GLenum mode, int vertexCount)
+{
+	vao.Bind();
+	glDrawArrays(mode, 0, vertexCount);
+}
+
+void Renderer::Draw(const VAO& vao, const EBO& ebo)
+{
+	vao.Bind();
+	ebo.Bind();
+	glDrawElements(GL_TRIANGLES, ebo.Count, GL_UNSIGNED_INT, nullptr);
+}
+
+/**********************
+	Shader related
+***********************/
+
+// Retrieve the Uniform location from the shader
+int GetUniformLocation(const char* name)
+{
+	// Try to get the uniform location
+	int loc = glGetUniformLocation(programID, name);
+
+	// Check if the location exist
+	if (loc == -1)
+	{
+		std::cout << "Warning: Cannot find uniform location of [" << name << "]" << std::endl;
+		return -1;
+	}
+
+	return loc;
+}
+
+// Set 1 uniform int value
+int SetUniform1i(const char* name, int value)
+{
+	int loc = GetUniformLocation(name);
+	if (loc == -1)
+		return -1;
+
+	glUniform1i(loc, value);
+
+	return 0;
+}
+
+// Set 1 uniform float value
+int SetUniform1f(const char* name, float value)
+{
+	int loc = GetUniformLocation(name);
+	if (loc == -1)
+		return -1;
+
+	glUniform1f(loc, value);
+	return 0;
+}
+
+// Set 4 uniform float values
+int SetUniform4f(const char* name, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3)
+{
+	int loc = GetUniformLocation(name);
+	if (loc == -1)
+		return -1;
+
+	glUniform4f(loc, v0, v1, v2, v3);
+	return 0;
+}
+
+// Set uniform mat4
+int SetUniformMat4f(const char* name, const glm::mat4& matrix)
+{
+	int loc = GetUniformLocation(name);
+	if (loc == -1)
+		return -1;
+
+	glUniformMatrix4fv(loc, 1, GL_FALSE, &matrix[0][0]);
+	return 0;
+}
+
+/**********************
+	Camera related
+***********************/
+class Camera
+{
+public:
+	static glm::mat4 GetViewMatrix();
+	static glm::mat4 GetProjectionMatrix();
+
+	static glm::vec3 GetPosition();
+	static void SetPosition(glm::vec3 pos);
+
+	static void OnPaint();
+private:
+	static glm::vec3 m_position;
+};
+
+glm::vec3 Camera::m_position = glm::vec3(0.0f, 0.0f, 0.0f);
+
+glm::mat4 Camera::GetViewMatrix()
+{
+	return glm::translate(glm::mat4(1.0f), -1.0f * GetPosition());
+}
+
+glm::mat4 Camera::GetProjectionMatrix()
+{
+	//return glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, 0.1f, 100.0f);
+	return glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+}
+
+glm::vec3 Camera::GetPosition()
+{
+	return m_position;
+}
+
+void Camera::SetPosition(glm::vec3 pos)
+{
+	m_position = pos;
+}
+
+void Camera::OnPaint()
+{
+	// Set the shader's projection and view uniform
+	SetUniformMat4f("u_viewMatrix", GetViewMatrix());
+	SetUniformMat4f("u_projectionMatrix", GetProjectionMatrix());
+}
+
+/**********************
+	Game Object related
+***********************/
+class Transform
+{
+public:
+	Transform();
+	~Transform();
+
+	glm::vec3 GetPosition();
+	void SetPosition(glm::vec3 value);
+
+	glm::vec3 GetRotation();
+	void SetRotation(glm::vec3 value);
+
+	glm::vec3 GetScale();
+	void SetScale(glm::vec3 value);
+
+	void OnPaint();
+	glm::mat4 GetTransformMat4();
+private:
+	glm::vec3 m_position;
+	glm::vec3 m_rotation;
+	glm::vec3 m_scale;
+};
+
+#define DEFAULT_COLOR_VALUE 0.8f, 0.8f, 0.8f, 1.0f
+
+class Object
+{
+public:
+	Object();
+	~Object();
+
+	void SetVertices(GLfloat vertices[], int vertCount);
+	void SetIndices(GLuint indices[], int idxCount);
+	void SetVerticesColor(GLfloat colors[]);
+
+	Transform GetTransform() const;
+
+	void SetActive(bool active);
+	bool IsActive() const;
+
+	void OnPaint();
+
+private:
+	Transform m_transform;
+	VAO m_vao;
+	VBO m_vertVBO, m_colorVBO;
+	EBO m_ebo;
+	int m_verticesCount;
+	bool m_useEBO;
+	bool m_useColorVBO;
+	bool m_isActive;
+	bool m_ready;
+};
+
+class ObjectRenderPipeline
+{
+public:
+	static void AddObject(Object& object);
+	static void RemoveObject(Object& object);
+	static void OnPaint();
+private:
+	static std::list<Object*> m_Objects;
+};
+
+Transform::Transform() :
+	m_position(glm::vec3()), m_rotation(glm::vec3()), m_scale(glm::vec3(1.f))
+{
+}
+
+Transform::~Transform()
+{
+}
+
+glm::vec3 Transform::GetPosition()
+{
+	return m_position;
+}
+
+void Transform::SetPosition(glm::vec3 value)
+{
+	m_position = value;
+}
+
+glm::vec3 Transform::GetRotation()
+{
+	return m_rotation;
+}
+
+void Transform::SetRotation(glm::vec3 value)
+{
+	m_rotation = value;
+}
+
+glm::vec3 Transform::GetScale()
+{
+	return m_scale;
+}
+
+void Transform::SetScale(glm::vec3 value)
+{
+	m_scale = value;
+}
+
+void Transform::OnPaint()
+{
+	SetUniformMat4f("u_modelMatrix", GetTransformMat4());
+}
+
+glm::mat4 Transform::GetTransformMat4()
+{
+	glm::mat4 model = glm::mat4(1.0f);
+	glm::mat4 t = glm::translate(model, m_position);
+	glm::mat4 r_x = glm::rotate(model, glm::radians(m_rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+	glm::mat4 r_y = glm::rotate(model, glm::radians(m_rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 r_z = glm::rotate(model, glm::radians(m_rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::mat4 s = glm::scale(model, m_scale);
+	return s * r_z * r_y * r_x * t;
+}
+
+Object::Object() :
+	m_vao(), m_vertVBO(), m_verticesCount(0), m_colorVBO(), m_transform(Transform()),
+	m_isActive(false), m_useColorVBO(false), m_useEBO(false), m_ready(false)
+{
+}
+
+Object::~Object()
+{
+	m_colorVBO.Delete();
+	m_vertVBO.Delete();
+	m_vao.Delete();
+	m_ebo.Delete();
+}
+
+void Object::SetVertices(GLfloat vertices[], int vertCount)
+{
+	m_vertVBO = VBO(vertices, vertCount * sizeof(float));
+	m_vao.LinkVBO(m_vertVBO, 0);
+
+	m_verticesCount = vertCount;
+	m_ready = true;
+}
+
+void Object::SetIndices(GLuint indices[], int idxCount)
+{
+	m_ebo = EBO(indices, idxCount);
+
+	m_useEBO = true;
+}
+
+void Object::SetVerticesColor(GLfloat colors[])
+{
+	if (m_verticesCount < 1)
+		m_verticesCount = sizeof(colors) / sizeof(float);
+
+	m_colorVBO = VBO(colors, m_verticesCount * sizeof(float));
+	m_vao.LinkVBO(m_colorVBO, 1);
+}
+
+Transform Object::GetTransform() const
+{
+	return m_transform;
+}
+
+void Object::SetActive(bool active)
+{
+	if (active)
+	{
+		ObjectRenderPipeline::AddObject(*this);
+	}
+	else
+	{
+		ObjectRenderPipeline::RemoveObject(*this);
+	}
+
+	m_isActive = active;
+}
+
+bool Object::IsActive() const
+{
+	return m_isActive;
+}
+
+void Object::OnPaint()
+{
+	if (!m_ready)
+		return;
+
+	m_transform.OnPaint();
+
+	if (!m_useColorVBO) {
+		SetUniform4f("u_Color", DEFAULT_COLOR_VALUE);
+	}
+
+	if (!m_useEBO)
+	{
+		Renderer::Draw(m_vao, GL_TRIANGLES, 6);
+	}
+	else
+	{
+		Renderer::Draw(m_vao, m_ebo);
+	}
+}
+
+std::list<Object*> ObjectRenderPipeline::m_Objects;
+
+void ObjectRenderPipeline::AddObject(Object& object)
+{
+	if (object.IsActive())
+		return;
+	m_Objects.push_back(&object);
+}
+
+void ObjectRenderPipeline::RemoveObject(Object& object)
+{
+	if (!object.IsActive())
+		return;
+	m_Objects.remove(&object);
+}
+
+void ObjectRenderPipeline::OnPaint()
+{
+	if (m_Objects.size() < 1)
+		return;
+
+	for (std::list<Object*>::iterator it = m_Objects.begin(); it != m_Objects.end(); it++)
+	{
+		(*it)->OnPaint();
+		/*std::cout << "Painting Transform:" << std::endl;
+		glm::mat4 t = (*it)->GetTransform().GetTransformMat4();
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				std::cout << t[j][i] << " ";
+			}
+			std::cout << std::endl;
+		}*/
+	}
+}
+#pragma endregion
+
 
 
 void get_OpenGL_info() {
@@ -27,6 +571,9 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
+VAO* vaoTri;
+VBO* vboTri;
+
 void sendDataToOpenGL() {
 	const GLfloat triangle[] =
 	{
@@ -40,21 +587,29 @@ void sendDataToOpenGL() {
 		+0.0f, +0.0f, +1.0f,
 	};
 
-	GLuint vaoID;
-	glGenVertexArrays(1, &vaoID);
-	glBindVertexArray(vaoID);  //first VAO
+	//GLuint vaoID;
+	//glGenVertexArrays(1, &vaoID);
+	//glBindVertexArray(vaoID);  //first VAO
 
-	GLuint vboID;
-	glGenBuffers(1, &vboID);
-	glBindBuffer(GL_ARRAY_BUFFER, vboID);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(triangle), triangle, GL_STATIC_DRAW);
+	//GLuint vboID;
+	//glGenBuffers(1, &vboID);
+	//glBindBuffer(GL_ARRAY_BUFFER, vboID);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(triangle), triangle, GL_STATIC_DRAW);
 
-	// vertex position
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
-	// vertex color
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (char*)(3 * sizeof(float)));
+	//// vertex position
+	//glEnableVertexAttribArray(0);
+	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
+	//// vertex color
+	//glEnableVertexAttribArray(1);
+	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (char*)(3 * sizeof(float)));
+
+	vaoTri = new VAO();
+	vaoTri->Bind();
+
+	vboTri = new VBO(triangle, sizeof(vertTriangle));
+	vaoTri->LinkVBO(*vboVertTri, 0);
+	vboColorTri = new VBO(colorTriangle, sizeof(colorTriangle));
+	vaoTri->LinkVBO(*vboColorTri, 1);
 
 	//// with indexing (uncomment to use)
 	//GLuint indices[] = { 0, 1, 2 };
@@ -151,19 +706,22 @@ void paintGL(void) {
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);  //specify the background color
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	glm::mat4 modelTransformMatrix = glm::mat4(1.0f);
-	modelTransformMatrix = glm::translate(glm::mat4(1.0f),
-		glm::vec3(x_delta * x_press_num, 0.0f, 0.0f));;
-	GLint modelTransformMatrixUniformLocation =
-		glGetUniformLocation(programID, "modelTransformMatrix");
-	glUniformMatrix4fv(modelTransformMatrixUniformLocation, 1,
-		GL_FALSE, &modelTransformMatrix[0][0]);
-
+	//glm::mat4 modelTransformMatrix = glm::mat4(1.0f);
+	//modelTransformMatrix = glm::translate(glm::mat4(1.0f),
+	//	glm::vec3(x_delta * x_press_num, 0.0f, 0.0f));;
+	//GLint modelTransformMatrixUniformLocation =
+	//	glGetUniformLocation(programID, "modelTransformMatrix");
+	//glUniformMatrix4fv(modelTransformMatrixUniformLocation, 1,
+	//	GL_FALSE, &modelTransformMatrix[0][0]);
+	SetUniformMat4f("u_modelMatrix", glm::translate(glm::mat4(1.0f),
+		glm::vec3(x_delta * x_press_num, 0.0f, 0.0f)));
+	Camera::OnPaint();
+	Renderer::Draw(*vaoTri, GL_TRIANGLES, 9);
 	// glBindVertexArray();
 
 	// without indexing
-	glDrawArrays(GL_TRIANGLES, 0, 6);  //render primitives from array data
-	//// with indexing (uncomment to use)
+	//glDrawArrays(GL_TRIANGLES, 0, 6);  //render primitives from array data
+	// with indexing (uncomment to use)
 	//glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
 }
 

@@ -186,7 +186,7 @@ void EBO::Delete()
 void Renderer::Clear()
 {
 	glClearColor(.07f, .13f, .17f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT  | GL_DEPTH_BUFFER_BIT);
 }
 
 void Renderer::Draw(const VAO& vao, GLenum mode, int vertexCount)
@@ -383,7 +383,8 @@ private:
 
 Transform::Transform():
 	m_position(glm::vec3()), m_rotation(glm::vec3()), m_scale(glm::vec3(1.f))
-{}
+{
+}
 
 Transform::~Transform()
 {
@@ -426,11 +427,12 @@ void Transform::OnPaint()
 
 glm::mat4 Transform::GetTransformMat4()
 {
-	glm::mat4 t = glm::translate(glm::mat4(1.0f), m_position);
-	glm::mat4 r_x = glm::rotate(glm::mat4(1.0f), m_rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-	glm::mat4 r_y = glm::rotate(glm::mat4(1.0f), m_rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 r_z = glm::rotate(glm::mat4(1.0f), m_rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-	glm::mat4 s = glm::scale(glm::mat4(1.0f), m_scale);
+	glm::mat4 model = glm::mat4(1.0f);
+	glm::mat4 t = glm::translate(model, m_position);
+	glm::mat4 r_x = glm::rotate(model, glm::radians(m_rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+	glm::mat4 r_y = glm::rotate(model, glm::radians(m_rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 r_z = glm::rotate(model, glm::radians(m_rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::mat4 s = glm::scale(model, m_scale);
 	return s * r_z * r_y * r_x * t;
 }
 
@@ -663,11 +665,12 @@ void sendDataToOpenGL() {
 		0.5f, 0.5f, 0.5f,
 		-0.5f, 0.5f, 0.5f,
 	};
+
 	GLuint idxCube[] =
 	{
 		0, 1, 2,
 		0, 4, 2,
-		1,
+		1, 
 	};
 
 	GLfloat vertPyramid[] =

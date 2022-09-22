@@ -7,11 +7,11 @@ uniform mat4 u_modelMatrix;
 uniform mat4 u_viewMatrix;
 uniform mat4 u_projectionMatrix;
 
-out vec3 outColor;
+out vec3 elColor;
 
 void main()
 {
 	vec4 v = vec4(position, 1.0);
 	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * v;
-	outColor = vertexColor;
+	elColor = vertexColor;
 }
