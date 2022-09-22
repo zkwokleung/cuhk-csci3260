@@ -59,6 +59,7 @@ public:
 	GLuint ID; // The ID of the EBO
 	GLuint Count; // The number of indecies
 
+	EBO();
 	EBO(GLuint* indices, GLuint count);
 
 	void Bind() const;
@@ -72,6 +73,8 @@ class Renderer
 public:
 	// Clear everything that is currently displayed
 	static void Clear();
+	// Draw an element with the given vertices and the specific shape
+	static void Draw(const VAO& vao, GLenum mode, int vertexCount);
 	// Draw an element with the given vertices array and indices array
 	static void Draw(const VAO& vao, const EBO& ebo);
 private:
@@ -132,6 +135,12 @@ void VAO::Delete()
 	glDeleteVertexArrays(1, &ID);
 }
 
+EBO::EBO()
+{
+	Count = 0;
+	glGenBuffers(1, &ID);
+}
+
 EBO::EBO(GLuint* indices, GLuint count)
 {
 	Count = count;
@@ -159,6 +168,12 @@ void Renderer::Clear()
 {
 	glClearColor(.07f, .13f, .17f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void Renderer::Draw(const VAO& vao, GLenum mode, int vertexCount)
+{
+	vao.Bind();
+	glDrawArrays(mode, 0, vertexCount);
 }
 
 void Renderer::Draw(const VAO& vao, const EBO& ebo)
@@ -251,14 +266,16 @@ private:
 	static glm::vec3 m_position;
 };
 
+glm::vec3 Camera::m_position = glm::vec3(0.0f, 5.0f, 0.0f);
+
 glm::mat4 Camera::GetViewMatrix()
 {
-	return glm::mat4(1.0f);
+	return glm::lookAt(GetPosition(), glm::vec3(0, 0, -10), glm::vec3(0, -1, 0));
 }
 
 glm::mat4 Camera::GetProjectionMatrix()
 {
-	return glm::perspective(60.0f, 1.0f, 0.1f, 20.0f);
+	return glm::perspective(30.0f, 1.0f, 2.0f, 20.0f);
 }
 
 glm::mat4 Camera::GetLookAt()
@@ -273,6 +290,7 @@ glm::vec3 Camera::GetPosition()
 
 void Camera::SetPosition(glm::vec3 pos)
 {
+	m_position = pos;
 }
 
 void Camera::OnPaint()
@@ -313,9 +331,12 @@ private:
 class Object
 {
 public:
-	Object(GLfloat vertices[], int vertCount, GLuint indices[], int idxCount);
-	Object(GLfloat vertices[], int vertCount, GLuint indicies[], int idxCount, GLfloat colors[]);
+	Object();
 	~Object();
+
+	void SetVertices(GLfloat vertices[], int vertCount);
+	void SetIndices(GLuint indices[], int idxCount);
+	void SetVerticesColor(GLfloat colors[]);
 
 	Transform GetTransform() const;
 
@@ -330,8 +351,10 @@ private:
 	VBO m_vertVBO, m_colorVBO;
 	EBO m_ebo;
 	int m_verticesCount;
+	bool m_useEBO;
 	bool m_useColorVBO;
 	bool m_isActive;
+	bool m_ready;
 };
 
 class ObjectRenderPipeline
@@ -388,22 +411,6 @@ void Transform::SetScale(glm::vec3 value)
 void Transform::OnPaint()
 {
 	SetUniformMat4f("u_modelMatrix", GetTransformMat4());
-
-	static int debugged = 0;
-	static glm::mat4 trans = GetTransformMat4();
-	if (!debugged)
-	{
-		std::cout << "Model Matrix:" << std::endl;
-		for (int i = 0; i < 4; i++)
-		{
-			for (int j = 0; j < 4; j++)
-			{
-				std::cout << " " << trans[j][i] << " ";
-			}
-			std::cout << std::endl;
-		}
-		debugged = 1;
-	}
 }
 
 glm::mat4 Transform::GetTransformMat4()
@@ -416,26 +423,39 @@ glm::mat4 Transform::GetTransformMat4()
 	return s * r_z * r_y * r_x * t;
 }
 
-
-Object::Object(GLfloat vertices[], int vertCount, GLuint indices[], int idxCount) :
-	m_vao(), m_vertVBO(vertices, vertCount * sizeof(float)), m_ebo(indices, idxCount), m_verticesCount(vertCount)
+Object::Object():
+	m_vao(), m_vertVBO(), m_verticesCount(0), m_colorVBO(),
+	m_isActive(false), m_useColorVBO(false), m_useEBO(false), m_ready(false)
 {
-	m_vao.LinkVBO(m_vertVBO, 0);
-	m_useColorVBO = false;
-
-	m_vao.LinkVBO(m_vertVBO, 1);
-}
-
-Object::Object(GLfloat vertices[], int vertCount, GLuint indices[], int idxCount, GLfloat colors[]) :
-	m_vao(), m_vertVBO(vertices, vertCount * sizeof(float)), m_ebo(indices, idxCount), m_verticesCount(vertCount), m_colorVBO(colors, vertCount * sizeof(float))
-{
-	m_vao.LinkVBO(m_vertVBO, 0);
-	m_vao.LinkVBO(m_colorVBO, 1);
-	m_useColorVBO = true;
 }
 
 Object::~Object()
 {
+}
+
+void Object::SetVertices(GLfloat vertices[], int vertCount)
+{
+	m_vertVBO = VBO(vertices, vertCount * sizeof(float));
+	m_vao.LinkVBO(m_vertVBO, 0);
+
+	m_verticesCount = vertCount;
+	m_ready = true;
+}
+
+void Object::SetIndices(GLuint indices[], int idxCount)
+{
+	m_ebo = EBO(indices, idxCount);
+
+	m_useEBO = true;
+}
+
+void Object::SetVerticesColor(GLfloat colors[])
+{
+	if (m_verticesCount < 1)
+		m_verticesCount = sizeof(colors) / sizeof(float);
+
+	m_colorVBO = VBO(colors, m_verticesCount * sizeof(float));
+	m_vao.LinkVBO(m_colorVBO, 1);
 }
 
 Transform Object::GetTransform() const
@@ -464,12 +484,23 @@ bool Object::IsActive() const
 
 void Object::OnPaint()
 {
+	if (!m_ready)
+		return;
+
 	m_transform.OnPaint();
 
 	if (!m_useColorVBO) {
+		SetUniform4f("u_Color", DEFAULT_COLOR_VALUE);
 	}
-	SetUniform4f("u_Color", DEFAULT_COLOR_VALUE);
-	Renderer::Draw(m_vao, m_ebo);
+
+	if (!m_useEBO)
+	{
+		Renderer::Draw(m_vao, GL_TRIANGLES, 6);
+	}
+	else
+	{
+		Renderer::Draw(m_vao, m_ebo);
+	}
 }
 
 std::list<Object*> ObjectRenderPipeline::m_Objects;
@@ -500,7 +531,7 @@ void ObjectRenderPipeline::OnPaint()
 }
 #pragma endregion
 
-
+#pragma region Main OpenGL Functions
 void get_OpenGL_info() {
 	// OpenGL information
 	const GLubyte* name = glGetString(GL_VENDOR);
@@ -632,18 +663,32 @@ void sendDataToOpenGL() {
 		3, 4, 1
 	};
 
-	const GLfloat ground[] =
+	GLfloat vertGround[] =
 	{
-		-1.0f, +0.0f, -1.0f,     
-		-1.0f, +0.0f, +1.0f,     
-		+1.0f, +0.0f, -1.0f,     
-		-1.0f, +0.0f, +1.0f,     
-		+1.0f, +0.0f, +1.0f,     
-		+1.0f, +0.0f, -1.0f,     
+		-1.0f, +0.0f, -1.0f,
+		-1.0f, +0.0f, +1.0f,
+		+1.0f, +0.0f, -1.0f,
+		-1.0f, +0.0f, +1.0f,
+		+1.0f, +0.0f, +1.0f,
+		+1.0f, +0.0f, -1.0f,
 	};
 
-	//pyramid = new Object(vertPyramid, 5, idxPyramid, 18);
-	/*ground = new Object(ground, 6, )*/
+	GLfloat colorGround[] =
+	{
+		+0.2f, +0.2f, +0.3f,
+		+0.52f, +0.37f, +0.26f,
+		+0.2f, +0.2f, +0.3f,
+		+0.52f, +0.37f, +0.26f,
+		+0.52f, +0.37f, +0.26f,
+		+0.2f, +0.2f, +0.3f,
+	};
+
+	//pyramid = new Object(vertPyramid, 5, idxPyramid, 18, groundColor);
+	//pyramid->SetActive(true);
+	ground = new Object();
+	ground->SetVertices(vertGround, 18);
+	ground->SetVerticesColor(colorGround);
+	ground->GetTransform().SetScale(glm::vec3(4.0f, 1.0f, 4.0f));
 }
 
 void paintGL(void) {
@@ -729,3 +774,4 @@ int main(int argc, char* argv[]) {
 	glfwTerminate();
 	return 0;
 }
+#pragma endregion
