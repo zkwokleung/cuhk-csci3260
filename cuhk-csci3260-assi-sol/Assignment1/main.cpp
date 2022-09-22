@@ -239,10 +239,16 @@ int SetUniformMat4f(const char* name, const glm::mat4& matrix)
 class Camera
 {
 public:
-	static	glm::mat4 GetViewMatrix();
+	static glm::mat4 GetViewMatrix();
 	static glm::mat4 GetProjectionMatrix();
+	static glm::mat4 GetLookAt();
+
+	static glm::vec3 GetPosition();
+	static void SetPosition(glm::vec3 pos);
 
 	static void OnPaint();
+private:
+	static glm::vec3 m_position;
 };
 
 glm::mat4 Camera::GetViewMatrix()
@@ -253,6 +259,20 @@ glm::mat4 Camera::GetViewMatrix()
 glm::mat4 Camera::GetProjectionMatrix()
 {
 	return glm::perspective(60.0f, 1.0f, 0.1f, 20.0f);
+}
+
+glm::mat4 Camera::GetLookAt()
+{
+	return glm::mat4();
+}
+
+glm::vec3 Camera::GetPosition()
+{
+	return glm::vec3();
+}
+
+void Camera::SetPosition(glm::vec3 pos)
+{
 }
 
 void Camera::OnPaint()
@@ -299,6 +319,8 @@ public:
 
 	Transform GetTransform() const;
 
+	void SetActive(bool active);
+	bool IsActive() const;
 
 	void OnPaint();
 
@@ -309,6 +331,7 @@ private:
 	EBO m_ebo;
 	int m_verticesCount;
 	bool m_useColorVBO;
+	bool m_isActive;
 };
 
 class ObjectRenderPipeline
@@ -318,7 +341,7 @@ public:
 	static void RemoveObject(Object& object);
 	static void OnPaint();
 private:
-	static std::list<Object> m_Objects;
+	static std::list<Object*> m_Objects;
 };
 
 Transform::Transform()
@@ -420,6 +443,25 @@ Transform Object::GetTransform() const
 	return m_transform;
 }
 
+void Object::SetActive(bool active)
+{
+	if (active)
+	{
+		ObjectRenderPipeline::AddObject(*this);
+	}
+	else
+	{
+		ObjectRenderPipeline::RemoveObject(*this);
+	}
+
+	m_isActive = active;
+}
+
+bool Object::IsActive() const
+{
+	return m_isActive;
+}
+
 void Object::OnPaint()
 {
 	m_transform.OnPaint();
@@ -430,23 +472,30 @@ void Object::OnPaint()
 	Renderer::Draw(m_vao, m_ebo);
 }
 
-std::list<Object> ObjectRenderPipeline::m_Objects;
+std::list<Object*> ObjectRenderPipeline::m_Objects;
 
 void ObjectRenderPipeline::AddObject(Object& object)
 {
-	m_Objects.push_back(object);
+	if (object.IsActive())
+		return;
+	m_Objects.push_back(&object);
 }
 
 void ObjectRenderPipeline::RemoveObject(Object& object)
 {
-	m_Objects.remove(object);
+	if (!object.IsActive())
+		return;
+	m_Objects.remove(&object);
 }
 
 void ObjectRenderPipeline::OnPaint()
 {
-	for (std::list<Object>::iterator it = m_Objects.begin(); it != m_Objects.end(); it++)
+	if (m_Objects.size() < 1)
+		return;
+
+	for (std::list<Object*>::iterator it = m_Objects.begin(); it != m_Objects.end(); it++)
 	{
-		it->OnPaint();
+		(*it)->OnPaint();
 	}
 }
 #pragma endregion
@@ -542,6 +591,7 @@ void installShaders() {
 
 
 Object* pyramid;
+Object* ground;
 
 void sendDataToOpenGL() {
 	// TODO:
@@ -582,7 +632,18 @@ void sendDataToOpenGL() {
 		3, 4, 1
 	};
 
-	pyramid = new Object(vertPyramid, 15, idxPyramid, 18);
+	const GLfloat ground[] =
+	{
+		-1.0f, +0.0f, -1.0f,     
+		-1.0f, +0.0f, +1.0f,     
+		+1.0f, +0.0f, -1.0f,     
+		-1.0f, +0.0f, +1.0f,     
+		+1.0f, +0.0f, +1.0f,     
+		+1.0f, +0.0f, -1.0f,     
+	};
+
+	//pyramid = new Object(vertPyramid, 5, idxPyramid, 18);
+	/*ground = new Object(ground, 6, )*/
 }
 
 void paintGL(void) {
