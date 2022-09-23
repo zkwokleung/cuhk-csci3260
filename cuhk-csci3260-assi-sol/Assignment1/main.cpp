@@ -14,7 +14,6 @@ Type your name and student ID here
 #include <fstream>
 #include <list>
 
-
 GLint programID;
 
 #pragma region My Classes
@@ -30,7 +29,7 @@ class VBO
 public:
 	GLuint ID;
 	VBO();
-	VBO(GLfloat* vertices, GLsizeiptr size);
+	VBO(const GLfloat* vertices, GLsizeiptr size);
 	~VBO();
 
 	// Bind the VBO to allow OpenGL to use it
@@ -47,7 +46,7 @@ public:
 	~VAO();
 
 	// Linking the buffer to this array
-	void LinkVBO(VBO& VBO, GLuint layout);
+	void LinkAttrib(VBO& VBO, GLuint layout, GLuint componentSize, GLenum type, GLsizeiptr stride, void* offset);
 
 	// Bind the VAO to allow OpenGL to use it
 	void Bind() const;
@@ -62,7 +61,7 @@ public:
 	GLuint Count; // The number of indecies
 
 	EBO();
-	EBO(GLuint* indices, GLuint count);
+	EBO(const GLuint* indices, GLuint count);
 	~EBO();
 
 	void Bind() const;
@@ -87,13 +86,12 @@ private:
 VBO::VBO() {
 }
 
-VBO::VBO(GLfloat* vertices, GLsizeiptr size)
+VBO::VBO(const GLfloat* vertices, GLsizeiptr size)
 {
-	std::cout << "Buffer ID before: " << ID << std::endl;
 	glGenBuffers(1, &ID);
-	std::cout << "Buffer ID: " << ID << std::endl;
-	glBindBuffer(GL_ARRAY_BUFFER, ID);
+	Bind();
 	glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
+	Unbind();
 }
 
 VBO::~VBO()
@@ -126,10 +124,11 @@ VAO::~VAO()
 	Delete();
 }
 
-void VAO::LinkVBO(VBO& VBO, GLuint layout)
+
+void VAO::LinkAttrib(VBO& VBO, GLuint layout, GLuint componentSize, GLenum type, GLsizeiptr stride, void* offset)
 {
 	VBO.Bind();
-	glVertexAttribPointer(layout, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	glVertexAttribPointer(layout, componentSize, type, GL_FALSE, stride, offset);
 	glEnableVertexAttribArray(layout);
 	VBO.Unbind();
 }
@@ -155,7 +154,7 @@ EBO::EBO()
 	glGenBuffers(1, &ID);
 }
 
-EBO::EBO(GLuint* indices, GLuint count)
+EBO::EBO(const GLuint* indices, GLuint count)
 {
 	Count = count;
 	glGenBuffers(1, &ID);
@@ -186,7 +185,7 @@ void EBO::Delete()
 void Renderer::Clear()
 {
 	glClearColor(.07f, .13f, .17f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT  | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Renderer::Draw(const VAO& vao, GLenum mode, int vertexCount)
@@ -284,7 +283,7 @@ private:
 	static glm::vec3 m_position;
 };
 
-glm::vec3 Camera::m_position = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 Camera::m_position = glm::vec3(0.0f, 0.0f, 100.f);
 
 glm::mat4 Camera::GetViewMatrix()
 {
@@ -293,8 +292,9 @@ glm::mat4 Camera::GetViewMatrix()
 
 glm::mat4 Camera::GetProjectionMatrix()
 {
-	//return glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, 0.1f, 100.0f);
-	return glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+	//return glm::ortho(0.0f, 512.0f, 0.0f, 512.0f, 0.1f, 1000.0f);
+	return glm::perspective(glm::radians(45.0f), 1.f, 0.1f, 1000.0f);
+	return glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 1000.0f);
 }
 
 glm::vec3 Camera::GetPosition()
@@ -323,17 +323,17 @@ public:
 	Transform();
 	~Transform();
 
-	glm::vec3 GetPosition();
+	glm::vec3 GetPosition() const;
 	void SetPosition(glm::vec3 value);
 
-	glm::vec3 GetRotation();
+	glm::vec3 GetRotation() const;
 	void SetRotation(glm::vec3 value);
 
-	glm::vec3 GetScale();
+	glm::vec3 GetScale() const;
 	void SetScale(glm::vec3 value);
 
-	void OnPaint();
-	glm::mat4 GetTransformMat4();
+	virtual void OnPaint();
+	glm::mat4 GetTransformMat4() const;
 private:
 	glm::vec3 m_position;
 	glm::vec3 m_rotation;
@@ -348,40 +348,68 @@ public:
 	Object();
 	~Object();
 
-	void SetVertices(GLfloat vertices[], int vertCount);
-	void SetIndices(GLuint indices[], int idxCount);
-	void SetVerticesColor(GLfloat colors[]);
-
-	Transform GetTransform() const;
+	Transform& GetTransform();
 
 	void SetActive(bool active);
 	bool IsActive() const;
 
-	void OnPaint();
+	virtual void OnPaint();
 
 private:
 	Transform m_transform;
-	VAO m_vao;
-	VBO m_vertVBO, m_colorVBO;
-	EBO m_ebo;
-	int m_verticesCount;
-	bool m_useEBO;
-	bool m_useColorVBO;
 	bool m_isActive;
-	bool m_ready;
+};
+
+class VerticesObject : public Object
+{
+public:
+	VerticesObject();
+	~VerticesObject();
+
+	virtual void SetVertices(const GLfloat vertices[], int elementCount);
+	virtual void OnPaint();
+
+protected:
+	VAO m_vao;
+	VBO m_vbo;
+	int m_elementCount;
+};
+
+class IndexedVerticesObject : public VerticesObject
+{
+public:
+	IndexedVerticesObject();
+	~IndexedVerticesObject();
+
+	virtual void SetIndices(const GLuint indices[], int idxCount);
+	virtual void OnPaint();
+
+protected:
+	EBO m_ebo;
+	int m_indicesCount;
+};
+
+class ColoredIndexedVerticesObject : public IndexedVerticesObject
+{
+public:
+	ColoredIndexedVerticesObject();
+	~ColoredIndexedVerticesObject();
+
+	virtual void SetVertices(const GLfloat vertices[], int elementCount);
+	virtual void OnPaint();
 };
 
 class ObjectRenderPipeline
 {
 public:
-	static void AddObject(Object& object);
-	static void RemoveObject(Object& object);
+	static void AddObject(Object* object);
+	static void RemoveObject(Object* object);
 	static void OnPaint();
 private:
 	static std::list<Object*> m_Objects;
 };
 
-Transform::Transform():
+Transform::Transform() :
 	m_position(glm::vec3()), m_rotation(glm::vec3()), m_scale(glm::vec3(1.f))
 {
 }
@@ -390,7 +418,7 @@ Transform::~Transform()
 {
 }
 
-glm::vec3 Transform::GetPosition()
+glm::vec3 Transform::GetPosition() const
 {
 	return m_position;
 }
@@ -400,7 +428,7 @@ void Transform::SetPosition(glm::vec3 value)
 	m_position = value;
 }
 
-glm::vec3 Transform::GetRotation()
+glm::vec3 Transform::GetRotation() const
 {
 	return m_rotation;
 }
@@ -410,7 +438,7 @@ void Transform::SetRotation(glm::vec3 value)
 	m_rotation = value;
 }
 
-glm::vec3 Transform::GetScale()
+glm::vec3 Transform::GetScale() const
 {
 	return m_scale;
 }
@@ -425,57 +453,48 @@ void Transform::OnPaint()
 	SetUniformMat4f("u_modelMatrix", GetTransformMat4());
 }
 
-glm::mat4 Transform::GetTransformMat4()
+glm::mat4 Transform::GetTransformMat4() const
 {
 	glm::mat4 model = glm::mat4(1.0f);
-	glm::mat4 t = glm::translate(model, m_position);
-	glm::mat4 r_x = glm::rotate(model, glm::radians(m_rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-	glm::mat4 r_y = glm::rotate(model, glm::radians(m_rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 r_z = glm::rotate(model, glm::radians(m_rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-	glm::mat4 s = glm::scale(model, m_scale);
-	return s * r_z * r_y * r_x * t;
+
+	// Translate
+	model = glm::translate(model, m_position);
+
+	// Rotate
+	model = glm::rotate(model, glm::radians(m_rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(m_rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(m_rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+
+	// Scale
+	model = glm::scale(model, m_scale);
+
+	std::cout << "position: (" << m_position.x << ", " << m_position.y << ", " << m_position.z << ")" << std::endl;
+	std::cout << "rotation: (" << m_rotation.x << ", " << m_rotation.y << ", " << m_rotation.z << ")" << std::endl;
+	std::cout << "scale: (" << m_scale.x << ", " << m_scale.y << ", " << m_scale.z << ")" << std::endl;
+
+	std::cout << "Transform: " << std::endl;
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			std::cout << model[j][i] << " ";
+		}
+		std::cout << std::endl;
+	}
+
+	return model;
 }
 
 Object::Object() :
-	m_vao(), m_vertVBO(), m_verticesCount(0), m_colorVBO(), m_transform(Transform()),
-	m_isActive(false), m_useColorVBO(false), m_useEBO(false), m_ready(false)
+	m_transform(), m_isActive(false)
 {
 }
 
 Object::~Object()
 {
-	m_colorVBO.Delete();
-	m_vertVBO.Delete();
-	m_vao.Delete();
-	m_ebo.Delete();
 }
 
-void Object::SetVertices(GLfloat vertices[], int vertCount)
-{
-	m_vertVBO = VBO(vertices, vertCount * sizeof(float));
-	m_vao.LinkVBO(m_vertVBO, 0);
-
-	m_verticesCount = vertCount;
-	m_ready = true;
-}
-
-void Object::SetIndices(GLuint indices[], int idxCount)
-{
-	m_ebo = EBO(indices, idxCount);
-
-	m_useEBO = true;
-}
-
-void Object::SetVerticesColor(GLfloat colors[])
-{
-	if (m_verticesCount < 1)
-		m_verticesCount = sizeof(colors) / sizeof(float);
-
-	m_colorVBO = VBO(colors, m_verticesCount * sizeof(float));
-	m_vao.LinkVBO(m_colorVBO, 1);
-}
-
-Transform Object::GetTransform() const
+Transform& Object::GetTransform()
 {
 	return m_transform;
 }
@@ -484,11 +503,11 @@ void Object::SetActive(bool active)
 {
 	if (active)
 	{
-		ObjectRenderPipeline::AddObject(*this);
+		ObjectRenderPipeline::AddObject(this);
 	}
 	else
 	{
-		ObjectRenderPipeline::RemoveObject(*this);
+		ObjectRenderPipeline::RemoveObject(this);
 	}
 
 	m_isActive = active;
@@ -501,39 +520,94 @@ bool Object::IsActive() const
 
 void Object::OnPaint()
 {
-	if (!m_ready)
-		return;
-
 	m_transform.OnPaint();
+}
 
-	if (!m_useColorVBO) {
-		SetUniform4f("u_Color", DEFAULT_COLOR_VALUE);
-	}
+VerticesObject::VerticesObject() : Object(), m_elementCount(0)
+{
+}
 
-	if (!m_useEBO)
-	{
-		Renderer::Draw(m_vao, GL_TRIANGLES, 6);
-	}
-	else
-	{
-		Renderer::Draw(m_vao, m_ebo);
-	}
+VerticesObject::~VerticesObject()
+{
+	m_vao.Delete();
+	m_vbo.Delete();
+}
+
+void VerticesObject::SetVertices(const GLfloat vertices[], int arraySize)
+{
+	m_vbo = VBO(vertices, sizeof(vertices));
+	m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, 0, 0);
+
+	m_elementCount = arraySize;
+}
+
+void VerticesObject::OnPaint()
+{
+	Object::OnPaint();
+
+	Renderer::Draw(m_vao, GL_TRIANGLES, m_elementCount / 3);
+}
+
+IndexedVerticesObject::IndexedVerticesObject() : VerticesObject(), m_indicesCount(0)
+{
+
+}
+
+IndexedVerticesObject::~IndexedVerticesObject()
+{
+	m_ebo.Delete();
+}
+
+void IndexedVerticesObject::SetIndices(const GLuint indices[], int idxCount)
+{
+	m_ebo = EBO(indices, idxCount);
+}
+
+void IndexedVerticesObject::OnPaint()
+{
+	Object::OnPaint();
+
+	Renderer::Draw(m_vao, m_ebo);
+}
+
+ColoredIndexedVerticesObject::ColoredIndexedVerticesObject() : IndexedVerticesObject()
+{
+
+}
+
+ColoredIndexedVerticesObject::~ColoredIndexedVerticesObject()
+{
+
+}
+
+void ColoredIndexedVerticesObject::SetVertices(const GLfloat vertices[], int arraySize)
+{
+	m_vbo = VBO(vertices, sizeof(vertices));
+	m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, 6 * sizeof(float), 0);
+	m_vao.LinkAttrib(m_vbo, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+
+	m_elementCount = arraySize;
+}
+
+void ColoredIndexedVerticesObject::OnPaint()
+{
+	IndexedVerticesObject::OnPaint();
 }
 
 std::list<Object*> ObjectRenderPipeline::m_Objects;
 
-void ObjectRenderPipeline::AddObject(Object& object)
+void ObjectRenderPipeline::AddObject(Object* object)
 {
-	if (object.IsActive())
+	if (object->IsActive())
 		return;
-	m_Objects.push_back(&object);
+	m_Objects.push_back(object);
 }
 
-void ObjectRenderPipeline::RemoveObject(Object& object)
+void ObjectRenderPipeline::RemoveObject(Object* object)
 {
-	if (!object.IsActive())
+	if (!object->IsActive())
 		return;
-	m_Objects.remove(&object);
+	m_Objects.remove(object);
 }
 
 void ObjectRenderPipeline::OnPaint()
@@ -541,19 +615,10 @@ void ObjectRenderPipeline::OnPaint()
 	if (m_Objects.size() < 1)
 		return;
 
-	for (std::list<Object*>::iterator it = m_Objects.begin(); it != m_Objects.end(); it++)
+	std::list<Object*>::iterator it;
+	for (it = m_Objects.begin(); it != m_Objects.end(); it++)
 	{
 		(*it)->OnPaint();
-		/*std::cout << "Painting Transform:" << std::endl;
-		glm::mat4 t = (*it)->GetTransform().GetTransformMat4();
-		for (int i = 0; i < 4; i++)
-		{
-			for (int j = 0; j < 4; j++)
-			{
-				std::cout << t[j][i] << " ";
-			}
-			std::cout << std::endl;
-		}*/
 	}
 }
 #pragma endregion
@@ -666,29 +731,22 @@ void sendDataToOpenGL() {
 		-0.5f, 0.5f, 0.5f,
 	};
 
-	GLuint idxCube[] =
-	{
-		0, 1, 2,
-		0, 4, 2,
-		1, 
-	};
-
 	GLfloat vertPyramid[] =
 	{
 		0.0f, 0.5f, 0.0f,
-		-0.5f, -0.5f, 0.5f,
-		0.5f, -0.5f, 0.5f,
-		0.5f, -0.5f, -0.5f,
-		-0.5f, -0.5f, -0.5f,
-	};
-
-	GLfloat colorPyramid[] =
-	{
 		0.0f, 0.0f, 0.0f,
+
+		-0.5f, -0.5f, 0.5f,
 		0.0f,0.0f,1.0f,
+
+		0.5f, -0.5f, 0.5f,
 		0.0f,1.0f,0.0f,
+
+		0.5f, -0.5f, -0.5f,
 		0.0f,1.0f,1.0f,
-		1.0f,0.0f,0.0f
+
+		-0.5f, -0.5f, -0.5f,
+		1.0f,0.0f,0.0f,
 	};
 
 	GLuint idxPyramid[] =
@@ -701,39 +759,7 @@ void sendDataToOpenGL() {
 		3, 4, 1
 	};
 
-	GLfloat vertGround[] =
-	{
-		-1.0f, +0.0f, -1.0f,
-		-1.0f, +0.0f, +1.0f,
-		+1.0f, +0.0f, -1.0f,
-		-1.0f, +0.0f, +1.0f,
-		+1.0f, +0.0f, +1.0f,
-		+1.0f, +0.0f, -1.0f,
-	};
 
-	GLfloat colorGround[] =
-	{
-		+0.2f, +0.2f, +0.3f,
-		+0.52f, +0.37f, +0.26f,
-		+0.2f, +0.2f, +0.3f,
-		+0.52f, +0.37f, +0.26f,
-		+0.52f, +0.37f, +0.26f,
-		+0.2f, +0.2f, +0.3f,
-	};
-
-	pyramid = new Object();
-	pyramid->SetVertices(vertPyramid, 15);
-	pyramid->SetIndices(idxPyramid, 18);
-	pyramid->SetVerticesColor(colorPyramid);
-	pyramid->GetTransform().SetScale(glm::vec3(1.0f, 1.0f, 1.f));
-	pyramid->GetTransform().SetPosition(glm::vec3(10.0f, 10.0f, -10.f));
-	pyramid->SetActive(true);
-
-	//ground = new Object();
-	//ground->SetVertices(vertGround, 18);
-	//ground->SetVerticesColor(colorGround);
-	//ground->GetTransform().SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
-	//ground->SetActive(true);
 }
 
 void paintGL(void) {
@@ -741,6 +767,7 @@ void paintGL(void) {
 	// TODO:
 	// render your objects and control the transformation here
 	Renderer::Clear();
+
 	Camera::OnPaint();
 	ObjectRenderPipeline::OnPaint();
 }
