@@ -16,8 +16,7 @@ Type your name and student ID here
 
 GLint programID;
 
-
-#pragma region My Classes
+#pragma region My API
 /***************************************************************
 	Classes and functions created by me to simplify some codes
 ****************************************************************/
@@ -295,17 +294,25 @@ public:
 
 	glm::vec3 GetScale() const;
 	void SetScale(glm::vec3 value);
+	glm::mat4 GetTransformMat4() const;
+
+	Transform* GetParent();
+	void SetParent(Transform* transform);
+	std::list<Transform*> GetChilds() const;
 
 	virtual void OnPaint();
-	glm::mat4 GetTransformMat4() const;
 private:
 	glm::vec3 m_position;
 	glm::vec3 m_rotation;
 	glm::vec3 m_scale;
+
+	Transform* m_parent;
+	std::list<Transform*> m_childs;
 };
 
 Transform::Transform() :
-	m_position(glm::vec3()), m_rotation(glm::vec3()), m_scale(glm::vec3(1.f))
+	m_position(glm::vec3()), m_rotation(glm::vec3()), m_scale(glm::vec3(1.f)),
+	m_parent(nullptr), m_childs()
 {
 }
 
@@ -377,7 +384,22 @@ glm::mat4 Transform::GetTransformMat4() const
 	//	std::cout << std::endl;
 	//}
 
-	return model;
+	return (m_parent) ? model * m_parent->GetTransformMat4() : model;
+}
+
+Transform* Transform::GetParent()
+{
+	return m_parent;
+}
+
+void Transform::SetParent(Transform* transform)
+{
+	m_parent = transform;
+}
+
+std::list<Transform*> Transform::GetChilds() const
+{
+	return m_childs;
 }
 
 
@@ -697,6 +719,10 @@ void IndexedColoredVerticesObject::OnPaint()
 
 #pragma endregion
 
+#pragma region Assignment Specific Classes
+
+#pragma endregion
+
 
 #pragma region Main OpenGL Functions
 void get_OpenGL_info() {
@@ -892,7 +918,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
 		mainCamera->GetTransform().SetRotation(mainCamera->GetTransform().GetRotation() + glm::vec3(.0f, -10.f, .0f));
 	}
-	}
+}
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
