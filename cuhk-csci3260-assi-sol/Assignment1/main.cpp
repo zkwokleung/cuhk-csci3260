@@ -21,6 +21,7 @@ GLint programID;
 	Classes and functions created by me to simplify some codes
 ****************************************************************/
 
+#pragma region Render Related
 /**********************
 	Render related
 ***********************/
@@ -211,7 +212,9 @@ void Renderer::Draw(const VAO& vao, const EBO& ebo)
 	ebo.Bind();
 	glDrawElements(GL_TRIANGLES, ebo.Count, GL_UNSIGNED_INT, 0);
 }
+#pragma endregion
 
+#pragma region Shader Related
 /**********************
 	Shader related
 ***********************/
@@ -276,7 +279,9 @@ int SetUniformMat4f(const char* name, const glm::mat4& matrix)
 	glUniformMatrix4fv(loc, 1, GL_FALSE, &matrix[0][0]);
 	return 0;
 }
+#pragma endregion
 
+#pragma region Generic
 /**********************
 	Generic
 ***********************/
@@ -295,6 +300,13 @@ public:
 	glm::vec3 GetScale() const;
 	void SetScale(glm::vec3 value);
 	glm::mat4 GetTransformMat4() const;
+
+	glm::vec3 GetForward() const;
+	glm::vec3 GetBackward() const;
+	glm::vec3 GetLeft() const;
+	glm::vec3 GetRight() const;
+	glm::vec3 GetUp() const;
+	glm::vec3 GetDown() const;
 
 	Transform* GetParent();
 	void SetParent(Transform* transform);
@@ -337,7 +349,6 @@ glm::vec3 Transform::GetRotation() const
 
 void Transform::SetRotation(glm::vec3 value)
 {
-	std::cout << "Rotation set to: (" << value.x << ", " << value.y << ", " << value.z << ")" << std::endl;
 	m_rotation = value;
 }
 
@@ -392,6 +403,44 @@ glm::mat4 Transform::GetTransformMat4() const
 	return (m_parent) ? model * m_parent->GetTransformMat4() : model;
 }
 
+glm::vec3 Transform::GetForward() const
+{
+	return -1.f * GetBackward();
+}
+
+glm::vec3 Transform::GetBackward() const
+{
+	return glm::vec3(
+		glm::cos(glm::radians(GetRotation().x)) * glm::sin(glm::radians(GetRotation().y)),
+		-1.f * glm::sin(glm::radians(GetRotation().x)),
+		glm::cos(glm::radians(GetRotation().x)) * glm::cos(glm::radians(GetRotation().y))
+	);
+}
+
+glm::vec3 Transform::GetLeft() const
+{
+	return glm::vec3(
+		glm::cos(glm::radians(GetRotation().y)),
+		0,
+		glm::sin(glm::radians(GetRotation().y))
+	);
+}
+
+glm::vec3 Transform::GetRight() const
+{
+	return -1.f * GetLeft();
+}
+
+glm::vec3 Transform::GetUp() const
+{
+	return glm::cross(GetForward(), GetRight());
+}
+
+glm::vec3 Transform::GetDown() const
+{
+	return -1.f * GetUp();
+}
+
 Transform* Transform::GetParent()
 {
 	return m_parent;
@@ -406,8 +455,9 @@ std::list<Transform*> Transform::GetChilds() const
 {
 	return m_childs;
 }
+#pragma endregion
 
-
+#pragma region Camera Related
 /**********************
 	Camera related
 ***********************/
@@ -491,7 +541,9 @@ Transform& Camera::GetTransform()
 {
 	return m_transform;
 }
+#pragma endregion
 
+#pragma region GameObject Related
 /**********************
 	Game Object related
 ***********************/
@@ -772,6 +824,7 @@ void GameObject::Init()
 	m_icvo = new IndexedColoredVerticesObject(GetVertices(), GetVerticesCount() * sizeof(float), GetIndices(), GetIndicesCount() * sizeof(int));
 	m_icvo->GetTransform().SetParent(&GetTransform());
 }
+#pragma endregion
 #pragma endregion
 
 #pragma region Assignment Specific Classes
@@ -1285,17 +1338,17 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 	// Camera Moving
 	if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + glm::vec3(.0f, 1.f, .0f));
+		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + mainCamera->GetTransform().GetForward());
 	}
 	if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + glm::vec3(-1.0f, 0.f, .0f));
+		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + mainCamera->GetTransform().GetLeft());
 	}
 
 	if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + glm::vec3(.0f, -1.f, .0f));
+		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + mainCamera->GetTransform().GetBackward());
 	}
 	if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + glm::vec3(1.0f, 0.f, .0f));
+		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + mainCamera->GetTransform().GetRight());
 	}
 
 	// Camera turnning
