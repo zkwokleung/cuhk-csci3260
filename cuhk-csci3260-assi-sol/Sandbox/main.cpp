@@ -45,7 +45,7 @@ public:
 	~VAO();
 
 	// Linking the buffer to this array
-	void LinkAttrib(VBO& VBO, GLuint layout, GLuint componentSize, GLenum type, GLsizeiptr stride, void* offset);
+	void LinkAttrib(VBO& VBO, GLuint layout, GLuint componentSize, GLenum type, GLsizei stride, void* offset);
 
 	// Bind the VAO to allow OpenGL to use it
 	void Bind() const;
@@ -82,7 +82,7 @@ private:
 
 };
 
-VBO::VBO() {
+VBO::VBO() : ID(0) {
 }
 
 VBO::VBO(const GLfloat* vertices, GLsizeiptr size)
@@ -110,7 +110,10 @@ void VBO::Unbind() const
 
 void VBO::Delete()
 {
-	glDeleteBuffers(1, &ID);
+	if (ID != 0)
+	{
+		glDeleteBuffers(1, &ID);
+	}
 }
 
 VAO::VAO()
@@ -124,7 +127,7 @@ VAO::~VAO()
 }
 
 
-void VAO::LinkAttrib(VBO& VBO, GLuint layout, GLuint componentSize, GLenum type, GLsizeiptr stride, void* offset)
+void VAO::LinkAttrib(VBO& VBO, GLuint layout, GLuint componentSize, GLenum type, GLsizei stride, void* offset)
 {
 	Bind();
 	VBO.Bind();
@@ -146,7 +149,10 @@ void VAO::Unbind() const
 
 void VAO::Delete()
 {
-	glDeleteVertexArrays(1, &ID);
+	if (ID != 0)
+	{
+		glDeleteVertexArrays(1, &ID);
+	}
 }
 
 EBO::EBO()
@@ -180,7 +186,10 @@ void EBO::Unbind() const
 
 void EBO::Delete()
 {
-	glDeleteBuffers(1, &ID);
+	if (ID != 0)
+	{
+		glDeleteBuffers(1, &ID);
+	}
 }
 
 void Renderer::Clear()
@@ -361,56 +370,6 @@ private:
 	bool m_isActive;
 };
 
-class VerticesObject : public Object
-{
-public:
-	VerticesObject();
-	VerticesObject(const GLfloat vertices[], int arraySize);
-	~VerticesObject();
-
-	virtual void SetVertices(const GLfloat vertices[], int elementCount);
-	virtual void OnPaint();
-
-protected:
-	VAO m_vao;
-	VBO m_vbo;
-	int m_elementCount;
-};
-
-class ColoredVerticesObject : public VerticesObject
-{
-public:
-	ColoredVerticesObject();
-	~ColoredVerticesObject();
-
-	virtual void SetVertices(const GLfloat vertices[], int arraySize);
-	virtual void OnPaint();
-};
-
-class IndexedVerticesObject : public VerticesObject
-{
-public:
-	IndexedVerticesObject();
-	~IndexedVerticesObject();
-
-	virtual void SetIndices(const GLuint indices[], int idxCount);
-	virtual void OnPaint();
-
-protected:
-	EBO m_ebo;
-	int m_indicesCount;
-};
-
-class ColoredIndexedVerticesObject : public IndexedVerticesObject
-{
-public:
-	ColoredIndexedVerticesObject();
-	~ColoredIndexedVerticesObject();
-
-	virtual void SetVertices(const GLfloat vertices[], int elementCount);
-	virtual void OnPaint();
-};
-
 class ObjectRenderPipeline
 {
 public:
@@ -419,6 +378,25 @@ public:
 	static void OnPaint();
 private:
 	static std::list<Object*> m_Objects;
+};
+
+class IndexedColoredVerticesObject : public Object
+{
+public:
+	IndexedColoredVerticesObject();
+	IndexedColoredVerticesObject(const GLfloat vertices[], int elementCount, const GLuint indices[], int indicesCount);
+	~IndexedColoredVerticesObject();
+
+	void SetVertices(const GLfloat vertices[], int elementCount);
+	void SetIndices(const GLuint indices[], int indicesCount);
+	virtual void OnPaint();
+
+private:
+	VAO* m_vao;
+	VBO* m_vbo;
+	EBO* m_ebo;
+	int m_elementCount;
+	int m_indicesCount;
 };
 
 Transform::Transform() :
@@ -535,107 +513,6 @@ void Object::OnPaint()
 	m_transform.OnPaint();
 }
 
-VerticesObject::VerticesObject() : Object(), m_elementCount(0), m_vao()
-{
-}
-
-VerticesObject::VerticesObject(const GLfloat vertices[], int arraySize) : Object(), m_vao()
-{
-	SetVertices(vertices, arraySize);
-}
-
-VerticesObject::~VerticesObject()
-{
-	m_vao.Delete();
-	m_vbo.Delete();
-}
-
-void VerticesObject::SetVertices(const GLfloat vertices[], int arraySize)
-{
-	m_vbo = VBO(vertices, sizeof(vertices));
-	m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, 0, 0);
-
-	m_elementCount = arraySize;
-}
-
-void VerticesObject::OnPaint()
-{
-	Object::OnPaint();
-
-	Renderer::Draw(m_vao, GL_TRIANGLES, m_elementCount / 3);
-}
-
-ColoredVerticesObject::ColoredVerticesObject() : VerticesObject()
-{
-}
-
-ColoredVerticesObject::~ColoredVerticesObject()
-{
-}
-
-void ColoredVerticesObject::SetVertices(const GLfloat vertices[], int arraySize)
-{
-	m_vbo = VBO(vertices, sizeof(vertices));
-	m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, 6 * sizeof(float), 0);
-	m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-
-	m_elementCount = arraySize;
-}
-
-void ColoredVerticesObject::OnPaint()
-{
-	Object::OnPaint();
-
-	Renderer::Draw(m_vao, GL_TRIANGLES, m_elementCount / 3);
-}
-
-
-IndexedVerticesObject::IndexedVerticesObject() : VerticesObject(), m_indicesCount(0)
-{
-
-}
-
-IndexedVerticesObject::~IndexedVerticesObject()
-{
-	m_ebo.Delete();
-}
-
-void IndexedVerticesObject::SetIndices(const GLuint indices[], int idxCount)
-{
-	m_ebo = EBO(indices, idxCount);
-}
-
-void IndexedVerticesObject::OnPaint()
-{
-	Object::OnPaint();
-
-	Renderer::Draw(m_vao, m_ebo);
-}
-
-ColoredIndexedVerticesObject::ColoredIndexedVerticesObject() : IndexedVerticesObject()
-{
-
-}
-
-ColoredIndexedVerticesObject::~ColoredIndexedVerticesObject()
-{
-
-}
-
-void ColoredIndexedVerticesObject::SetVertices(const GLfloat vertices[], int arraySize)
-{
-	m_vbo = VBO(vertices, arraySize * sizeof(float));
-	m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, 6 * sizeof(float), 0);
-	m_vao.LinkAttrib(m_vbo, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-
-	m_elementCount = arraySize;
-}
-
-void ColoredIndexedVerticesObject::OnPaint()
-{
-	IndexedVerticesObject::OnPaint();
-}
-
 std::list<Object*> ObjectRenderPipeline::m_Objects;
 
 void ObjectRenderPipeline::AddObject(Object* object)
@@ -663,6 +540,47 @@ void ObjectRenderPipeline::OnPaint()
 		(*it)->OnPaint();
 	}
 }
+
+IndexedColoredVerticesObject::IndexedColoredVerticesObject() : Object(), m_elementCount(0), m_indicesCount(0), m_vao(new VAO()), m_vbo(nullptr), m_ebo(nullptr)
+{
+}
+
+IndexedColoredVerticesObject::IndexedColoredVerticesObject(const GLfloat vertices[], int elementCount, const GLuint indices[], int indicesCount) :
+	Object(), m_vao(new VAO())
+{
+	SetVertices(vertices, elementCount);
+	SetIndices(indices, indicesCount);
+}
+
+IndexedColoredVerticesObject::~IndexedColoredVerticesObject()
+{
+	m_vao->Delete();
+	m_vbo->Delete();
+	m_ebo->Delete();
+}
+
+void IndexedColoredVerticesObject::SetVertices(const GLfloat vertices[], int elementCount)
+{
+	m_vbo = new VBO(vertices, elementCount * sizeof(float));
+	m_vao->LinkAttrib(*m_vbo, 0, 3, GL_FLOAT, 6 * sizeof(float), 0);
+	m_vao->LinkAttrib(*m_vbo, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+
+	m_elementCount = elementCount;
+}
+
+void IndexedColoredVerticesObject::SetIndices(const GLuint indices[], int indicesCount)
+{
+	m_ebo = new EBO(indices, indicesCount);
+
+	m_indicesCount = indicesCount;
+}
+
+void IndexedColoredVerticesObject::OnPaint()
+{
+	Object::OnPaint();
+	Renderer::Draw(*m_vao, *m_ebo);
+}
+
 #pragma endregion
 
 
@@ -670,7 +588,7 @@ VAO* vaoTri;
 VBO* vboTri;
 EBO* eboTri;
 
-Object* triangleObject;
+IndexedColoredVerticesObject* triangleObject;
 
 void get_OpenGL_info() {
 	// OpenGL information
@@ -697,15 +615,6 @@ void sendDataToOpenGL() {
 
 		+0.0f, +0.5f, +0.0f,  // top
 		+1.0f, +0.0f, +1.0f,
-	};
-
-	const GLfloat vertTri[] =
-	{
-		-0.5f, -0.5f, +0.0f,  // left
-
-		+0.5f, -0.5f, +0.0f,  // right
-
-		+0.0f, +0.5f, +0.0f,  // top
 	};
 
 	//GLuint vaoID;
@@ -739,7 +648,7 @@ void sendDataToOpenGL() {
 
 	eboTri = new EBO(indices, 3);
 
-	triangleObject = new Object();
+	triangleObject = new IndexedColoredVerticesObject(triangle, 18, indices, 3);
 	triangleObject->SetActive(true);
 }
 
@@ -845,7 +754,7 @@ void paintGL(void) {
 	Camera::OnPaint();
 	ObjectRenderPipeline::OnPaint();
 
-	Renderer::Draw(*vaoTri, *eboTri);
+	//Renderer::Draw(*vaoTri, *eboTri);
 
 	// glBindVertexArray();
 
