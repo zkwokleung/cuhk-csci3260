@@ -199,7 +199,7 @@ void Renderer::Draw(const VAO& vao, const EBO& ebo)
 {
 	vao.Bind();
 	ebo.Bind();
-	glDrawElements(GL_TRIANGLES, ebo.Count, GL_UNSIGNED_INT, nullptr);
+	glDrawElements(GL_TRIANGLES, ebo.Count, GL_UNSIGNED_INT, 0);
 }
 
 /**********************
@@ -365,6 +365,7 @@ class VerticesObject : public Object
 {
 public:
 	VerticesObject();
+	VerticesObject(const GLfloat vertices[], int arraySize);
 	~VerticesObject();
 
 	virtual void SetVertices(const GLfloat vertices[], int elementCount);
@@ -374,6 +375,16 @@ protected:
 	VAO m_vao;
 	VBO m_vbo;
 	int m_elementCount;
+};
+
+class ColoredVerticesObject : public VerticesObject
+{
+public:
+	ColoredVerticesObject();
+	~ColoredVerticesObject();
+
+	virtual void SetVertices(const GLfloat vertices[], int arraySize);
+	virtual void OnPaint();
 };
 
 class IndexedVerticesObject : public VerticesObject
@@ -469,19 +480,19 @@ glm::mat4 Transform::GetTransformMat4() const
 	// Scale
 	model = glm::scale(model, m_scale);
 
-	std::cout << "position: (" << m_position.x << ", " << m_position.y << ", " << m_position.z << ")" << std::endl;
-	std::cout << "rotation: (" << m_rotation.x << ", " << m_rotation.y << ", " << m_rotation.z << ")" << std::endl;
-	std::cout << "scale: (" << m_scale.x << ", " << m_scale.y << ", " << m_scale.z << ")" << std::endl;
+	//std::cout << "position: (" << m_position.x << ", " << m_position.y << ", " << m_position.z << ")" << std::endl;
+	//std::cout << "rotation: (" << m_rotation.x << ", " << m_rotation.y << ", " << m_rotation.z << ")" << std::endl;
+	//std::cout << "scale: (" << m_scale.x << ", " << m_scale.y << ", " << m_scale.z << ")" << std::endl;
 
-	std::cout << "Transform: " << std::endl;
-	for (int i = 0; i < 4; i++)
-	{
-		for (int j = 0; j < 4; j++)
-		{
-			std::cout << model[j][i] << " ";
-		}
-		std::cout << std::endl;
-	}
+	//std::cout << "Transform: " << std::endl;
+	//for (int i = 0; i < 4; i++)
+	//{
+	//	for (int j = 0; j < 4; j++)
+	//	{
+	//		std::cout << model[j][i] << " ";
+	//	}
+	//	std::cout << std::endl;
+	//}
 
 	return model;
 }
@@ -524,8 +535,13 @@ void Object::OnPaint()
 	m_transform.OnPaint();
 }
 
-VerticesObject::VerticesObject() : Object(), m_elementCount(0)
+VerticesObject::VerticesObject() : Object(), m_elementCount(0), m_vao()
 {
+}
+
+VerticesObject::VerticesObject(const GLfloat vertices[], int arraySize) : Object(), m_vao()
+{
+	SetVertices(vertices, arraySize);
 }
 
 VerticesObject::~VerticesObject()
@@ -548,6 +564,31 @@ void VerticesObject::OnPaint()
 
 	Renderer::Draw(m_vao, GL_TRIANGLES, m_elementCount / 3);
 }
+
+ColoredVerticesObject::ColoredVerticesObject() : VerticesObject()
+{
+}
+
+ColoredVerticesObject::~ColoredVerticesObject()
+{
+}
+
+void ColoredVerticesObject::SetVertices(const GLfloat vertices[], int arraySize)
+{
+	m_vbo = VBO(vertices, sizeof(vertices));
+	m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, 6 * sizeof(float), 0);
+	m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+
+	m_elementCount = arraySize;
+}
+
+void ColoredVerticesObject::OnPaint()
+{
+	Object::OnPaint();
+
+	Renderer::Draw(m_vao, GL_TRIANGLES, m_elementCount / 3);
+}
+
 
 IndexedVerticesObject::IndexedVerticesObject() : VerticesObject(), m_indicesCount(0)
 {
@@ -583,7 +624,7 @@ ColoredIndexedVerticesObject::~ColoredIndexedVerticesObject()
 
 void ColoredIndexedVerticesObject::SetVertices(const GLfloat vertices[], int arraySize)
 {
-	m_vbo = VBO(vertices, sizeof(vertices));
+	m_vbo = VBO(vertices, arraySize * sizeof(float));
 	m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, 6 * sizeof(float), 0);
 	m_vao.LinkAttrib(m_vbo, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 
@@ -629,8 +670,7 @@ VAO* vaoTri;
 VBO* vboTri;
 EBO* eboTri;
 
-ColoredIndexedVerticesObject* triangle2D;
-
+Object* triangleObject;
 
 void get_OpenGL_info() {
 	// OpenGL information
@@ -650,13 +690,22 @@ void sendDataToOpenGL() {
 	const GLfloat triangle[] =
 	{
 		-0.5f, -0.5f, +0.0f,  // left
-		+1.0f, +0.0f, +0.0f,  // color
+		+0.0f, +0.0f, +1.0f,  // color
 
 		+0.5f, -0.5f, +0.0f,  // right
-		+1.0f, +1.0f, +0.0f,
+		+0.0f, +1.0f, +1.0f,
 
 		+0.0f, +0.5f, +0.0f,  // top
 		+1.0f, +0.0f, +1.0f,
+	};
+
+	const GLfloat vertTri[] =
+	{
+		-0.5f, -0.5f, +0.0f,  // left
+
+		+0.5f, -0.5f, +0.0f,  // right
+
+		+0.0f, +0.5f, +0.0f,  // top
 	};
 
 	//GLuint vaoID;
@@ -689,6 +738,9 @@ void sendDataToOpenGL() {
 	vaoTri->LinkAttrib(*vboTri, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 
 	eboTri = new EBO(indices, 3);
+
+	triangleObject = new Object();
+	triangleObject->SetActive(true);
 }
 
 bool checkStatus(
@@ -782,14 +834,18 @@ void paintGL(void) {
 		glm::vec3(x_delta * x_press_num, 0.0f, 0.0f));;
 	modelTransformMatrix = glm::scale(modelTransformMatrix, glm::vec3(5.0f, 5.0f, 5.0f));
 
-	GLint modelTransformMatrixUniformLocation =
-		glGetUniformLocation(programID, "u_modelMatrix");
-	glUniformMatrix4fv(modelTransformMatrixUniformLocation, 1,
-		GL_FALSE, &modelTransformMatrix[0][0]);
+	//GLint modelTransformMatrixUniformLocation =
+	//	glGetUniformLocation(programID, "u_modelMatrix");
+	//glUniformMatrix4fv(modelTransformMatrixUniformLocation, 1,
+	//	GL_FALSE, &modelTransformMatrix[0][0]);
+
+	triangleObject->GetTransform().SetPosition(glm::vec3(x_delta * x_press_num, 0.0f, 0.0f));
+	triangleObject->GetTransform().SetScale(glm::vec3(1.0f, 5.0f, 5.0f));
 
 	Camera::OnPaint();
+	ObjectRenderPipeline::OnPaint();
 
-	Renderer::Draw(*vaoTri, GL_TRIANGLES, 6);
+	Renderer::Draw(*vaoTri, *eboTri);
 
 	// glBindVertexArray();
 
