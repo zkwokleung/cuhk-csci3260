@@ -15,7 +15,7 @@ float y_rotate_delta = 1.f;
 float y_rotation = 0;
 int x_press_num = 0;
 
-#pragma region My Classes
+#pragma region My API
 /***************************************************************
 	Classes and functions created by me to simplify some codes
 ****************************************************************/
@@ -293,17 +293,25 @@ public:
 
 	glm::vec3 GetScale() const;
 	void SetScale(glm::vec3 value);
+	glm::mat4 GetTransformMat4() const;
+
+	Transform* GetParent();
+	void SetParent(Transform* transform);
+	std::list<Transform*> GetChilds() const;
 
 	virtual void OnPaint();
-	glm::mat4 GetTransformMat4() const;
 private:
 	glm::vec3 m_position;
 	glm::vec3 m_rotation;
 	glm::vec3 m_scale;
+
+	Transform* m_parent;
+	std::list<Transform*> m_childs;
 };
 
 Transform::Transform() :
-	m_position(glm::vec3()), m_rotation(glm::vec3()), m_scale(glm::vec3(1.f))
+	m_position(glm::vec3()), m_rotation(glm::vec3()), m_scale(glm::vec3(1.f)),
+	m_parent(nullptr), m_childs()
 {
 }
 
@@ -361,21 +369,40 @@ glm::mat4 Transform::GetTransformMat4() const
 	// Scale
 	model = glm::scale(model, m_scale);
 
-	//std::cout << "position: (" << m_position.x << ", " << m_position.y << ", " << m_position.z << ")" << std::endl;
-	//std::cout << "rotation: (" << m_rotation.x << ", " << m_rotation.y << ", " << m_rotation.z << ")" << std::endl;
-	//std::cout << "scale: (" << m_scale.x << ", " << m_scale.y << ", " << m_scale.z << ")" << std::endl;
+	static int i = 0;
+	if (i != 2)
+	{
+		std::cout << "position: (" << m_position.x << ", " << m_position.y << ", " << m_position.z << ")" << std::endl;
+		std::cout << "rotation: (" << m_rotation.x << ", " << m_rotation.y << ", " << m_rotation.z << ")" << std::endl;
+		std::cout << "scale: (" << m_scale.x << ", " << m_scale.y << ", " << m_scale.z << ")" << std::endl;
+		std::cout << "Transform: " << std::endl;
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				std::cout << model[j][i] << " ";
+			}
+			std::cout << std::endl;
+		}
+		i++;
+	}
 
-	//std::cout << "Transform: " << std::endl;
-	//for (int i = 0; i < 4; i++)
-	//{
-	//	for (int j = 0; j < 4; j++)
-	//	{
-	//		std::cout << model[j][i] << " ";
-	//	}
-	//	std::cout << std::endl;
-	//}
+	return (m_parent) ? model * m_parent->GetTransformMat4() : model;
+}
 
-	return model;
+Transform* Transform::GetParent()
+{
+	return m_parent;
+}
+
+void Transform::SetParent(Transform* transform)
+{
+	m_parent = transform;
+}
+
+std::list<Transform*> Transform::GetChilds() const
+{
+	return m_childs;
 }
 
 
@@ -434,17 +461,19 @@ Camera::~Camera()
 glm::mat4 Camera::GetViewMatrix()
 {
 	glm::mat4 view = glm::mat4(1.0f);
-	view = glm::translate(view, GetTransform().GetPosition() * -1.f);
+
+	// Scale (Not used)
+	//view = glm::scale(view, glm::vec3(
+	//	1.f / GetTransform().GetScale().x, 1.f / GetTransform().GetScale().y, 1.f / GetTransform().GetScale().z
+	//));
 
 	// Rotate
 	view = glm::rotate(view, glm::radians(GetTransform().GetRotation().x * -1.f), glm::vec3(1.0f, 0.0f, 0.0f));
 	view = glm::rotate(view, glm::radians(GetTransform().GetRotation().y * -1.f), glm::vec3(0.0f, 1.0f, 0.0f));
 	view = glm::rotate(view, glm::radians(GetTransform().GetRotation().z * -1.f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-	// Scale
-	view = glm::scale(view, glm::vec3(
-		1.f / GetTransform().GetScale().x, 1.f / GetTransform().GetScale().y, 1.f / GetTransform().GetScale().z
-	));
+	// Translate
+	view = glm::translate(view, GetTransform().GetPosition() * -1.f);
 
 	return view;
 }
@@ -693,7 +722,6 @@ void IndexedColoredVerticesObject::OnPaint()
 
 #pragma endregion
 
-
 VAO* vaoTri;
 VBO* vboTri;
 EBO* eboTri;
@@ -885,7 +913,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 	if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
 		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + glm::vec3(.0f, 1.f, .0f));
-	}
+}
 	if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
 		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + glm::vec3(-1.0f, 0.f, .0f));
 	}
