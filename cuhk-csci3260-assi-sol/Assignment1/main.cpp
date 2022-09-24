@@ -436,17 +436,19 @@ Camera::~Camera()
 glm::mat4 Camera::GetViewMatrix()
 {
 	glm::mat4 view = glm::mat4(1.0f);
-	view = glm::translate(view, GetTransform().GetPosition() * -1.f);
+
+	// Scale (Not used)
+	//view = glm::scale(view, glm::vec3(
+	//	1.f / GetTransform().GetScale().x, 1.f / GetTransform().GetScale().y, 1.f / GetTransform().GetScale().z
+	//));
 
 	// Rotate
 	view = glm::rotate(view, glm::radians(GetTransform().GetRotation().x * -1.f), glm::vec3(1.0f, 0.0f, 0.0f));
 	view = glm::rotate(view, glm::radians(GetTransform().GetRotation().y * -1.f), glm::vec3(0.0f, 1.0f, 0.0f));
 	view = glm::rotate(view, glm::radians(GetTransform().GetRotation().z * -1.f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-	// Scale
-	view = glm::scale(view, glm::vec3(
-		1.f / GetTransform().GetScale().x, 1.f / GetTransform().GetScale().y, 1.f / GetTransform().GetScale().z
-	));
+	// Translate
+	view = glm::translate(view, GetTransform().GetPosition() * -1.f);
 
 	return view;
 }
@@ -858,8 +860,39 @@ void paintGL(void) {
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	// TODO:
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
 
-}
+	// Camera Moving
+	if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + glm::vec3(.0f, 1.f, .0f));
+	}
+	if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + glm::vec3(-1.0f, 0.f, .0f));
+	}
+
+	if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + glm::vec3(.0f, -1.f, .0f));
+	}
+	if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + glm::vec3(1.0f, 0.f, .0f));
+	}
+
+	// Camera turnning
+	if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+		mainCamera->GetTransform().SetRotation(mainCamera->GetTransform().GetRotation() + glm::vec3(10.f, .0f, .0f));
+	}
+	if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+		mainCamera->GetTransform().SetRotation(mainCamera->GetTransform().GetRotation() + glm::vec3(.0f, 10.f, .0f));
+	}
+
+	if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+		mainCamera->GetTransform().SetRotation(mainCamera->GetTransform().GetRotation() + glm::vec3(-10.f, .0f, .0f));
+	}
+	if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+		mainCamera->GetTransform().SetRotation(mainCamera->GetTransform().GetRotation() + glm::vec3(.0f, -10.f, .0f));
+	}
+	}
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
