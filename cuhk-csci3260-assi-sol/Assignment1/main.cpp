@@ -337,6 +337,7 @@ glm::vec3 Transform::GetRotation() const
 
 void Transform::SetRotation(glm::vec3 value)
 {
+	std::cout << "Rotation set to: (" << value.x << ", " << value.y << ", " << value.z << ")" << std::endl;
 	m_rotation = value;
 }
 
@@ -721,10 +722,6 @@ void IndexedColoredVerticesObject::OnPaint()
 	Renderer::Draw(*m_vao, *m_ebo);
 }
 
-#pragma endregion
-
-#pragma region Assignment Specific Classes
-#pragma region GameObject
 class GameObject : public Object
 {
 public:
@@ -777,7 +774,8 @@ void GameObject::Init()
 }
 #pragma endregion
 
-#pragma region TreeStem
+#pragma region Assignment Specific Classes
+#pragma region Terrain
 class Terrain : public GameObject
 {
 public:
@@ -807,170 +805,76 @@ GLfloat* Terrain::GetVertices() const
 {
 	static GLfloat l_vertices[] =
 	{
-		.0f, 1.f, .0f,		// 0: Top Center
-		.5f, .44f, .32f,
+		// Top
+		-1.f, 1.f, 1.f,
+		.0f, .6f, .0f,
 
-		1.f, 1.f, .0f,		// 1: 0
-		.4f, .2f, .0f,
+		1.f, 1.f, 1.f,
+		.0f, .55f, .0f,
 
-		.866f, 1.f, .5f,	// 2: 30
-		.4f, .2f, .0f,
+		1.f, 1.f, -1.f,
+		.0f, .55f, .0f,
 
-		.5f, 1.f, .866f,	// 3: 60
-		.4f, .2f, .0f,
+		-1.f, 1.f, -1.f,
+		.0f, .4f, .0f,
 
-		.0f, 1.f, 1.f,		// 4: 90
-		.4f, .2f, .0f,
+		// Bottom
+		-1.f, -1.f, 1.f,
+		.3f, .2f, .0f,
 
-		-.5f, 1.f, .866f,	// 5: 120
-		.4f, .2f, .0f,
+		1.f, -1.f, 1.f,
+		.3f, .2f, .0f,
 
-		-.866f, 1.f, .5f,	// 6: 150
-		.4f, .2f, .0f,
+		1.f, -1.f, -1.f,
+		.3f, .2f, .0f,
 
-		-1.f, 1.f, .0f,		// 7: 180
-		.4f, .2f, .0f,
-
-		-.866f, 1.f, -.5f,	// 8: 210
-		.4f, .2f, .0f,
-
-		-.5f, 1.f, -.866f,	// 9: 240
-		.4f, .2f, .0f,
-
-		.0f, 1.f, -1.f,		// 10: 270
-		.4f, .2f, .0f,
-
-		.5f, 1.f, -.866f,	// 11: 300
-		.4f, .2f, .0f,
-
-		.866f, 1.f, -.5f,	// 12: 330
-		.4f, .2f, .0f,
-
-
-		.0f, -1.f, .0f,		// 13: Bottom Center
-		.5f, .44f, .32f,
-
-		1.f, -1.f, .0f,		// 14: 0
-		.5f, .2f, .0f,
-
-		.866f, -1.f, .5f,	// 15: 30
-		.4f, .26f, .08f,
-
-		.5f, -1.f, .866f,	// 16: 60
-		.5f, .2f, .0f,
-
-		.0f, -1.f, 1.f,		// 17: 90
-		.4f, .26f, .08f,
-
-		-.5f, -1.f, .866f,	// 18: 120
-		.5f, .2f, .0f,
-
-		-.866f, -1.f, .5f,	// 19: 150
-		.4f, .26f, .08f,
-
-		-1.f, -1.f, .0f,	// 20: 180
-		.5f, .2f, .0f,
-
-		-.866f, -1.f, -.5f,	// 21: 210
-		.4f, .26f, .08f,
-
-		-.5f, -1.f, -.866f,	// 22: 240
-		.5f, .2f, .0f,
-
-		.0f, -1.f, -1.f,	// 23: 270
-		.4f, .26f, .08f,
-
-		.5f, -1.f, -.866f,	// 24: 300
-		.5f, .2f, .0f,
-
-		.866f, -1.f, -.5f,	// 25: 330
-		.4f, .26f, .08f,
+		-1.f, -1.f, -1.f,
+		.3f, .2f, .0f,
 	};
 
 	return l_vertices;
+}
+
+GLuint Terrain::GetVerticesCount() const
+{
+	return 48;
 }
 
 GLuint* Terrain::GetIndices() const
 {
 	static GLuint l_indices[] =
 	{
-		// Top Circle
+		// Top
 		0, 1, 2,
-		0, 2, 3,
-		0, 3, 4,
-		0, 4, 5,
-		0, 5, 6,
-		0, 6, 7,
-		0, 7, 8,
-		0, 8, 9,
-		0, 9, 10,
-		0, 10, 11,
-		0, 11, 12,
-		0, 12, 1,
+		2, 3, 0,
 
-		// Bottom Circle
-		13, 14, 15,
-		13, 15, 16,
-		13, 16, 17,
-		13, 17, 18,
-		13, 18, 19,
-		13, 19, 20,
-		13, 20, 21,
-		13, 21, 22,
-		13, 22, 23,
-		13, 23, 24,
-		13, 24, 25,
-		13, 25, 14,
+		// Bottom
+		4, 5, 6,
+		6, 7, 4,
 
-		// Sides
-		1, 2, 14,
-		14, 15, 2,
+		// Front
+		0, 1, 4,
+		4, 5, 1,
 
-		2, 3, 15,
-		15, 16, 3,
+		// Right
+		1, 2, 5,
+		5, 6, 2,
 
-		3, 4, 16,
-		16, 17, 4,
+		// Back
+		2, 3, 6,
+		6, 7, 3,
 
-		4, 5, 17,
-		17, 18, 5,
-
-		5, 6, 18,
-		18, 19, 6,
-
-		6, 7, 19,
-		19, 20, 7,
-
-		7, 8, 20,
-		20, 21, 8,
-
-		8, 9, 21,
-		21, 22, 9,
-
-		9, 10, 22,
-		22, 23, 10,
-
-		10, 11, 23,
-		23, 24, 11,
-
-		11, 12, 24,
-		24, 25, 12,
-
-		12, 0, 25,
-		25, 14, 0,
+		// Left
+		3, 0, 7,
+		7, 4, 0,
 	};
 
 	return l_indices;
 }
 
-GLuint Terrain::GetVerticesCount() const
-{
-	return 156;
-}
-
 GLuint Terrain::GetIndicesCount() const
 {
-	return 144;
+	return 36;
 }
 #pragma endregion
 
@@ -1342,43 +1246,32 @@ void installShaders() {
 Camera* mainCamera;
 TreeStem* treeStem;
 Leaf* leaf;
+Terrain* terrain;
 
 void sendDataToOpenGL() {
 	// TODO:
 	// create 3D objects and/or 2D objects and/or lines (points) here and bind to VAOs & VBOs
 	mainCamera = new Camera();
-	mainCamera->GetTransform().SetPosition(glm::vec3(.0f, .0f, 10.f));
+	mainCamera->GetTransform().SetPosition(glm::vec3(4.0f, 6.0f, 10.f));
+	mainCamera->GetTransform().SetRotation(glm::vec3(-20.f, 20.0f, .0f));
+
 	Camera::SetMain(mainCamera);
 
-	GLfloat vertCube[] =
-	{
-		-0.5f, -0.5f, -0.5f,
-		0.5f, -0.5f, -0.5f,
-		0.5f, 0.5f, -0.5f,
-		-0.5f, 0.5f, -0.5f,
-		-0.5f, -0.5f, 0.5f,
-		0.5f, -0.5f, 0.5f,
-		0.5f, 0.5f, 0.5f,
-		-0.5f, 0.5f, 0.5f,
-	};
-
 	treeStem = GameObject::InstantiateOfType<TreeStem>();
-	treeStem->SetActive(true);
+	//treeStem->SetActive(true);
 
 	leaf = GameObject::InstantiateOfType<Leaf>();
-	leaf->SetActive(true);
-}
+	//leaf->SetActive(true);
 
-float yRotation = 0;
+	terrain = GameObject::InstantiateOfType<Terrain>();
+	terrain->GetTransform().SetScale(glm::vec3(100.f, .5f, 100.f));
+	terrain->SetActive(true);
+}
 
 void paintGL(void) {
 	// always run
 	// TODO:
 	// render your objects and control the transformation here
-
-	leaf->GetTransform().SetRotation(glm::vec3(.0f, yRotation, .0f));
-
-	yRotation += 1;
 
 	Renderer::Clear();
 	Camera::OnPaint();
@@ -1419,6 +1312,18 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
 		mainCamera->GetTransform().SetRotation(mainCamera->GetTransform().GetRotation() + glm::vec3(.0f, -10.f, .0f));
 	}
+}
+
+void on_mouse_button(int button, int action, double xpos, double ypos)
+{
+	// TODO: handle the mouse input
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+	double xpos, ypos;
+	glfwGetCursorPos(window, &xpos, &ypos);
+	on_mouse_button(button, action, xpos, ypos);
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -1470,6 +1375,7 @@ int main(int argc, char* argv[]) {
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetKeyCallback(window, key_callback); // TODO
 	// TODO: mouse callback, etc.
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
 
 	/* Initialize the glew */
 	if (GLEW_OK != glewInit()) {
