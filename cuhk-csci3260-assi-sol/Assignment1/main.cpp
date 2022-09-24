@@ -558,12 +558,12 @@ public:
 
 	Transform& GetTransform();
 
-	void SetActive(bool active);
-	bool IsActive() const;
+	virtual void SetActive(bool active);
+	virtual bool IsActive() const;
 
 	virtual void OnPaint();
 
-private:
+protected:
 	Transform m_transform;
 	bool m_isActive;
 };
@@ -819,8 +819,6 @@ T* GameObject::InstantiateOfType()
 
 void GameObject::Init()
 {
-	std::cout << "Sizeof Vertices: " << GetVerticesCount() * sizeof(float) << std::endl;
-	std::cout << "Sizeof Indices: " << GetIndicesCount() * sizeof(int) << std::endl;
 	m_icvo = new IndexedColoredVerticesObject(GetVertices(), GetVerticesCount() * sizeof(float), GetIndices(), GetIndicesCount() * sizeof(int));
 	m_icvo->GetTransform().SetParent(&GetTransform());
 }
@@ -1202,6 +1200,118 @@ GLuint Leaf::GetIndicesCount() const
 }
 #pragma endregion
 
+#pragma region Tree
+#define TREE_MAX_GENERATION 4
+class Tree : public Object
+{
+public:
+	Tree();
+	~Tree();
+
+	virtual void SetActive(bool active);
+	virtual bool IsActive() const;
+
+	void Grow();
+	void Chop();
+	void SetGeneration(int gen);
+	int GetGeneration() const;
+
+private:
+
+	std::list<Leaf*> m_leaves;
+	TreeStem* m_stem;
+
+	int m_generation;
+	bool m_chopped;
+};
+
+Tree::Tree() : Object(), m_leaves(), m_stem(GameObject::InstantiateOfType<TreeStem>()), m_generation(1), m_chopped(false)
+{
+	// Set stem transform and active
+	m_stem->GetTransform().SetPosition(glm::vec3(.0f, 1.f, .0f));
+	m_stem->GetTransform().SetScale(glm::vec3(.3f, 1.f, .3f));
+	m_stem->SetActive(true);
+
+	// Set leaf position
+	for (float i = 1.0f; i < TREE_MAX_GENERATION + 1; i++)
+	{
+		Leaf* leaf = GameObject::InstantiateOfType<Leaf>();
+		leaf->GetTransform().SetParent(&GetTransform());
+		leaf->GetTransform().SetPosition(glm::vec3(.0f, i, .0f));
+		m_leaves.push_back(leaf);
+	}
+
+	// Set the tree's generation
+	SetGeneration(m_generation);
+}
+
+Tree::~Tree()
+{
+
+}
+
+void Tree::SetActive(bool active)
+{
+	m_stem->SetActive(active);
+
+	std::list<Leaf*>::iterator it = m_leaves.begin();
+	for (int i = 0; i < m_generation; i++, it++)
+	{
+		(*it)->SetActive(active);
+	}
+	m_isActive = active;
+}
+
+bool Tree::IsActive() const
+{
+	return m_isActive;
+}
+
+void Tree::Grow()
+{
+	if (m_chopped)
+		return;
+
+	if (m_generation < TREE_MAX_GENERATION)
+	{
+		SetGeneration(++m_generation);
+	}
+}
+
+void Tree::Chop()
+{
+	m_chopped = true;
+
+	std::list<Leaf*>::iterator it = m_leaves.begin();
+	for (int i = 0; i < m_generation; i++, it++)
+	{
+		(*it)->SetActive(false);
+	}
+}
+
+void Tree::SetGeneration(int gen)
+{
+	// Set the scale of the stem
+	m_stem->GetTransform().SetScale(glm::vec3(.3f * gen * .7f, gen / 5.f, .3f * gen * .7f));
+
+	std::list<Leaf*>::iterator it = m_leaves.begin();
+	for (int i = 0; i < m_generation; i++, it++)
+	{
+		// Set the scale of the leaves
+		(*it)->GetTransform().SetScale(glm::vec3(.5f * gen * .8f, .8f * gen * .6f, .5f * gen * .8f));
+
+		// Set leaves active
+		(*it)->SetActive(i < gen);
+	}
+
+	m_generation = gen;
+}
+
+int Tree::GetGeneration() const
+{
+	return m_generation;
+}
+#pragma endregion
 
 #pragma endregion
 
@@ -1300,6 +1410,7 @@ Camera* mainCamera;
 TreeStem* treeStem;
 Leaf* leaf;
 Terrain* terrain;
+Tree* tree;
 
 void sendDataToOpenGL() {
 	// TODO:
@@ -1310,15 +1421,13 @@ void sendDataToOpenGL() {
 
 	Camera::SetMain(mainCamera);
 
-	treeStem = GameObject::InstantiateOfType<TreeStem>();
-	//treeStem->SetActive(true);
-
-	leaf = GameObject::InstantiateOfType<Leaf>();
-	//leaf->SetActive(true);
-
 	terrain = GameObject::InstantiateOfType<Terrain>();
 	terrain->GetTransform().SetScale(glm::vec3(100.f, .5f, 100.f));
 	terrain->SetActive(true);
+
+	tree = new Tree();
+	tree->GetTransform().SetPosition(glm::vec3(.0f, 1.f, .0f));
+	tree->SetActive(true);
 }
 
 void paintGL(void) {
@@ -1364,6 +1473,19 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 	if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
 		mainCamera->GetTransform().SetRotation(mainCamera->GetTransform().GetRotation() + glm::vec3(.0f, -10.f, .0f));
+	}
+
+	// Grow Tree
+	if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+	{
+		tree->Grow();
+	}
+
+	// TODO: Change to chop tree with mouse
+	// Chop Tree 
+	if (key == GLFW_KEY_ENTER && action == GLFW_PRESS)
+	{
+		tree->Chop();
 	}
 }
 
@@ -1452,5 +1574,5 @@ int main(int argc, char* argv[]) {
 
 	glfwTerminate();
 	return 0;
-}
+	}
 #pragma endregion
