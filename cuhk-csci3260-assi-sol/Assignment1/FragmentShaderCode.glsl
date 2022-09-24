@@ -3,13 +3,13 @@
 layout(location = 0) out vec4 FragColor;
 in vec3 vertColor;
 
-uniform vec4 u_Color;
+uniform vec4 u_VertColor;
 
 void main()
 {
-	if(u_Color != 0)
+	if(u_VertColor != 0)
 	{
-		FragColor = u_Color;
+		FragColor = u_VertColor;
 	}
 	else
 	{

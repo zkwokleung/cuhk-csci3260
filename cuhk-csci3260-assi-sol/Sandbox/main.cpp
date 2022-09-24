@@ -277,55 +277,7 @@ int SetUniformMat4f(const char* name, const glm::mat4& matrix)
 }
 
 /**********************
-	Camera related
-***********************/
-class Camera
-{
-public:
-	static glm::mat4 GetViewMatrix();
-	static glm::mat4 GetProjectionMatrix();
-
-	static glm::vec3 GetPosition();
-	static void SetPosition(glm::vec3 pos);
-
-	static void OnPaint();
-private:
-	static glm::vec3 m_position;
-};
-
-glm::vec3 Camera::m_position = glm::vec3(0.0f, 0.0f, 10.f);
-
-glm::mat4 Camera::GetViewMatrix()
-{
-	return glm::translate(glm::mat4(1.0f), -1.0f * GetPosition());
-}
-
-glm::mat4 Camera::GetProjectionMatrix()
-{
-	//return glm::ortho(0.0f, 512.0f, 0.0f, 512.0f, 0.1f, 1000.0f);
-	return glm::perspective(glm::radians(45.0f), 1.f, 0.1f, 1000.0f);
-	return glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 1000.0f);
-}
-
-glm::vec3 Camera::GetPosition()
-{
-	return m_position;
-}
-
-void Camera::SetPosition(glm::vec3 pos)
-{
-	m_position = pos;
-}
-
-void Camera::OnPaint()
-{
-	// Set the shader's projection and view uniform
-	SetUniformMat4f("u_viewMatrix", GetViewMatrix());
-	SetUniformMat4f("u_projectionMatrix", GetProjectionMatrix());
-}
-
-/**********************
-	Game Object related
+	Generic
 ***********************/
 class Transform
 {
@@ -348,55 +300,6 @@ private:
 	glm::vec3 m_position;
 	glm::vec3 m_rotation;
 	glm::vec3 m_scale;
-};
-
-#define DEFAULT_COLOR_VALUE 0.8f, 0.8f, 0.8f, 1.0f
-
-class Object
-{
-public:
-	Object();
-	~Object();
-
-	Transform& GetTransform();
-
-	void SetActive(bool active);
-	bool IsActive() const;
-
-	virtual void OnPaint();
-
-private:
-	Transform m_transform;
-	bool m_isActive;
-};
-
-class ObjectRenderPipeline
-{
-public:
-	static void AddObject(Object* object);
-	static void RemoveObject(Object* object);
-	static void OnPaint();
-private:
-	static std::list<Object*> m_Objects;
-};
-
-class IndexedColoredVerticesObject : public Object
-{
-public:
-	IndexedColoredVerticesObject();
-	IndexedColoredVerticesObject(const GLfloat vertices[], int elementCount, const GLuint indices[], int indicesCount);
-	~IndexedColoredVerticesObject();
-
-	void SetVertices(const GLfloat vertices[], int elementCount);
-	void SetIndices(const GLuint indices[], int indicesCount);
-	virtual void OnPaint();
-
-private:
-	VAO* m_vao;
-	VBO* m_vbo;
-	EBO* m_ebo;
-	int m_elementCount;
-	int m_indicesCount;
 };
 
 Transform::Transform() :
@@ -475,6 +378,165 @@ glm::mat4 Transform::GetTransformMat4() const
 	return model;
 }
 
+
+/**********************
+	Camera related
+***********************/
+class Camera
+{
+public:
+	static Camera* GetMain();
+	static void SetMain(Camera* camera);
+	static void OnPaint();
+
+	Camera();
+	~Camera();
+
+	glm::mat4 GetViewMatrix();
+	glm::mat4 GetProjectionMatrix();
+
+	Transform& GetTransform();
+private:
+	static Camera* m_main;
+
+	Transform m_transform;
+};
+
+Camera* Camera::m_main = nullptr;
+
+Camera* Camera::GetMain()
+{
+	return m_main;
+}
+
+void Camera::SetMain(Camera* camera)
+{
+	m_main = camera;
+}
+
+void Camera::OnPaint()
+{
+	// Set the shader's projection and view uniform
+	SetUniformMat4f("u_viewMatrix", m_main->GetViewMatrix());
+	SetUniformMat4f("u_projectionMatrix", m_main->GetProjectionMatrix());
+}
+
+Camera::Camera() : m_transform()
+{
+
+}
+
+Camera::~Camera()
+{
+
+}
+
+glm::mat4 Camera::GetViewMatrix()
+{
+	glm::mat4 view = glm::mat4(1.0f);
+	view = glm::translate(view, GetTransform().GetPosition() * -1.f);
+
+	// Rotate
+	view = glm::rotate(view, glm::radians(GetTransform().GetRotation().x * -1.f), glm::vec3(1.0f, 0.0f, 0.0f));
+	view = glm::rotate(view, glm::radians(GetTransform().GetRotation().y * -1.f), glm::vec3(0.0f, 1.0f, 0.0f));
+	view = glm::rotate(view, glm::radians(GetTransform().GetRotation().z * -1.f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+	// Scale
+	view = glm::scale(view, glm::vec3(
+		1.f / GetTransform().GetScale().x, 1.f / GetTransform().GetScale().y, 1.f / GetTransform().GetScale().z
+	));
+
+	return view;
+}
+
+glm::mat4 Camera::GetProjectionMatrix()
+{
+	//return glm::ortho(0.0f, 512.0f, 0.0f, 512.0f, 0.1f, 1000.0f);
+	return glm::perspective(glm::radians(45.0f), 1.f, 0.1f, 1000.0f);
+	return glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 1000.0f);
+}
+
+Transform& Camera::GetTransform()
+{
+	return m_transform;
+}
+
+/**********************
+	Game Object related
+***********************/
+
+#define DEFAULT_COLOR_VALUE 0.8f, 0.8f, 0.8f, 1.0f
+
+class Object
+{
+public:
+	Object();
+	~Object();
+
+	Transform& GetTransform();
+
+	void SetActive(bool active);
+	bool IsActive() const;
+
+	virtual void OnPaint();
+
+private:
+	Transform m_transform;
+	bool m_isActive;
+};
+
+class ObjectRenderPipeline
+{
+public:
+	static void AddObject(Object* object);
+	static void RemoveObject(Object* object);
+	static void OnPaint();
+private:
+	static std::list<Object*> m_Objects;
+};
+
+class VerticesObject : public Object
+{
+public:
+	VerticesObject();
+	VerticesObject(const GLfloat vertices[], int elementCount);
+	~VerticesObject();
+
+	virtual void SetVertices(const GLfloat vertices[], int elementCount);
+	virtual void OnPaint();
+
+protected:
+	VAO* m_vao;
+	VBO* m_vbo;
+	int m_elementCount;
+};
+
+class ColoredVerticesObject : public VerticesObject
+{
+public:
+	ColoredVerticesObject();
+	ColoredVerticesObject(const GLfloat vertices[], int elementCount);
+	~ColoredVerticesObject();
+
+	virtual void SetVertices(const GLfloat vertices[], int elementCount);
+	virtual void OnPaint();
+};
+
+class IndexedColoredVerticesObject : public ColoredVerticesObject
+{
+public:
+	IndexedColoredVerticesObject();
+	IndexedColoredVerticesObject(const GLfloat vertices[], int elementCount, const GLuint indices[], int indicesCount);
+	~IndexedColoredVerticesObject();
+
+	virtual void SetIndices(const GLuint indices[], int indicesCount);
+	virtual void OnPaint();
+
+protected:
+	EBO* m_ebo;
+	int m_indicesCount;
+};
+
 Object::Object() :
 	m_transform(), m_isActive(false)
 {
@@ -541,31 +603,79 @@ void ObjectRenderPipeline::OnPaint()
 	}
 }
 
-IndexedColoredVerticesObject::IndexedColoredVerticesObject() : Object(), m_elementCount(0), m_indicesCount(0), m_vao(new VAO()), m_vbo(nullptr), m_ebo(nullptr)
+VerticesObject::VerticesObject() : Object(), m_vao(new VAO()), m_vbo(nullptr), m_elementCount(0)
 {
+
 }
 
-IndexedColoredVerticesObject::IndexedColoredVerticesObject(const GLfloat vertices[], int elementCount, const GLuint indices[], int indicesCount) :
-	Object(), m_vao(new VAO())
+VerticesObject::VerticesObject(const GLfloat vertices[], int elementCount) : Object(), m_vao(new VAO())
 {
 	SetVertices(vertices, elementCount);
-	SetIndices(indices, indicesCount);
 }
 
-IndexedColoredVerticesObject::~IndexedColoredVerticesObject()
+VerticesObject::~VerticesObject()
 {
 	m_vao->Delete();
 	m_vbo->Delete();
-	m_ebo->Delete();
 }
 
-void IndexedColoredVerticesObject::SetVertices(const GLfloat vertices[], int elementCount)
+void VerticesObject::SetVertices(const GLfloat vertices[], int elementCount)
+{
+	m_vbo = new VBO(vertices, elementCount * sizeof(float));
+	m_vao->LinkAttrib(*m_vbo, 0, 3, GL_FLOAT, 0, 0);
+
+	m_elementCount = elementCount;
+}
+
+void VerticesObject::OnPaint()
+{
+	Object::OnPaint();
+	SetUniform4f("u_VertColor", DEFAULT_COLOR_VALUE);
+	Renderer::Draw(*m_vao, GL_TRIANGLES, m_elementCount / 3);
+}
+
+ColoredVerticesObject::ColoredVerticesObject() : VerticesObject()
+{
+
+}
+
+ColoredVerticesObject::ColoredVerticesObject(const GLfloat vertices[], int elementCount)
+{
+	SetVertices(vertices, elementCount);
+}
+
+ColoredVerticesObject::~ColoredVerticesObject()
+{
+
+}
+
+void ColoredVerticesObject::SetVertices(const GLfloat vertices[], int elementCount)
 {
 	m_vbo = new VBO(vertices, elementCount * sizeof(float));
 	m_vao->LinkAttrib(*m_vbo, 0, 3, GL_FLOAT, 6 * sizeof(float), 0);
 	m_vao->LinkAttrib(*m_vbo, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 
 	m_elementCount = elementCount;
+}
+
+void ColoredVerticesObject::OnPaint()
+{
+	VerticesObject::OnPaint();
+}
+
+IndexedColoredVerticesObject::IndexedColoredVerticesObject() : ColoredVerticesObject(), m_ebo(nullptr), m_indicesCount(0)
+{
+}
+
+IndexedColoredVerticesObject::IndexedColoredVerticesObject(const GLfloat vertices[], int elementCount, const GLuint indices[], int indicesCount) :
+	ColoredVerticesObject(vertices, elementCount)
+{
+	SetIndices(indices, indicesCount);
+}
+
+IndexedColoredVerticesObject::~IndexedColoredVerticesObject()
+{
+	m_ebo->Delete();
 }
 
 void IndexedColoredVerticesObject::SetIndices(const GLuint indices[], int indicesCount)
@@ -587,6 +697,7 @@ void IndexedColoredVerticesObject::OnPaint()
 VAO* vaoTri;
 VBO* vboTri;
 EBO* eboTri;
+Camera* mainCamera;
 
 IndexedColoredVerticesObject* triangleObject;
 
@@ -605,6 +716,10 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 }
 
 void sendDataToOpenGL() {
+	mainCamera = new Camera();
+	mainCamera->GetTransform().SetPosition(glm::vec3(.0f, .0f, 10.f));
+	Camera::SetMain(mainCamera);
+
 	const GLfloat triangle[] =
 	{
 		-0.5f, -0.5f, +0.0f,  // left
@@ -769,17 +884,17 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		glfwSetWindowShouldClose(window, true);
 
 	if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-		Camera::SetPosition(Camera::GetPosition() + glm::vec3(.0f, 1.f, .0f));
+		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + glm::vec3(.0f, 1.f, .0f));
 	}
 	if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-		Camera::SetPosition(Camera::GetPosition() + glm::vec3(-1.0f, 0.f, .0f));
+		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + glm::vec3(-1.0f, 0.f, .0f));
 	}
 
 	if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-		Camera::SetPosition(Camera::GetPosition() + glm::vec3(.0f, -1.f, .0f));
+		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + glm::vec3(.0f, -1.f, .0f));
 	}
 	if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-		Camera::SetPosition(Camera::GetPosition() + glm::vec3(1.0f, 0.f, .0f));
+		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + glm::vec3(1.0f, 0.f, .0f));
 	}
 }
 
