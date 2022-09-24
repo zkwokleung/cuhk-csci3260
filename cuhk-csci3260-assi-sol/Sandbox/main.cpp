@@ -126,10 +126,12 @@ VAO::~VAO()
 
 void VAO::LinkAttrib(VBO& VBO, GLuint layout, GLuint componentSize, GLenum type, GLsizeiptr stride, void* offset)
 {
+	Bind();
 	VBO.Bind();
-	glVertexAttribPointer(layout, componentSize, type, GL_FALSE, stride, offset);
 	glEnableVertexAttribArray(layout);
+	glVertexAttribPointer(layout, componentSize, type, GL_FALSE, stride, offset);
 	VBO.Unbind();
+	Unbind();
 }
 
 void VAO::Bind() const
@@ -651,10 +653,10 @@ void sendDataToOpenGL() {
 		+1.0f, +0.0f, +0.0f,  // color
 
 		+0.5f, -0.5f, +0.0f,  // right
-		+1.0f, +0.0f, +0.0f,
+		+1.0f, +1.0f, +0.0f,
 
 		+0.0f, +0.5f, +0.0f,  // top
-		+1.0f, +0.0f, +0.0f,
+		+1.0f, +0.0f, +1.0f,
 	};
 
 	//GLuint vaoID;
@@ -674,12 +676,19 @@ void sendDataToOpenGL() {
 	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (char*)(3 * sizeof(float)));
 
 	//// with indexing (uncomment to use)
-	//GLuint indices[] = { 0, 1, 2 };
+	GLuint indices[] = { 0, 1, 2 };
 	//// index buffer
 	//GLuint indexBufferID;
 	//glGenBuffers(1, &indexBufferID);
 	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
 	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	vaoTri = new VAO();
+	vboTri = new VBO(triangle, 18 * sizeof(float));
+	vaoTri->LinkAttrib(*vboTri, 0, 3, GL_FLOAT, 6 * sizeof(float), 0);
+	vaoTri->LinkAttrib(*vboTri, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+
+	eboTri = new EBO(indices, 3);
 }
 
 bool checkStatus(
@@ -779,6 +788,8 @@ void paintGL(void) {
 		GL_FALSE, &modelTransformMatrix[0][0]);
 
 	Camera::OnPaint();
+
+	Renderer::Draw(*vaoTri, GL_TRIANGLES, 6);
 
 	// glBindVertexArray();
 
