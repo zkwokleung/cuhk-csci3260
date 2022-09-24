@@ -370,23 +370,23 @@ glm::mat4 Transform::GetTransformMat4() const
 	// Scale
 	model = glm::scale(model, m_scale);
 
-	static int i = 0;
-	if (i != 2)
-	{
-		std::cout << "position: (" << m_position.x << ", " << m_position.y << ", " << m_position.z << ")" << std::endl;
-		std::cout << "rotation: (" << m_rotation.x << ", " << m_rotation.y << ", " << m_rotation.z << ")" << std::endl;
-		std::cout << "scale: (" << m_scale.x << ", " << m_scale.y << ", " << m_scale.z << ")" << std::endl;
-		std::cout << "Transform: " << std::endl;
-		for (int i = 0; i < 4; i++)
-		{
-			for (int j = 0; j < 4; j++)
-			{
-				std::cout << model[j][i] << " ";
-			}
-			std::cout << std::endl;
-		}
-		i++;
-	}
+	//static int i = 0;
+	//if (i != 2)
+	//{
+	//	std::cout << "position: (" << m_position.x << ", " << m_position.y << ", " << m_position.z << ")" << std::endl;
+	//	std::cout << "rotation: (" << m_rotation.x << ", " << m_rotation.y << ", " << m_rotation.z << ")" << std::endl;
+	//	std::cout << "scale: (" << m_scale.x << ", " << m_scale.y << ", " << m_scale.z << ")" << std::endl;
+	//	std::cout << "Transform: " << std::endl;
+	//	for (int i = 0; i < 4; i++)
+	//	{
+	//		for (int j = 0; j < 4; j++)
+	//		{
+	//			std::cout << model[j][i] << " ";
+	//		}
+	//		std::cout << std::endl;
+	//	}
+	//	i++;
+	//}
 
 	return (m_parent) ? model * m_parent->GetTransformMat4() : model;
 }
@@ -723,186 +723,529 @@ void IndexedColoredVerticesObject::OnPaint()
 
 #pragma endregion
 
-
 #pragma region Assignment Specific Classes
-class TreeStem : public Object
+#pragma region GameObject
+class GameObject : public Object
 {
 public:
+	virtual void OnPaint();
+
+	template <typename T>
+	static T* InstantiateOfType();
+protected:
+	GameObject();
+	~GameObject();
+
+	virtual GLfloat* GetVertices() const = 0;
+	virtual GLuint* GetIndices() const = 0;
+	virtual GLuint GetVerticesCount() const = 0;
+	virtual GLuint GetIndicesCount() const = 0;
+	IndexedColoredVerticesObject* m_icvo;
+
+private:
+	void Init();
+};
+
+GameObject::GameObject() : Object(), m_icvo(nullptr)
+{
+}
+
+GameObject::~GameObject()
+{
+
+}
+
+void GameObject::OnPaint()
+{
+	m_icvo->OnPaint();
+}
+
+template <typename T>
+T* GameObject::InstantiateOfType()
+{
+	GameObject* go = new T();
+	go->Init();
+	return (T*)go;
+}
+
+void GameObject::Init()
+{
+	std::cout << "Sizeof Vertices: " << GetVerticesCount() * sizeof(float) << std::endl;
+	std::cout << "Sizeof Indices: " << GetIndicesCount() * sizeof(int) << std::endl;
+	m_icvo = new IndexedColoredVerticesObject(GetVertices(), GetVerticesCount() * sizeof(float), GetIndices(), GetIndicesCount() * sizeof(int));
+	m_icvo->GetTransform().SetParent(&GetTransform());
+}
+#pragma endregion
+
+#pragma region TreeStem
+class Terrain : public GameObject
+{
+public:
+	virtual GLfloat* GetVertices() const;
+	virtual GLuint* GetIndices() const;
+	virtual GLuint GetVerticesCount() const;
+	virtual GLuint GetIndicesCount() const;
+
+private:
+	Terrain();
+	~Terrain();
+
+	friend GameObject;
+};
+
+Terrain::Terrain() : GameObject()
+{
+
+}
+
+Terrain::~Terrain()
+{
+
+}
+
+GLfloat* Terrain::GetVertices() const
+{
+	static GLfloat l_vertices[] =
+	{
+		.0f, 1.f, .0f,		// 0: Top Center
+		.5f, .44f, .32f,
+
+		1.f, 1.f, .0f,		// 1: 0
+		.4f, .2f, .0f,
+
+		.866f, 1.f, .5f,	// 2: 30
+		.4f, .2f, .0f,
+
+		.5f, 1.f, .866f,	// 3: 60
+		.4f, .2f, .0f,
+
+		.0f, 1.f, 1.f,		// 4: 90
+		.4f, .2f, .0f,
+
+		-.5f, 1.f, .866f,	// 5: 120
+		.4f, .2f, .0f,
+
+		-.866f, 1.f, .5f,	// 6: 150
+		.4f, .2f, .0f,
+
+		-1.f, 1.f, .0f,		// 7: 180
+		.4f, .2f, .0f,
+
+		-.866f, 1.f, -.5f,	// 8: 210
+		.4f, .2f, .0f,
+
+		-.5f, 1.f, -.866f,	// 9: 240
+		.4f, .2f, .0f,
+
+		.0f, 1.f, -1.f,		// 10: 270
+		.4f, .2f, .0f,
+
+		.5f, 1.f, -.866f,	// 11: 300
+		.4f, .2f, .0f,
+
+		.866f, 1.f, -.5f,	// 12: 330
+		.4f, .2f, .0f,
+
+
+		.0f, -1.f, .0f,		// 13: Bottom Center
+		.5f, .44f, .32f,
+
+		1.f, -1.f, .0f,		// 14: 0
+		.5f, .2f, .0f,
+
+		.866f, -1.f, .5f,	// 15: 30
+		.4f, .26f, .08f,
+
+		.5f, -1.f, .866f,	// 16: 60
+		.5f, .2f, .0f,
+
+		.0f, -1.f, 1.f,		// 17: 90
+		.4f, .26f, .08f,
+
+		-.5f, -1.f, .866f,	// 18: 120
+		.5f, .2f, .0f,
+
+		-.866f, -1.f, .5f,	// 19: 150
+		.4f, .26f, .08f,
+
+		-1.f, -1.f, .0f,	// 20: 180
+		.5f, .2f, .0f,
+
+		-.866f, -1.f, -.5f,	// 21: 210
+		.4f, .26f, .08f,
+
+		-.5f, -1.f, -.866f,	// 22: 240
+		.5f, .2f, .0f,
+
+		.0f, -1.f, -1.f,	// 23: 270
+		.4f, .26f, .08f,
+
+		.5f, -1.f, -.866f,	// 24: 300
+		.5f, .2f, .0f,
+
+		.866f, -1.f, -.5f,	// 25: 330
+		.4f, .26f, .08f,
+	};
+
+	return l_vertices;
+}
+
+GLuint* Terrain::GetIndices() const
+{
+	static GLuint l_indices[] =
+	{
+		// Top Circle
+		0, 1, 2,
+		0, 2, 3,
+		0, 3, 4,
+		0, 4, 5,
+		0, 5, 6,
+		0, 6, 7,
+		0, 7, 8,
+		0, 8, 9,
+		0, 9, 10,
+		0, 10, 11,
+		0, 11, 12,
+		0, 12, 1,
+
+		// Bottom Circle
+		13, 14, 15,
+		13, 15, 16,
+		13, 16, 17,
+		13, 17, 18,
+		13, 18, 19,
+		13, 19, 20,
+		13, 20, 21,
+		13, 21, 22,
+		13, 22, 23,
+		13, 23, 24,
+		13, 24, 25,
+		13, 25, 14,
+
+		// Sides
+		1, 2, 14,
+		14, 15, 2,
+
+		2, 3, 15,
+		15, 16, 3,
+
+		3, 4, 16,
+		16, 17, 4,
+
+		4, 5, 17,
+		17, 18, 5,
+
+		5, 6, 18,
+		18, 19, 6,
+
+		6, 7, 19,
+		19, 20, 7,
+
+		7, 8, 20,
+		20, 21, 8,
+
+		8, 9, 21,
+		21, 22, 9,
+
+		9, 10, 22,
+		22, 23, 10,
+
+		10, 11, 23,
+		23, 24, 11,
+
+		11, 12, 24,
+		24, 25, 12,
+
+		12, 0, 25,
+		25, 14, 0,
+	};
+
+	return l_indices;
+}
+
+GLuint Terrain::GetVerticesCount() const
+{
+	return 156;
+}
+
+GLuint Terrain::GetIndicesCount() const
+{
+	return 144;
+}
+#pragma endregion
+
+#pragma region TreeStem
+class TreeStem : public GameObject
+{
+public:
+	virtual GLfloat* GetVertices() const;
+	virtual GLuint* GetIndices() const;
+	virtual GLuint GetVerticesCount() const;
+	virtual GLuint GetIndicesCount() const;
+
+private:
 	TreeStem();
 	~TreeStem();
 
-	virtual void OnPaint();
+	friend GameObject;
+};
+
+TreeStem::TreeStem() : GameObject()
+{
+
+}
+
+TreeStem::~TreeStem()
+{
+
+}
+
+GLfloat* TreeStem::GetVertices() const
+{
+	static GLfloat l_vertices[] =
+	{
+		.0f, 1.f, .0f,		// 0: Top Center
+		.5f, .44f, .32f,
+
+		1.f, 1.f, .0f,		// 1: 0
+		.4f, .2f, .0f,
+
+		.866f, 1.f, .5f,	// 2: 30
+		.4f, .2f, .0f,
+
+		.5f, 1.f, .866f,	// 3: 60
+		.4f, .2f, .0f,
+
+		.0f, 1.f, 1.f,		// 4: 90
+		.4f, .2f, .0f,
+
+		-.5f, 1.f, .866f,	// 5: 120
+		.4f, .2f, .0f,
+
+		-.866f, 1.f, .5f,	// 6: 150
+		.4f, .2f, .0f,
+
+		-1.f, 1.f, .0f,		// 7: 180
+		.4f, .2f, .0f,
+
+		-.866f, 1.f, -.5f,	// 8: 210
+		.4f, .2f, .0f,
+
+		-.5f, 1.f, -.866f,	// 9: 240
+		.4f, .2f, .0f,
+
+		.0f, 1.f, -1.f,		// 10: 270
+		.4f, .2f, .0f,
+
+		.5f, 1.f, -.866f,	// 11: 300
+		.4f, .2f, .0f,
+
+		.866f, 1.f, -.5f,	// 12: 330
+		.4f, .2f, .0f,
+
+
+		.0f, -1.f, .0f,		// 13: Bottom Center
+		.5f, .44f, .32f,
+
+		1.f, -1.f, .0f,		// 14: 0
+		.5f, .2f, .0f,
+
+		.866f, -1.f, .5f,	// 15: 30
+		.4f, .26f, .08f,
+
+		.5f, -1.f, .866f,	// 16: 60
+		.5f, .2f, .0f,
+
+		.0f, -1.f, 1.f,		// 17: 90
+		.4f, .26f, .08f,
+
+		-.5f, -1.f, .866f,	// 18: 120
+		.5f, .2f, .0f,
+
+		-.866f, -1.f, .5f,	// 19: 150
+		.4f, .26f, .08f,
+
+		-1.f, -1.f, .0f,	// 20: 180
+		.5f, .2f, .0f,
+
+		-.866f, -1.f, -.5f,	// 21: 210
+		.4f, .26f, .08f,
+
+		-.5f, -1.f, -.866f,	// 22: 240
+		.5f, .2f, .0f,
+
+		.0f, -1.f, -1.f,	// 23: 270
+		.4f, .26f, .08f,
+
+		.5f, -1.f, -.866f,	// 24: 300
+		.5f, .2f, .0f,
+
+		.866f, -1.f, -.5f,	// 25: 330
+		.4f, .26f, .08f,
+	};
+
+	return l_vertices;
+}
+
+GLuint* TreeStem::GetIndices() const
+{
+	static GLuint l_indices[] =
+	{
+		// Top Circle
+		0, 1, 2,
+		0, 2, 3,
+		0, 3, 4,
+		0, 4, 5,
+		0, 5, 6,
+		0, 6, 7,
+		0, 7, 8,
+		0, 8, 9,
+		0, 9, 10,
+		0, 10, 11,
+		0, 11, 12,
+		0, 12, 1,
+
+		// Bottom Circle
+		13, 14, 15,
+		13, 15, 16,
+		13, 16, 17,
+		13, 17, 18,
+		13, 18, 19,
+		13, 19, 20,
+		13, 20, 21,
+		13, 21, 22,
+		13, 22, 23,
+		13, 23, 24,
+		13, 24, 25,
+		13, 25, 14,
+
+		// Sides
+		1, 2, 14,
+		14, 15, 2,
+
+		2, 3, 15,
+		15, 16, 3,
+
+		3, 4, 16,
+		16, 17, 4,
+
+		4, 5, 17,
+		17, 18, 5,
+
+		5, 6, 18,
+		18, 19, 6,
+
+		6, 7, 19,
+		19, 20, 7,
+
+		7, 8, 20,
+		20, 21, 8,
+
+		8, 9, 21,
+		21, 22, 9,
+
+		9, 10, 22,
+		22, 23, 10,
+
+		10, 11, 23,
+		23, 24, 11,
+
+		11, 12, 24,
+		24, 25, 12,
+
+		12, 0, 25,
+		25, 14, 0,
+	};
+
+	return l_indices;
+}
+
+GLuint TreeStem::GetVerticesCount() const
+{
+	return 156;
+}
+
+GLuint TreeStem::GetIndicesCount() const
+{
+	return 144;
+}
+#pragma endregion
+
+#pragma region Leaf
+class Leaf : public GameObject
+{
+public:
+	virtual GLfloat* GetVertices() const;
+	virtual GLuint* GetIndices() const;
+	virtual GLuint GetVerticesCount() const;
+	virtual GLuint GetIndicesCount() const;
 
 private:
-	const static GLfloat VERTICES[];
-	const static GLuint INDICIES[];
+	Leaf();
+	~Leaf();
 
-	IndexedColoredVerticesObject m_icvo;
+	friend GameObject;
 };
 
-const GLfloat TreeStem::VERTICES[] =
+Leaf::Leaf() : GameObject()
 {
-	.0f, 1.f, .0f,		// 0: Top Center
-	.5f, .44f, .32f,
 
-	1.f, 1.f, .0f,		// 1: 0
-	.4f, .2f, .0f,
-
-	.866f, 1.f, .5f,	// 2: 30
-	.4f, .2f, .0f,
-
-	.5f, 1.f, .866f,	// 3: 60
-	.4f, .2f, .0f,
-
-	.0f, 1.f, 1.f,		// 4: 90
-	.4f, .2f, .0f,
-
-	-.5f, 1.f, .866f,	// 5: 120
-	.4f, .2f, .0f,
-
-	-.866f, 1.f, .5f,	// 6: 150
-	.4f, .2f, .0f,
-
-	-1.f, 1.f, .0f,		// 7: 180
-	.4f, .2f, .0f,
-
-	-.866f, 1.f, -.5f,	// 8: 210
-	.4f, .2f, .0f,
-
-	-.5f, 1.f, -.866f,	// 9: 240
-	.4f, .2f, .0f,
-
-	.0f, 1.f, -1.f,		// 10: 270
-	.4f, .2f, .0f,
-
-	.5f, 1.f, -.866f,	// 11: 300
-	.4f, .2f, .0f,
-
-	.866f, 1.f, -.5f,	// 12: 330
-	.4f, .2f, .0f,
-
-
-	.0f, -1.f, .0f,		// 13: Bottom Center
-	.5f, .44f, .32f,
-
-	1.f, -1.f, .0f,		// 14: 0
-	.5f, .2f, .0f,
-
-	.866f, -1.f, .5f,	// 15: 30
-	.46f, .36f, .28f,
-
-	.5f, -1.f, .866f,	// 16: 60
-	.5f, .2f, .0f,
-
-	.0f, -1.f, 1.f,		// 17: 90
-	.46f, .36f, .28f,
-
-	-.5f, -1.f, .866f,	// 18: 120
-	.5f, .2f, .0f,
-
-	-.866f, -1.f, .5f,	// 19: 150
-	.46f, .36f, .28f,
-
-	-1.f, -1.f, .0f,	// 20: 180
-	.5f, .2f, .0f,
-
-	-.866f, -1.f, -.5f,	// 21: 210
-	.46f, .36f, .28f,
-
-	-.5f, -1.f, -.866f,	// 22: 240
-	.5f, .2f, .0f,
-
-	.0f, -1.f, -1.f,	// 23: 270
-	.46f, .36f, .28f,
-
-	.5f, -1.f, -.866f,	// 24: 300
-	.5f, .2f, .0f,
-
-	.866f, -1.f, -.5f,	// 25: 330
-	.46f, .36f, .28f,
-};
-
-const GLuint TreeStem::INDICIES[] =
-{
-	// Top Circle
-	0, 1, 2,
-	0, 2, 3,
-	0, 3, 4,
-	0, 4, 5,
-	0, 5, 6,
-	0, 6, 7,
-	0, 7, 8,
-	0, 8, 9,
-	0, 9, 10,
-	0, 10, 11,
-	0, 11, 12,
-	0, 12, 1,
-
-	// Bottom Circle
-	13, 14, 15,
-	13, 15, 16,
-	13, 16, 17,
-	13, 17, 18,
-	13, 18, 19,
-	13, 19, 20,
-	13, 20, 21,
-	13, 21, 22,
-	13, 22, 23,
-	13, 23, 24,
-	13, 24, 25,
-	13, 25, 14,
-
-	// Sides
-	1, 2, 14,
-	14, 15, 2,
-
-	2, 3, 15,
-	15, 16, 3,
-
-	3, 4, 16,
-	16, 17, 4,
-
-	4, 5, 17,
-	17, 18, 5,
-
-	5, 6, 18,
-	18, 19, 6,
-
-	6, 7, 19,
-	19, 20, 7,
-
-	7, 8, 20,
-	20, 21, 8,
-
-	8, 9, 21,
-	21, 22, 9,
-
-	9, 10, 22,
-	22, 23, 10,
-
-	10, 11, 23,
-	23, 24, 11,
-
-	11, 12, 24,
-	24, 25, 12,
-
-	12, 0, 25,
-	25, 14, 0,
-};
-
-TreeStem::TreeStem() : Object(), m_icvo(VERTICES, 156, INDICIES, 144)
-{
-	std::cout << "Creating a tree stem" << std::endl;
-	std::cout << "Size of vertices: " << sizeof(TreeStem::VERTICES) / sizeof(float) << std::endl;
-	std::cout << "Size of indices: " << sizeof(TreeStem::INDICIES) / sizeof(int) << std::endl;
-
-	m_icvo.GetTransform().SetParent(&this->GetTransform());
 }
 
-void TreeStem::OnPaint()
+Leaf::~Leaf()
 {
-	m_icvo.OnPaint();
+
 }
+
+GLfloat* Leaf::GetVertices() const
+{
+	static GLfloat l_vertices[] =
+	{
+		.0f, 1.f, .0f,
+		.0f, .25f, .0f,
+
+		-1.f, -1.f, 1.f,
+		.0f, .1f, .0f,
+
+		1.f, -1.f, 1.f,
+		.0f, .12f, .0f,
+
+		1.f, -1.f, -1.f,
+		.0f, .15f, .0f,
+
+		-1.f, -1.f, -1.f,
+		.0f, .13f, .0f,
+	};
+
+	return l_vertices;
+}
+
+GLuint* Leaf::GetIndices() const
+{
+	static GLuint l_indices[] =
+	{
+		0, 1, 2,
+		0, 2, 3,
+		0, 3, 4,
+		0, 4, 1,
+		1, 2, 3,
+		3, 4, 1
+	};
+
+	return l_indices;
+}
+
+GLuint Leaf::GetVerticesCount() const
+{
+	return 30;
+}
+GLuint Leaf::GetIndicesCount() const
+{
+	return 18;
+}
+#pragma endregion
+
+
 #pragma endregion
 
 
@@ -996,9 +1339,9 @@ void installShaders() {
 }
 
 
-IndexedColoredVerticesObject* pyramid;
 Camera* mainCamera;
 TreeStem* treeStem;
+Leaf* leaf;
 
 void sendDataToOpenGL() {
 	// TODO:
@@ -1019,39 +1362,11 @@ void sendDataToOpenGL() {
 		-0.5f, 0.5f, 0.5f,
 	};
 
-	GLfloat vertPyramid[] =
-	{
-		0.0f, 0.5f, 0.0f,
-		0.0f, 0.0f, 0.0f,
-
-		-0.5f, -0.5f, 0.5f,
-		0.0f,0.0f,1.0f,
-
-		0.5f, -0.5f, 0.5f,
-		0.0f,1.0f,0.0f,
-
-		0.5f, -0.5f, -0.5f,
-		0.0f,1.0f,1.0f,
-
-		-0.5f, -0.5f, -0.5f,
-		1.0f,0.0f,0.0f,
-	};
-
-	GLuint idxPyramid[] =
-	{
-		0, 1, 2,
-		0, 2, 3,
-		0, 3, 4,
-		0, 4, 1,
-		1, 2, 3,
-		3, 4, 1
-	};
-
-	pyramid = new IndexedColoredVerticesObject(vertPyramid, 30, idxPyramid, 18);
-	//pyramid->SetActive(true);
-
-	treeStem = new TreeStem();
+	treeStem = GameObject::InstantiateOfType<TreeStem>();
 	treeStem->SetActive(true);
+
+	leaf = GameObject::InstantiateOfType<Leaf>();
+	leaf->SetActive(true);
 }
 
 float yRotation = 0;
@@ -1061,7 +1376,7 @@ void paintGL(void) {
 	// TODO:
 	// render your objects and control the transformation here
 
-	pyramid->GetTransform().SetRotation(glm::vec3(.0f, yRotation, .0f));
+	leaf->GetTransform().SetRotation(glm::vec3(.0f, yRotation, .0f));
 
 	yRotation += 1;
 
