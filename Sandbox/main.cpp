@@ -317,16 +317,16 @@ public:
 
 	virtual void OnPaint();
 private:
-	glm::vec3 m_position;
-	glm::vec3 m_rotation;
-	glm::vec3 m_scale;
+	glm::vec3 m_localPosition;
+	glm::vec3 m_localRotation;
+	glm::vec3 m_localScale;
 
 	Transform* m_parent;
 	std::list<Transform*> m_childs;
 };
 
 Transform::Transform() :
-	m_position(glm::vec3()), m_rotation(glm::vec3()), m_scale(glm::vec3(1.f)),
+	m_localPosition(glm::vec3()), m_localRotation(glm::vec3()), m_localScale(glm::vec3(1.f)),
 	m_parent(nullptr), m_childs()
 {
 }
@@ -337,32 +337,32 @@ Transform::~Transform()
 
 glm::vec3 Transform::GetPosition() const
 {
-	return m_position;
+	return m_localPosition;
 }
 
 void Transform::SetPosition(glm::vec3 value)
 {
-	m_position = value;
+	m_localPosition = value;
 }
 
 glm::vec3 Transform::GetRotation() const
 {
-	return m_rotation;
+	return m_localRotation;
 }
 
 void Transform::SetRotation(glm::vec3 value)
 {
-	m_rotation = value;
+	m_localRotation = value;
 }
 
 glm::vec3 Transform::GetScale() const
 {
-	return m_scale;
+	return m_localScale;
 }
 
 void Transform::SetScale(glm::vec3 value)
 {
-	m_scale = value;
+	m_localScale = value;
 }
 
 void Transform::OnPaint()
@@ -375,15 +375,15 @@ glm::mat4 Transform::GetTransformMat4() const
 	glm::mat4 model = glm::mat4(1.0f);
 
 	// Translate
-	model = glm::translate(model, m_position);
+	model = glm::translate(model, m_localPosition);
 
 	// Rotate
-	model = glm::rotate(model, glm::radians(m_rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(m_rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(m_rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::rotate(model, glm::radians(m_localRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(m_localRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(m_localRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	// Scale
-	model = glm::scale(model, m_scale);
+	model = glm::scale(model, m_localScale);
 
 	//static int i = 0;
 	//if (i != 2)

@@ -296,6 +296,7 @@ public:
 	Transform();
 	~Transform();
 
+	// World Space. Parent's transform will be taken into account
 	glm::vec3 GetPosition() const;
 	void SetPosition(glm::vec3 value);
 
@@ -304,6 +305,17 @@ public:
 
 	glm::vec3 GetScale() const;
 	void SetScale(glm::vec3 value);
+
+	// Local space
+	glm::vec3 GetLocalPosition() const;
+	void SetLocalPosition(glm::vec3 value);
+
+	glm::vec3 GetLocalRotation() const;
+	void SetLocalRotation(glm::vec3 value);
+
+	glm::vec3 GetLocalScale() const;
+	void SetLocalScale(glm::vec3 value);
+
 	glm::mat4 GetTransformMat4() const;
 
 	glm::vec3 GetForward() const;
@@ -319,16 +331,16 @@ public:
 
 	virtual void OnPaint();
 private:
-	glm::vec3 m_position;
-	glm::vec3 m_rotation;
-	glm::vec3 m_scale;
+	glm::vec3 m_localPosition;
+	glm::vec3 m_localRotation;
+	glm::vec3 m_localScale;
 
 	Transform* m_parent;
 	std::list<Transform*> m_childs;
 };
 
 Transform::Transform() :
-	m_position(glm::vec3()), m_rotation(glm::vec3()), m_scale(glm::vec3(1.f)),
+	m_localPosition(glm::vec3()), m_localRotation(glm::vec3()), m_localScale(glm::vec3(1.f)),
 	m_parent(nullptr), m_childs()
 {
 }
@@ -339,32 +351,68 @@ Transform::~Transform()
 
 glm::vec3 Transform::GetPosition() const
 {
-	return m_position;
+	if (m_parent != nullptr)
+	{
+		return m_parent->GetPosition() + m_localPosition;
+	}
+
+	return m_localPosition;
 }
 
 void Transform::SetPosition(glm::vec3 value)
 {
-	m_position = value;
+	if (m_parent != nullptr)
+	{
+		m_localPosition = value - m_parent->GetPosition();
+	}
+	else
+	{
+		m_localPosition = value;
+	}
 }
 
 glm::vec3 Transform::GetRotation() const
 {
-	return m_rotation;
+	if (m_parent != nullptr)
+	{
+		return m_parent->GetRotation() + m_localRotation;
+	}
+
+	return m_localRotation;
 }
 
 void Transform::SetRotation(glm::vec3 value)
 {
-	m_rotation = value;
+	if (m_parent != nullptr)
+	{
+		m_localRotation = value - m_parent->GetRotation();
+	}
+	else
+	{
+		m_localRotation = value;
+	}
 }
 
 glm::vec3 Transform::GetScale() const
 {
-	return m_scale;
+	if (m_parent != nullptr)
+	{
+		return glm::vec3(m_parent->GetScale().x * m_localScale.x, m_parent->GetScale().y * m_localScale.y, m_parent->GetScale().z * m_localScale.z);
+	}
+
+	return m_localScale;
 }
 
 void Transform::SetScale(glm::vec3 value)
 {
-	m_scale = value;
+	if (m_parent != nullptr)
+	{
+		m_localScale = glm::vec3(value.x / m_parent->GetScale().x, value.y / m_parent->GetScale().y, value.z / m_parent->GetScale().z);
+	}
+	else
+	{
+		m_localScale = value;
+	}
 }
 
 void Transform::OnPaint()
@@ -376,16 +424,16 @@ glm::mat4 Transform::GetTransformMat4() const
 {
 	glm::mat4 model = glm::mat4(1.0f);
 
-	// Translate
-	model = glm::translate(model, m_position);
+	// Scale
+	model = glm::scale(model, GetLocalScale());
 
 	// Rotate
-	model = glm::rotate(model, glm::radians(m_rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(m_rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(m_rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::rotate(model, glm::radians(GetLocalRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(GetLocalRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(GetLocalRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
 
-	// Scale
-	model = glm::scale(model, m_scale);
+	// Translate
+	model = glm::translate(model, GetLocalPosition());
 
 	//static int i = 0;
 	//if (i != 2)
@@ -405,7 +453,42 @@ glm::mat4 Transform::GetTransformMat4() const
 	//	i++;
 	//}
 
-	return (m_parent) ? model * m_parent->GetTransformMat4() : model;
+	if (m_parent != nullptr)
+	{
+		return m_parent->GetTransformMat4() * model;
+	}
+
+	return model;
+}
+
+glm::vec3 Transform::GetLocalPosition() const
+{
+	return m_localPosition;
+}
+
+void Transform::SetLocalPosition(glm::vec3 value)
+{
+	m_localPosition = value;
+}
+
+glm::vec3 Transform::GetLocalRotation() const
+{
+	return m_localRotation;
+}
+
+void Transform::SetLocalRotation(glm::vec3 value)
+{
+	m_localRotation = value;
+}
+
+glm::vec3 Transform::GetLocalScale() const
+{
+	return m_localScale;
+}
+
+void Transform::SetLocalScale(glm::vec3 value)
+{
+	m_localScale = value;
 }
 
 glm::vec3 Transform::GetForward() const
@@ -422,7 +505,7 @@ glm::vec3 Transform::GetBackward() const
 	);
 }
 
-glm::vec3 Transform::GetLeft() const
+glm::vec3 Transform::GetRight() const
 {
 	return glm::vec3(
 		glm::cos(glm::radians(GetRotation().y)),
@@ -431,9 +514,9 @@ glm::vec3 Transform::GetLeft() const
 	);
 }
 
-glm::vec3 Transform::GetRight() const
+glm::vec3 Transform::GetLeft() const
 {
-	return -1.f * GetLeft();
+	return -1.f * GetRight();
 }
 
 glm::vec3 Transform::GetUp() const
@@ -964,6 +1047,14 @@ std::list<Object*> Scene::GetObjects() const
 }
 #pragma endregion
 
+#pragma region Physics Related
+class Physics
+{
+public:
+	bool Raycase(glm::vec3 origin, glm::vec3 direction, GLfloat maxDistance);
+};
+#pragma endregion
+
 #pragma endregion
 
 #pragma region Assignment Specific Classes
@@ -1249,8 +1340,8 @@ GLuint* TreeStem::GetIndices() const
 		11, 12, 24,
 		24, 25, 12,
 
-		12, 0, 25,
-		25, 14, 0,
+		12, 1, 25,
+		25, 14, 1,
 	};
 
 	return l_indices;
@@ -1368,8 +1459,9 @@ private:
 Tree::Tree() : Object(), m_leaves(), m_stem(GameObject::InstantiateOfType<TreeStem>()), m_generation(1), m_chopped(false)
 {
 	// Set stem transform and active
-	m_stem->GetTransform().SetPosition(glm::vec3(.0f, 1.f, .0f));
-	m_stem->GetTransform().SetScale(glm::vec3(.3f, 1.f, .3f));
+	m_stem->GetTransform().SetLocalPosition(glm::vec3(.0f, -.5f, .0f));
+	m_stem->GetTransform().SetLocalScale(glm::vec3(.3f, 1.f, .3f));
+	m_stem->GetTransform().SetParent(&GetTransform());
 	m_stem->SetActive(true);
 
 	// Set leaf position
@@ -1431,16 +1523,16 @@ void Tree::Chop()
 void Tree::SetGeneration(int gen)
 {
 	// Set the scale of the stem
-	m_stem->GetTransform().SetScale(glm::vec3(.3f * gen * .7f, gen / 5.f, .3f * gen * .7f));
+	m_stem->GetTransform().SetLocalScale(glm::vec3(.3f * gen * .7f, gen / 5.f, .3f * gen * .7f));
 
 	std::list<Leaf*>::iterator it = m_leaves.begin();
 	for (int i = 0; i < m_generation; i++, it++)
 	{
 		// Set the scale of the leaves
-		(*it)->GetTransform().SetScale(glm::vec3(.5f * gen * .8f, .8f * gen * .6f, .5f * gen * .8f));
+		(*it)->GetTransform().SetLocalScale(glm::vec3(.5f * gen * .8f, .8f * gen * .6f, .5f * gen * .8f));
 
 		// Set the position of the leaves
-		(*it)->GetTransform().SetPosition(glm::vec3(.0f, i + i * .3f + 1, .0f));
+		(*it)->GetTransform().SetLocalPosition(glm::vec3(.0f, i + i * .3f + 1, .0f));
 
 		// Set leaves active
 		(*it)->SetActive(i < gen);
@@ -1490,6 +1582,13 @@ bool FirstPersonPlayer::IsActive() const
 	return m_isActive;
 }
 
+#pragma endregion
+
+#pragma region Forest Scene
+class ForestScene : public Scene
+{
+
+};
 #pragma endregion
 
 #pragma endregion
@@ -1583,27 +1682,41 @@ void installShaders() {
 	glUseProgram(programID);
 }
 
-
 Camera* mainCamera;
 Terrain* terrain;
-Tree* tree;
+std::list<Tree*> trees;
 
 void sendDataToOpenGL() {
 	// TODO:
 	// create 3D objects and/or 2D objects and/or lines (points) here and bind to VAOs & VBOs
+
+	// Create Camera
 	mainCamera = new Camera();
 	mainCamera->GetTransform().SetPosition(glm::vec3(4.0f, 3.0f, 10.f));
 	mainCamera->GetTransform().SetRotation(glm::vec3(-10.f, 20.0f, .0f));
-
 	Camera::SetMain(mainCamera);
 
+	// Create terrain
 	terrain = GameObject::InstantiateOfType<Terrain>();
 	terrain->GetTransform().SetScale(glm::vec3(100.f, .5f, 100.f));
+	terrain->GetTransform().SetPosition(glm::vec3(1.f, .0f, 1.f));
 	terrain->SetActive(true);
 
-	tree = new Tree();
-	tree->GetTransform().SetPosition(glm::vec3(.0f, 1.f, .0f));
-	tree->SetActive(true);
+	// Create Trees
+	for (int x = 5; x < 100; x += 3)
+	{
+		for (int y = 5; y < 100; y += 3)
+		{
+			int r = rand() % 100;
+			if (r < 30)
+				continue;
+
+			Tree* newTree = new Tree();
+			newTree->GetTransform().SetPosition(glm::vec3((float)x, .8f, (float)y));
+			newTree->SetActive(true);
+			trees.push_back(newTree);
+		}
+	}
 
 	SceneManager::OnInitialize();
 }
@@ -1657,20 +1770,27 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	// Grow Tree
 	if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
 	{
-		tree->Grow();
+		int r = rand() % trees.size();
+		std::list<Tree*>::iterator it = trees.begin();
+		for (int i = 0; i < r; i++)
+			it++;
+		(*it)->Grow();
 	}
 
 	// TODO: Change to chop tree with mouse
 	// Chop Tree 
 	if (key == GLFW_KEY_ENTER && action == GLFW_PRESS)
 	{
-		tree->Chop();
+		int r = rand() % trees.size();
+		std::list<Tree*>::iterator it = trees.begin();
+		for (int i = 0; i < r; i++)
+			it++;
+		(*it)->Chop();
 	}
 }
 
 void on_mouse_button(int button, int action, double xpos, double ypos)
 {
-	// TODO: handle the mouse input
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
@@ -1678,6 +1798,39 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
 	on_mouse_button(button, action, xpos, ypos);
+}
+
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	const static float speed = .1f; // The speed of the camera
+	static int wWidth, wHeight; // Window width and height
+
+	// Get the center position of the window
+	glfwGetWindowSize(window, &wWidth, &wHeight);
+	static glm::vec2 center = glm::vec2(wWidth / 2, wHeight / 2);
+
+	// Do not proceed if the position is the center of the window
+	if (xpos == center.x && ypos == center.y)
+		return;
+
+	// handle the mouse input
+	glm::vec2 newPos = glm::vec2(xpos, ypos);
+	glm::vec2 deltaPos = newPos - center;
+
+	glm::vec3 cameraRotation = mainCamera->GetTransform().GetRotation();
+	cameraRotation += glm::vec3(deltaPos.y * speed * -1.f, deltaPos.x * speed * -1.f, .0f);
+
+	// Clamp the rotation value
+	if (cameraRotation.x >= 360.f || cameraRotation.x <= -360.f)
+		cameraRotation.x = .0f;
+	if (cameraRotation.y >= 360.f || cameraRotation.y <= -360.f)
+		cameraRotation.y = .0f;
+
+	// Set the rotation of the camera
+	mainCamera->GetTransform().SetRotation(cameraRotation);
+
+	// Fix the cursor position to the center of the screen
+	glfwSetCursorPos(window, wWidth / 2, wHeight / 2);
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -1729,7 +1882,10 @@ int main(int argc, char* argv[]) {
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetKeyCallback(window, key_callback); // TODO
 	// TODO: mouse callback, etc.
+	// Hide mouse cursor
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
+	glfwSetCursorPosCallback(window, cursor_position_callback);
 
 	/* Initialize the glew */
 	if (GLEW_OK != glewInit()) {
