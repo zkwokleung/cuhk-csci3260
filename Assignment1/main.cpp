@@ -1952,6 +1952,69 @@ GLuint Cloud::GetIndicesCount() const
 }
 #pragma endregion
 
+#pragma region AxeBlade
+
+#pragma region AxeBlade
+class AxeBlade : public GameObject
+{
+public:
+	virtual GLfloat* GetVertices() const;
+	virtual GLuint* GetIndices() const;
+	virtual GLuint GetVerticesCount() const;
+	virtual GLuint GetIndicesCount() const;
+
+private:
+	AxeBlade();
+	~AxeBlade();
+
+	friend GameObject;
+};
+
+AxeBlade::AxeBlade() : GameObject()
+{
+
+}
+
+AxeBlade::~AxeBlade()
+{
+
+}
+
+GLfloat* AxeBlade::GetVertices() const
+{
+	static GLfloat l_vertices[] =
+	{
+		.0f, -.5f, -.8f,
+		-.1f, -.2f, .0f,
+
+	};
+
+	return l_vertices;
+}
+
+GLuint* AxeBlade::GetIndices() const
+{
+	static GLuint l_indices[] =
+	{
+		0, 1, 3,
+	};
+
+	return l_indices;
+}
+
+GLuint AxeBlade::GetVerticesCount() const
+{
+	return 72;
+}
+GLuint AxeBlade::GetIndicesCount() const
+{
+	return 60;
+}
+#pragma endregion
+
+#pragma endregion
+
+
 #pragma region First Person Player
 class FirstPersonPlayer : public Object
 {
@@ -2045,11 +2108,14 @@ ForestScene::ForestScene()
 				AddObject(newTree);
 			}
 
-			if (r > 80)
+			if (r < 90)
 			{
 				// Create Clouds
+				int randScale = rand() % 100;
 				Cloud* newCloud = GameObject::InstantiateOfType<Cloud>();
-				newCloud->GetTransform().SetLocalPosition(glm::vec3(x, 50.f, y));
+				newCloud->GetTransform().SetLocalScale(glm::vec3(randScale, randScale * .2f, randScale));
+				newCloud->GetTransform().SetLocalRotation(glm::vec3(.0f, .0f, .0f));
+				newCloud->GetTransform().SetLocalPosition(glm::vec3(x, 100.f, y));
 				m_clouds.push_back(newCloud);
 				newCloud->SetActive(true);
 				AddObject(newCloud);
@@ -2073,9 +2139,33 @@ void ForestScene::OnInitialize()
 
 void ForestScene::OnPaint()
 {
+	static glm::vec3 cloudSpeed = glm::vec3(.0f, .0f, .05f);
+	static float cloudBound = 1.f;
+
 	// Move the clouds
+	std::list<Cloud*>::iterator itc;
+	for (itc = m_clouds.begin(); itc != m_clouds.end(); itc++)
+	{
+		glm::vec3 des = (*itc)->GetTransform().GetPosition() + cloudSpeed;
+
+		// Set the bound of the cloud
+		if (des.z >= 110.f)
+		{
+			des.z = -1.f;
+		}
+		(*itc)->GetTransform().SetPosition(des);
+	}
 
 	// Grow the trees by chance
+	int r = rand() % 100;
+	if (r > 90)
+	{
+		r = rand() % m_trees.size();
+		std::list<Tree*>::iterator itt = m_trees.begin();
+		for (int i = 0; i < r; i++, itt++);
+
+		(*itt)->Grow();
+	}
 }
 
 void ForestScene::OnEnd()
