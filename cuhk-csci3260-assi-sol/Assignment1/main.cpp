@@ -995,11 +995,129 @@ void GameObject::Init()
 class Scene
 {
 public:
+	Scene();
+	~Scene();
 
+	virtual void OnInitialize();
+	virtual void OnPaint();
+	virtual void OnEnd();
+
+	void AddObject(Object* object);
+	void RemoveObject(Object* object);
+	std::list<Object*> GetObjects() const;
 
 private:
-	static Scene s_activeScene;
+	friend SceneManager;
+
+	std::list<Object*> m_objects;
+	bool m_initialized;
 };
+
+class SceneManager
+{
+public:
+	static void OnInitialize();
+	static void OnPaint();
+	static void OnEnd();
+	static void SetActiveScene(Scene* scene);
+	static Scene* GetActiveScene();
+
+private:
+	static Scene* s_activeScene;
+	static bool s_busying;
+};
+
+void SceneManager::OnInitialize()
+{
+	if (s_activeScene != nullptr)
+	{
+		s_activeScene->OnInitialize();
+	}
+}
+
+void SceneManager::OnPaint()
+{
+	if (s_busying)
+	{
+		return;
+	}
+
+	if (s_activeScene != nullptr)
+	{
+		s_activeScene->OnPaint();
+	}
+}
+
+void SceneManager::OnEnd()
+{
+	// End the current scene
+	if (s_activeScene != nullptr)
+	{
+		s_activeScene->OnEnd();
+	}
+}
+
+void SceneManager::SetActiveScene(Scene* scene)
+{
+	s_busying = true;
+
+	// End the current scene
+	if (s_activeScene != nullptr)
+	{
+		s_activeScene->OnEnd();
+	}
+
+	// Set the current scene
+	s_activeScene = scene;
+
+	// Initialize the current scene
+	if (s_activeScene != nullptr)
+	{
+		s_activeScene->OnInitialize();
+	}
+
+	s_busying = false;
+}
+
+Scene* SceneManager::GetActiveScene()
+{
+	return s_activeScene;
+}
+
+Scene::Scene() : m_objects(), m_initialized(false)
+{
+}
+
+Scene::~Scene()
+{
+}
+
+void Scene::OnInitialize()
+{
+}
+
+void Scene::OnPaint()
+{
+}
+
+void Scene::OnEnd()
+{
+}
+
+void Scene::AddObject(Object* object)
+{
+	m_objects.push_back(object);
+}
+
+void Scene::RemoveObject(Object* object)
+{
+	m_objects.remove(object);
+}
+
+std::list<Object*> Scene::GetObjects() const
+{
+	return m_objects;
+}
 #pragma endregion
 
 #pragma endregion
@@ -1530,7 +1648,6 @@ bool FirstPersonPlayer::IsActive() const
 
 #pragma endregion
 
-
 #pragma region Main OpenGL Functions
 void get_OpenGL_info() {
 	// OpenGL information
@@ -1622,8 +1739,6 @@ void installShaders() {
 
 
 Camera* mainCamera;
-TreeStem* treeStem;
-Leaf* leaf;
 Terrain* terrain;
 Tree* tree;
 
@@ -1643,6 +1758,8 @@ void sendDataToOpenGL() {
 	tree = new Tree();
 	tree->GetTransform().SetPosition(glm::vec3(.0f, 1.f, .0f));
 	tree->SetActive(true);
+
+	SceneManager::OnInitialize();
 }
 
 void paintGL(void) {
@@ -1653,6 +1770,7 @@ void paintGL(void) {
 	Renderer::Clear();
 	Camera::OnPaint();
 	ObjectRenderPipeline::OnPaint();
+	SceneManager::OnPaint();
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
