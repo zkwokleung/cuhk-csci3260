@@ -13,6 +13,7 @@ Type your name and student ID here
 #include <iostream>
 #include <fstream>
 #include <list>
+#include <unordered_map>
 
 GLint programID;
 
@@ -449,11 +450,177 @@ Transform* Transform::GetParent()
 void Transform::SetParent(Transform* transform)
 {
 	m_parent = transform;
+	transform->m_childs.push_back(this);
 }
 
 std::list<Transform*> Transform::GetChilds() const
 {
 	return m_childs;
+}
+#pragma endregion
+
+#pragma region Input Related
+typedef void(*KeyCallbackFunc)(int key, int action);
+typedef void(*MouseButtonCallbackFunc)(int button, int action);
+typedef void(*MouseMoveCallbackFunc)(double xpos, int ypos);
+
+// A event listener that listen to the input event
+class KeyCallback
+{
+public:
+	KeyCallback(void);
+	KeyCallback(KeyCallbackFunc func);
+	void SetCallback(KeyCallbackFunc func);
+private:
+	// Allow the Input Manager to access the callback function
+	friend class Input;
+
+	// The key to this callback listener in the input manager
+	int m_id;
+	KeyCallbackFunc m_callback;
+};
+
+class MouseButtonCallback
+{
+public:
+	MouseButtonCallback(void);
+	MouseButtonCallback(MouseButtonCallbackFunc func);
+	void SetCallback(MouseButtonCallbackFunc func);
+
+private:
+	friend class Input;
+
+	int m_id;
+	MouseButtonCallbackFunc m_callback;
+};
+
+class MouseMoveCallback
+{
+public:
+	MouseMoveCallback(void);
+	MouseMoveCallback(MouseMoveCallbackFunc func);
+	void SetCallback(MouseMoveCallbackFunc func);
+
+private:
+	friend class Input;
+
+	int m_id;
+	MouseMoveCallbackFunc m_callback;
+};
+
+// The Input Manager to handle all the input events
+class Input
+{
+public:
+	static void Init(GLFWwindow* window);
+
+	// Keyboard keys callback
+	static void AddKeyCallback(KeyCallback callback);
+	static void RemoveKeyCallback(KeyCallback callback);
+	static void RemoveAllKeyCallbacks();
+
+	// Mouse button callback
+	static void AddMouseButtonCallback(MouseButtonCallback callback);
+	static void RemoveMouseButtonCallback(MouseButtonCallback callback);
+	static void RemoveAllMouseButtonCallbacks();
+
+	// Mouse move callback
+	static void AddMouseMoveCallback(MouseMoveCallback callback);
+	static void RemoveMouseMoveCallback(MouseMoveCallback callback);
+	static void RemoveAllMouseMoveCallbacks();
+
+private:
+	static unsigned int s_nextKey;
+	static std::unordered_map<int, KeyCallback> s_keyCallbacks;
+	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+	static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
+	static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+};
+
+unsigned int Input::s_nextKey = 0;
+std::unordered_map<int, KeyCallback> Input::s_keyCallbacks;
+
+KeyCallback::KeyCallback(void) : m_id(-1), m_callback(nullptr)
+{
+}
+
+// Constructor of the Key Callback Listener
+KeyCallback::KeyCallback(KeyCallbackFunc func) : m_id(-1)
+{
+	SetCallback(func);
+}
+
+void KeyCallback::SetCallback(KeyCallbackFunc func)
+{
+	m_callback = func;
+}
+
+// The key callback function which is binded to glfw
+void Input::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	// Invoke all the callback listeners
+	for (unsigned int i = 0; i < s_keyCallbacks.size(); i++)
+	{
+		if (s_keyCallbacks[i].m_callback)
+			s_keyCallbacks[i].m_callback(key, action);
+	}
+}
+
+void Input::cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
+{
+}
+
+void Input::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+}
+
+// Initialize the Input Manager
+void Input::Init(GLFWwindow* window)
+{
+	s_nextKey = 0;
+	glfwSetKeyCallback(window, key_callback);
+	glfwSetCursorPosCallback(window, cursor_position_callback);
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
+}
+
+void Input::AddKeyCallback(KeyCallback callback)
+{
+	KeyCallback newCallback(callback);
+	s_keyCallbacks[s_nextKey] = newCallback;
+	callback.m_id = s_nextKey;
+	s_nextKey++;
+}
+
+void Input::RemoveKeyCallback(KeyCallback callback)
+{
+	s_keyCallbacks.erase(callback.m_id);
+	callback.m_id = -1;
+}
+
+void Input::RemoveAllKeyCallbacks()
+{
+	while (s_keyCallbacks.size() > 0)
+	{
+		RemoveKeyCallback(s_keyCallbacks.at(0));
+	}
+}
+void Input::AddMouseButtonCallback(MouseButtonCallback callback)
+{
+}
+void Input::RemoveMouseButtonCallback(MouseButtonCallback callback)
+{
+}
+void Input::RemoveAllMouseButtonCallbacks()
+{
+}
+void Input::AddMouseMoveCallback(MouseMoveCallback callback)
+{
+}
+void Input::RemoveMouseMoveCallback(MouseMoveCallback callback)
+{
+}
+void Input::RemoveAllMouseMoveCallbacks()
+{
 }
 #pragma endregion
 
@@ -476,28 +643,28 @@ public:
 
 	Transform& GetTransform();
 private:
-	static Camera* m_main;
+	static Camera* s_main;
 
 	Transform m_transform;
 };
 
-Camera* Camera::m_main = nullptr;
+Camera* Camera::s_main = nullptr;
 
 Camera* Camera::GetMain()
 {
-	return m_main;
+	return s_main;
 }
 
 void Camera::SetMain(Camera* camera)
 {
-	m_main = camera;
+	s_main = camera;
 }
 
 void Camera::OnPaint()
 {
 	// Set the shader's projection and view uniform
-	SetUniformMat4f("u_viewMatrix", m_main->GetViewMatrix());
-	SetUniformMat4f("u_projectionMatrix", m_main->GetProjectionMatrix());
+	SetUniformMat4f("u_viewMatrix", s_main->GetViewMatrix());
+	SetUniformMat4f("u_projectionMatrix", s_main->GetProjectionMatrix());
 }
 
 Camera::Camera() : m_transform()
@@ -575,7 +742,7 @@ public:
 	static void RemoveObject(Object* object);
 	static void OnPaint();
 private:
-	static std::list<Object*> m_Objects;
+	static std::list<Object*> s_objects;
 };
 
 class VerticesObject : public Object
@@ -658,29 +825,29 @@ void Object::OnPaint()
 	m_transform.OnPaint();
 }
 
-std::list<Object*> ObjectRenderPipeline::m_Objects;
+std::list<Object*> ObjectRenderPipeline::s_objects;
 
 void ObjectRenderPipeline::AddObject(Object* object)
 {
 	if (object->IsActive())
 		return;
-	m_Objects.push_back(object);
+	s_objects.push_back(object);
 }
 
 void ObjectRenderPipeline::RemoveObject(Object* object)
 {
 	if (!object->IsActive())
 		return;
-	m_Objects.remove(object);
+	s_objects.remove(object);
 }
 
 void ObjectRenderPipeline::OnPaint()
 {
-	if (m_Objects.size() < 1)
+	if (s_objects.size() < 1)
 		return;
 
 	std::list<Object*>::iterator it;
-	for (it = m_Objects.begin(); it != m_Objects.end(); it++)
+	for (it = s_objects.begin(); it != s_objects.end(); it++)
 	{
 		(*it)->OnPaint();
 	}
@@ -823,6 +990,18 @@ void GameObject::Init()
 	m_icvo->GetTransform().SetParent(&GetTransform());
 }
 #pragma endregion
+
+#pragma region Scene
+class Scene
+{
+public:
+
+
+private:
+	static Scene s_activeScene;
+};
+#pragma endregion
+
 #pragma endregion
 
 #pragma region Assignment Specific Classes
@@ -864,7 +1043,7 @@ GLfloat* Terrain::GetVertices() const
 		.0f, .55f, .0f,
 
 		1.f, 1.f, -1.f,
-		.0f, .55f, .0f,
+		.0f, .3f, .0f,
 
 		-1.f, 1.f, -1.f,
 		.0f, .4f, .0f,
@@ -1217,7 +1396,6 @@ public:
 	int GetGeneration() const;
 
 private:
-
 	std::list<Leaf*> m_leaves;
 	TreeStem* m_stem;
 
@@ -1311,6 +1489,43 @@ int Tree::GetGeneration() const
 {
 	return m_generation;
 }
+#pragma endregion
+
+#pragma region First Person Player
+class FirstPersonPlayer : public Object
+{
+public:
+	FirstPersonPlayer();
+	~FirstPersonPlayer();
+
+	virtual void SetActive(bool active);
+	virtual bool IsActive() const;
+
+private:
+	Camera* m_camera;
+};
+
+FirstPersonPlayer::FirstPersonPlayer() : Object(), m_camera(new Camera())
+{
+	m_camera->GetTransform().SetPosition(glm::vec3(.0f, .5f, .0f));
+	m_camera->GetTransform().SetParent(&GetTransform());
+}
+
+FirstPersonPlayer::~FirstPersonPlayer()
+{
+
+}
+
+void FirstPersonPlayer::SetActive(bool active)
+{
+	m_isActive = active;
+}
+
+bool FirstPersonPlayer::IsActive() const
+{
+	return m_isActive;
+}
+
 #pragma endregion
 
 #pragma endregion
@@ -1416,8 +1631,8 @@ void sendDataToOpenGL() {
 	// TODO:
 	// create 3D objects and/or 2D objects and/or lines (points) here and bind to VAOs & VBOs
 	mainCamera = new Camera();
-	mainCamera->GetTransform().SetPosition(glm::vec3(4.0f, 6.0f, 10.f));
-	mainCamera->GetTransform().SetRotation(glm::vec3(-20.f, 20.0f, .0f));
+	mainCamera->GetTransform().SetPosition(glm::vec3(4.0f, 3.0f, 10.f));
+	mainCamera->GetTransform().SetRotation(glm::vec3(-10.f, 20.0f, .0f));
 
 	Camera::SetMain(mainCamera);
 
@@ -1574,5 +1789,5 @@ int main(int argc, char* argv[]) {
 
 	glfwTerminate();
 	return 0;
-	}
+}
 #pragma endregion
