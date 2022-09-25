@@ -4,6 +4,8 @@ Type your name and student ID here
 	- Student ID: 1155149068
 */
 
+// Enjoy this 2000+ lines of code
+
 #include "Dependencies/glew/glew.h"
 #include "Dependencies/GLFW/glfw3.h"
 
