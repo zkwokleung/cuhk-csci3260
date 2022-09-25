@@ -71,6 +71,8 @@ public:
 	void Delete();
 };
 
+#define DEFAULT_CLEAR_COLOR 
+
 // The Renderer is responsible for drawing things to the window.
 class Renderer
 {
@@ -82,7 +84,7 @@ public:
 	// Draw an element with the given vertices array and indices array
 	static void Draw(const VAO& vao, const EBO& ebo);
 private:
-
+	static glm::vec4 s_clearColor;
 };
 
 VBO::VBO() : ID(0) {
@@ -195,9 +197,11 @@ void EBO::Delete()
 	}
 }
 
+glm::vec4 Renderer::s_clearColor = glm::vec4(DEFAULT_CLEAR_COLOR);
+
 void Renderer::Clear()
 {
-	glClearColor(.07f, .13f, .17f, 1.0f);
+	glClearColor(s_clearColor.x, s_clearColor.y, s_clearColor.z, s_clearColor.w);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -456,171 +460,6 @@ void Transform::SetParent(Transform* transform)
 std::list<Transform*> Transform::GetChilds() const
 {
 	return m_childs;
-}
-#pragma endregion
-
-#pragma region Input Related
-typedef void(*KeyCallbackFunc)(int key, int action);
-typedef void(*MouseButtonCallbackFunc)(int button, int action);
-typedef void(*MouseMoveCallbackFunc)(double xpos, int ypos);
-
-// A event listener that listen to the input event
-class KeyCallback
-{
-public:
-	KeyCallback(void);
-	KeyCallback(KeyCallbackFunc func);
-	void SetCallback(KeyCallbackFunc func);
-private:
-	// Allow the Input Manager to access the callback function
-	friend class Input;
-
-	// The key to this callback listener in the input manager
-	int m_id;
-	KeyCallbackFunc m_callback;
-};
-
-class MouseButtonCallback
-{
-public:
-	MouseButtonCallback(void);
-	MouseButtonCallback(MouseButtonCallbackFunc func);
-	void SetCallback(MouseButtonCallbackFunc func);
-
-private:
-	friend class Input;
-
-	int m_id;
-	MouseButtonCallbackFunc m_callback;
-};
-
-class MouseMoveCallback
-{
-public:
-	MouseMoveCallback(void);
-	MouseMoveCallback(MouseMoveCallbackFunc func);
-	void SetCallback(MouseMoveCallbackFunc func);
-
-private:
-	friend class Input;
-
-	int m_id;
-	MouseMoveCallbackFunc m_callback;
-};
-
-// The Input Manager to handle all the input events
-class Input
-{
-public:
-	static void Init(GLFWwindow* window);
-
-	// Keyboard keys callback
-	static void AddKeyCallback(KeyCallback callback);
-	static void RemoveKeyCallback(KeyCallback callback);
-	static void RemoveAllKeyCallbacks();
-
-	// Mouse button callback
-	static void AddMouseButtonCallback(MouseButtonCallback callback);
-	static void RemoveMouseButtonCallback(MouseButtonCallback callback);
-	static void RemoveAllMouseButtonCallbacks();
-
-	// Mouse move callback
-	static void AddMouseMoveCallback(MouseMoveCallback callback);
-	static void RemoveMouseMoveCallback(MouseMoveCallback callback);
-	static void RemoveAllMouseMoveCallbacks();
-
-private:
-	static unsigned int s_nextKey;
-	static std::unordered_map<int, KeyCallback> s_keyCallbacks;
-	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-	static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
-	static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
-};
-
-unsigned int Input::s_nextKey = 0;
-std::unordered_map<int, KeyCallback> Input::s_keyCallbacks;
-
-KeyCallback::KeyCallback(void) : m_id(-1), m_callback(nullptr)
-{
-}
-
-// Constructor of the Key Callback Listener
-KeyCallback::KeyCallback(KeyCallbackFunc func) : m_id(-1)
-{
-	SetCallback(func);
-}
-
-void KeyCallback::SetCallback(KeyCallbackFunc func)
-{
-	m_callback = func;
-}
-
-// The key callback function which is binded to glfw
-void Input::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	// Invoke all the callback listeners
-	for (unsigned int i = 0; i < s_keyCallbacks.size(); i++)
-	{
-		if (s_keyCallbacks[i].m_callback)
-			s_keyCallbacks[i].m_callback(key, action);
-	}
-}
-
-void Input::cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
-{
-}
-
-void Input::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
-{
-}
-
-// Initialize the Input Manager
-void Input::Init(GLFWwindow* window)
-{
-	s_nextKey = 0;
-	glfwSetKeyCallback(window, key_callback);
-	glfwSetCursorPosCallback(window, cursor_position_callback);
-	glfwSetMouseButtonCallback(window, mouse_button_callback);
-}
-
-void Input::AddKeyCallback(KeyCallback callback)
-{
-	KeyCallback newCallback(callback);
-	s_keyCallbacks[s_nextKey] = newCallback;
-	callback.m_id = s_nextKey;
-	s_nextKey++;
-}
-
-void Input::RemoveKeyCallback(KeyCallback callback)
-{
-	s_keyCallbacks.erase(callback.m_id);
-	callback.m_id = -1;
-}
-
-void Input::RemoveAllKeyCallbacks()
-{
-	while (s_keyCallbacks.size() > 0)
-	{
-		RemoveKeyCallback(s_keyCallbacks.at(0));
-	}
-}
-void Input::AddMouseButtonCallback(MouseButtonCallback callback)
-{
-}
-void Input::RemoveMouseButtonCallback(MouseButtonCallback callback)
-{
-}
-void Input::RemoveAllMouseButtonCallbacks()
-{
-}
-void Input::AddMouseMoveCallback(MouseMoveCallback callback)
-{
-}
-void Input::RemoveMouseMoveCallback(MouseMoveCallback callback)
-{
-}
-void Input::RemoveAllMouseMoveCallbacks()
-{
 }
 #pragma endregion
 
@@ -1006,9 +845,7 @@ public:
 	void RemoveObject(Object* object);
 	std::list<Object*> GetObjects() const;
 
-private:
-	friend SceneManager;
-
+protected:
 	std::list<Object*> m_objects;
 	bool m_initialized;
 };
@@ -1026,6 +863,9 @@ private:
 	static Scene* s_activeScene;
 	static bool s_busying;
 };
+
+Scene* SceneManager::s_activeScene = nullptr;
+bool SceneManager::s_busying = false;
 
 void SceneManager::OnInitialize()
 {
@@ -1094,6 +934,10 @@ Scene::~Scene()
 
 void Scene::OnInitialize()
 {
+	if (m_initialized)
+		return;
+
+	m_initialized = true;
 }
 
 void Scene::OnPaint()
@@ -1533,7 +1377,6 @@ Tree::Tree() : Object(), m_leaves(), m_stem(GameObject::InstantiateOfType<TreeSt
 	{
 		Leaf* leaf = GameObject::InstantiateOfType<Leaf>();
 		leaf->GetTransform().SetParent(&GetTransform());
-		leaf->GetTransform().SetPosition(glm::vec3(.0f, i, .0f));
 		m_leaves.push_back(leaf);
 	}
 
@@ -1595,6 +1438,9 @@ void Tree::SetGeneration(int gen)
 	{
 		// Set the scale of the leaves
 		(*it)->GetTransform().SetScale(glm::vec3(.5f * gen * .8f, .8f * gen * .6f, .5f * gen * .8f));
+
+		// Set the position of the leaves
+		(*it)->GetTransform().SetPosition(glm::vec3(.0f, i + i * .3f + 1, .0f));
 
 		// Set leaves active
 		(*it)->SetActive(i < gen);

@@ -20,6 +20,7 @@ int x_press_num = 0;
 	Classes and functions created by me to simplify some codes
 ****************************************************************/
 
+#pragma region Render Related
 /**********************
 	Render related
 ***********************/
@@ -68,6 +69,8 @@ public:
 	void Delete();
 };
 
+#define DEFAULT_CLEAR_COLOR 
+
 // The Renderer is responsible for drawing things to the window.
 class Renderer
 {
@@ -79,7 +82,7 @@ public:
 	// Draw an element with the given vertices array and indices array
 	static void Draw(const VAO& vao, const EBO& ebo);
 private:
-
+	static glm::vec4 s_clearColor;
 };
 
 VBO::VBO() : ID(0) {
@@ -192,9 +195,11 @@ void EBO::Delete()
 	}
 }
 
+glm::vec4 Renderer::s_clearColor = glm::vec4(DEFAULT_CLEAR_COLOR);
+
 void Renderer::Clear()
 {
-	glClearColor(.07f, .13f, .17f, 1.0f);
+	glClearColor(s_clearColor.x, s_clearColor.y, s_clearColor.z, s_clearColor.w);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -210,7 +215,9 @@ void Renderer::Draw(const VAO& vao, const EBO& ebo)
 	ebo.Bind();
 	glDrawElements(GL_TRIANGLES, ebo.Count, GL_UNSIGNED_INT, 0);
 }
+#pragma endregion
 
+#pragma region Shader Related
 /**********************
 	Shader related
 ***********************/
@@ -275,7 +282,9 @@ int SetUniformMat4f(const char* name, const glm::mat4& matrix)
 	glUniformMatrix4fv(loc, 1, GL_FALSE, &matrix[0][0]);
 	return 0;
 }
+#pragma endregion
 
+#pragma region Generic
 /**********************
 	Generic
 ***********************/
@@ -294,6 +303,13 @@ public:
 	glm::vec3 GetScale() const;
 	void SetScale(glm::vec3 value);
 	glm::mat4 GetTransformMat4() const;
+
+	glm::vec3 GetForward() const;
+	glm::vec3 GetBackward() const;
+	glm::vec3 GetLeft() const;
+	glm::vec3 GetRight() const;
+	glm::vec3 GetUp() const;
+	glm::vec3 GetDown() const;
 
 	Transform* GetParent();
 	void SetParent(Transform* transform);
@@ -369,25 +385,63 @@ glm::mat4 Transform::GetTransformMat4() const
 	// Scale
 	model = glm::scale(model, m_scale);
 
-	static int i = 0;
-	if (i != 2)
-	{
-		std::cout << "position: (" << m_position.x << ", " << m_position.y << ", " << m_position.z << ")" << std::endl;
-		std::cout << "rotation: (" << m_rotation.x << ", " << m_rotation.y << ", " << m_rotation.z << ")" << std::endl;
-		std::cout << "scale: (" << m_scale.x << ", " << m_scale.y << ", " << m_scale.z << ")" << std::endl;
-		std::cout << "Transform: " << std::endl;
-		for (int i = 0; i < 4; i++)
-		{
-			for (int j = 0; j < 4; j++)
-			{
-				std::cout << model[j][i] << " ";
-			}
-			std::cout << std::endl;
-		}
-		i++;
-	}
+	//static int i = 0;
+	//if (i != 2)
+	//{
+	//	std::cout << "position: (" << m_position.x << ", " << m_position.y << ", " << m_position.z << ")" << std::endl;
+	//	std::cout << "rotation: (" << m_rotation.x << ", " << m_rotation.y << ", " << m_rotation.z << ")" << std::endl;
+	//	std::cout << "scale: (" << m_scale.x << ", " << m_scale.y << ", " << m_scale.z << ")" << std::endl;
+	//	std::cout << "Transform: " << std::endl;
+	//	for (int i = 0; i < 4; i++)
+	//	{
+	//		for (int j = 0; j < 4; j++)
+	//		{
+	//			std::cout << model[j][i] << " ";
+	//		}
+	//		std::cout << std::endl;
+	//	}
+	//	i++;
+	//}
 
 	return (m_parent) ? model * m_parent->GetTransformMat4() : model;
+}
+
+glm::vec3 Transform::GetForward() const
+{
+	return -1.f * GetBackward();
+}
+
+glm::vec3 Transform::GetBackward() const
+{
+	return glm::vec3(
+		glm::cos(glm::radians(GetRotation().x)) * glm::sin(glm::radians(GetRotation().y)),
+		-1.f * glm::sin(glm::radians(GetRotation().x)),
+		glm::cos(glm::radians(GetRotation().x)) * glm::cos(glm::radians(GetRotation().y))
+	);
+}
+
+glm::vec3 Transform::GetLeft() const
+{
+	return glm::vec3(
+		glm::cos(glm::radians(GetRotation().y)),
+		0,
+		glm::sin(glm::radians(GetRotation().y))
+	);
+}
+
+glm::vec3 Transform::GetRight() const
+{
+	return -1.f * GetLeft();
+}
+
+glm::vec3 Transform::GetUp() const
+{
+	return glm::cross(GetForward(), GetRight());
+}
+
+glm::vec3 Transform::GetDown() const
+{
+	return -1.f * GetUp();
 }
 
 Transform* Transform::GetParent()
@@ -398,14 +452,16 @@ Transform* Transform::GetParent()
 void Transform::SetParent(Transform* transform)
 {
 	m_parent = transform;
+	transform->m_childs.push_back(this);
 }
 
 std::list<Transform*> Transform::GetChilds() const
 {
 	return m_childs;
 }
+#pragma endregion
 
-
+#pragma region Camera Related
 /**********************
 	Camera related
 ***********************/
@@ -424,28 +480,28 @@ public:
 
 	Transform& GetTransform();
 private:
-	static Camera* m_main;
+	static Camera* s_main;
 
 	Transform m_transform;
 };
 
-Camera* Camera::m_main = nullptr;
+Camera* Camera::s_main = nullptr;
 
 Camera* Camera::GetMain()
 {
-	return m_main;
+	return s_main;
 }
 
 void Camera::SetMain(Camera* camera)
 {
-	m_main = camera;
+	s_main = camera;
 }
 
 void Camera::OnPaint()
 {
 	// Set the shader's projection and view uniform
-	SetUniformMat4f("u_viewMatrix", m_main->GetViewMatrix());
-	SetUniformMat4f("u_projectionMatrix", m_main->GetProjectionMatrix());
+	SetUniformMat4f("u_viewMatrix", s_main->GetViewMatrix());
+	SetUniformMat4f("u_projectionMatrix", s_main->GetProjectionMatrix());
 }
 
 Camera::Camera() : m_transform()
@@ -489,7 +545,9 @@ Transform& Camera::GetTransform()
 {
 	return m_transform;
 }
+#pragma endregion
 
+#pragma region GameObject Related
 /**********************
 	Game Object related
 ***********************/
@@ -504,12 +562,12 @@ public:
 
 	Transform& GetTransform();
 
-	void SetActive(bool active);
-	bool IsActive() const;
+	virtual void SetActive(bool active);
+	virtual bool IsActive() const;
 
 	virtual void OnPaint();
 
-private:
+protected:
 	Transform m_transform;
 	bool m_isActive;
 };
@@ -521,7 +579,7 @@ public:
 	static void RemoveObject(Object* object);
 	static void OnPaint();
 private:
-	static std::list<Object*> m_Objects;
+	static std::list<Object*> s_objects;
 };
 
 class VerticesObject : public Object
@@ -604,29 +662,29 @@ void Object::OnPaint()
 	m_transform.OnPaint();
 }
 
-std::list<Object*> ObjectRenderPipeline::m_Objects;
+std::list<Object*> ObjectRenderPipeline::s_objects;
 
 void ObjectRenderPipeline::AddObject(Object* object)
 {
 	if (object->IsActive())
 		return;
-	m_Objects.push_back(object);
+	s_objects.push_back(object);
 }
 
 void ObjectRenderPipeline::RemoveObject(Object* object)
 {
 	if (!object->IsActive())
 		return;
-	m_Objects.remove(object);
+	s_objects.remove(object);
 }
 
 void ObjectRenderPipeline::OnPaint()
 {
-	if (m_Objects.size() < 1)
+	if (s_objects.size() < 1)
 		return;
 
 	std::list<Object*>::iterator it;
-	for (it = m_Objects.begin(); it != m_Objects.end(); it++)
+	for (it = s_objects.begin(); it != s_objects.end(); it++)
 	{
 		(*it)->OnPaint();
 	}
@@ -719,6 +777,190 @@ void IndexedColoredVerticesObject::OnPaint()
 	Object::OnPaint();
 	Renderer::Draw(*m_vao, *m_ebo);
 }
+
+class GameObject : public Object
+{
+public:
+	virtual void OnPaint();
+
+	template <typename T>
+	static T* InstantiateOfType();
+protected:
+	GameObject();
+	~GameObject();
+
+	virtual GLfloat* GetVertices() const = 0;
+	virtual GLuint* GetIndices() const = 0;
+	virtual GLuint GetVerticesCount() const = 0;
+	virtual GLuint GetIndicesCount() const = 0;
+	IndexedColoredVerticesObject* m_icvo;
+
+private:
+	void Init();
+};
+
+GameObject::GameObject() : Object(), m_icvo(nullptr)
+{
+}
+
+GameObject::~GameObject()
+{
+
+}
+
+void GameObject::OnPaint()
+{
+	m_icvo->OnPaint();
+}
+
+template <typename T>
+T* GameObject::InstantiateOfType()
+{
+	GameObject* go = new T();
+	go->Init();
+	return (T*)go;
+}
+
+void GameObject::Init()
+{
+	m_icvo = new IndexedColoredVerticesObject(GetVertices(), GetVerticesCount() * sizeof(float), GetIndices(), GetIndicesCount() * sizeof(int));
+	m_icvo->GetTransform().SetParent(&GetTransform());
+}
+#pragma endregion
+
+#pragma region Scene
+class Scene
+{
+public:
+	Scene();
+	~Scene();
+
+	virtual void OnInitialize();
+	virtual void OnPaint();
+	virtual void OnEnd();
+
+	void AddObject(Object* object);
+	void RemoveObject(Object* object);
+	std::list<Object*> GetObjects() const;
+
+protected:
+	std::list<Object*> m_objects;
+	bool m_initialized;
+};
+
+class SceneManager
+{
+public:
+	static void OnInitialize();
+	static void OnPaint();
+	static void OnEnd();
+	static void SetActiveScene(Scene* scene);
+	static Scene* GetActiveScene();
+
+private:
+	static Scene* s_activeScene;
+	static bool s_busying;
+};
+
+Scene* SceneManager::s_activeScene = nullptr;
+bool SceneManager::s_busying = false;
+
+void SceneManager::OnInitialize()
+{
+	if (s_activeScene != nullptr)
+	{
+		s_activeScene->OnInitialize();
+	}
+}
+
+void SceneManager::OnPaint()
+{
+	if (s_busying)
+	{
+		return;
+	}
+
+	if (s_activeScene != nullptr)
+	{
+		s_activeScene->OnPaint();
+	}
+}
+
+void SceneManager::OnEnd()
+{
+	// End the current scene
+	if (s_activeScene != nullptr)
+	{
+		s_activeScene->OnEnd();
+	}
+}
+
+void SceneManager::SetActiveScene(Scene* scene)
+{
+	s_busying = true;
+
+	// End the current scene
+	if (s_activeScene != nullptr)
+	{
+		s_activeScene->OnEnd();
+	}
+
+	// Set the current scene
+	s_activeScene = scene;
+
+	// Initialize the current scene
+	if (s_activeScene != nullptr)
+	{
+		s_activeScene->OnInitialize();
+	}
+
+	s_busying = false;
+}
+
+Scene* SceneManager::GetActiveScene()
+{
+	return s_activeScene;
+}
+
+Scene::Scene() : m_objects(), m_initialized(false)
+{
+}
+
+Scene::~Scene()
+{
+}
+
+void Scene::OnInitialize()
+{
+	if (m_initialized)
+		return;
+
+	m_initialized = true;
+}
+
+void Scene::OnPaint()
+{
+}
+
+void Scene::OnEnd()
+{
+}
+
+void Scene::AddObject(Object* object)
+{
+	m_objects.push_back(object);
+}
+
+void Scene::RemoveObject(Object* object)
+{
+	m_objects.remove(object);
+}
+
+std::list<Object*> Scene::GetObjects() const
+{
+	return m_objects;
+}
+#pragma endregion
 
 #pragma endregion
 
@@ -913,7 +1155,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 	if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
 		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + glm::vec3(.0f, 1.f, .0f));
-}
+	}
 	if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
 		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + glm::vec3(-1.0f, 0.f, .0f));
 	}
