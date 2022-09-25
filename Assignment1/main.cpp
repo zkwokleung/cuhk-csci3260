@@ -83,6 +83,8 @@ public:
 	static void Draw(const VAO& vao, GLenum mode, int vertexCount);
 	// Draw an element with the given vertices array and indices array
 	static void Draw(const VAO& vao, const EBO& ebo);
+	// Set the clear color
+	static void SetClearColor(glm::vec4 clearColor);
 private:
 	static glm::vec4 s_clearColor;
 };
@@ -216,6 +218,10 @@ void Renderer::Draw(const VAO& vao, const EBO& ebo)
 	vao.Bind();
 	ebo.Bind();
 	glDrawElements(GL_TRIANGLES, ebo.Count, GL_UNSIGNED_INT, 0);
+}
+void Renderer::SetClearColor(glm::vec4 clearColor)
+{
+	s_clearColor = clearColor;
 }
 #pragma endregion
 
@@ -510,7 +516,7 @@ glm::vec3 Transform::GetRight() const
 	return glm::vec3(
 		glm::cos(glm::radians(GetRotation().y)),
 		0,
-		glm::sin(glm::radians(GetRotation().y))
+		-1.f * glm::sin(glm::radians(GetRotation().y))
 	);
 }
 
@@ -789,6 +795,9 @@ VerticesObject::~VerticesObject()
 {
 	m_vao->Delete();
 	m_vbo->Delete();
+
+	delete m_vao;
+	delete m_vbo;
 }
 
 void VerticesObject::SetVertices(const GLfloat vertices[], int elementCount)
@@ -848,6 +857,8 @@ IndexedColoredVerticesObject::IndexedColoredVerticesObject(const GLfloat vertice
 IndexedColoredVerticesObject::~IndexedColoredVerticesObject()
 {
 	m_ebo->Delete();
+
+	delete m_ebo;
 }
 
 void IndexedColoredVerticesObject::SetIndices(const GLuint indices[], int indicesCount)
@@ -870,6 +881,7 @@ public:
 
 	template <typename T>
 	static T* InstantiateOfType();
+	static void Destroy(GameObject* gameObject);
 protected:
 	GameObject();
 	~GameObject();
@@ -890,7 +902,7 @@ GameObject::GameObject() : Object(), m_icvo(nullptr)
 
 GameObject::~GameObject()
 {
-
+	delete m_icvo;
 }
 
 void GameObject::OnPaint()
@@ -904,6 +916,11 @@ T* GameObject::InstantiateOfType()
 	GameObject* go = new T();
 	go->Init();
 	return (T*)go;
+}
+
+void GameObject::Destroy(GameObject* gameObject)
+{
+	delete gameObject;
 }
 
 void GameObject::Init()
@@ -1013,6 +1030,12 @@ Scene::Scene() : m_objects(), m_initialized(false)
 
 Scene::~Scene()
 {
+	while (m_objects.size() > 0)
+	{
+		Object* o = *(m_objects.begin());
+		m_objects.remove(o);
+		delete o;
+	}
 }
 
 void Scene::OnInitialize()
@@ -1051,8 +1074,266 @@ std::list<Object*> Scene::GetObjects() const
 class Physics
 {
 public:
-	bool Raycase(glm::vec3 origin, glm::vec3 direction, GLfloat maxDistance);
+	bool Raycast(glm::vec3 origin, glm::vec3 direction, GLfloat maxDistance);
 };
+#pragma endregion
+
+#pragma region Input Related
+typedef void(*KeyCallbackFunc)(GLFWwindow* window, int key, int scancode, int action, int mods);
+typedef void(*CursorPosCallbackFunc)(GLFWwindow* window, double xpos, double ypos);
+typedef void(*MouseButtonCallbackFunc)(GLFWwindow* window, int button, int action, double xpos, int ypos);
+
+// A event listener that listen to the input event
+class KeyCallback
+{
+public:
+	KeyCallback(void);
+	KeyCallback(KeyCallbackFunc func);
+	void SetCallback(KeyCallbackFunc func);
+private:
+	// Allow the Input Manager to access the callback function
+	friend class Input;
+
+	// The key to this callback listener in the input manager
+	int m_id;
+	KeyCallbackFunc m_callback;
+};
+
+class CursorPosCallback
+{
+public:
+	CursorPosCallback(void);
+	CursorPosCallback(CursorPosCallbackFunc func);
+	void SetCallback(CursorPosCallbackFunc func);
+
+private:
+	friend class Input;
+
+	int m_id;
+	CursorPosCallbackFunc m_callback;
+};
+
+class MouseButtonCallback
+{
+public:
+	MouseButtonCallback(void);
+	MouseButtonCallback(MouseButtonCallbackFunc func);
+	void SetCallback(MouseButtonCallbackFunc func);
+
+private:
+	friend class Input;
+
+	int m_id;
+	MouseButtonCallbackFunc m_callback;
+};
+
+// The Input Manager to handle all the input events
+class Input
+{
+public:
+	static void Init(GLFWwindow* window);
+
+	// Keyboard keys callback
+	static void AddKeyCallback(KeyCallback callback);
+	static void RemoveKeyCallback(KeyCallback callback);
+	static void RemoveAllKeyCallbacks();
+
+	// Mouse button callback
+	static void AddMouseButtonCallback(MouseButtonCallback callback);
+	static void RemoveMouseButtonCallback(MouseButtonCallback callback);
+	static void RemoveAllMouseButtonCallbacks();
+
+	// Mouse move callback
+	static void AddCursorPosCallback(CursorPosCallback callback);
+	static void RemoveCursorPosCallback(CursorPosCallback callback);
+	static void RemoveAllCursorPosCallbacks();
+
+private:
+	static unsigned int s_nextKey;
+	static std::unordered_map<int, KeyCallback> s_keyCallbacks;
+	static std::unordered_map<int, CursorPosCallback> s_cursorPosCallbacks;
+	static std::unordered_map<int, MouseButtonCallback> s_mouseButtonCallbacks;
+
+	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+	static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
+	static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+};
+
+KeyCallback::KeyCallback(void) : m_id(-1), m_callback(nullptr)
+{
+}
+
+// Constructor of the Key Callback Listener
+KeyCallback::KeyCallback(KeyCallbackFunc func) : m_id(-1)
+{
+	SetCallback(func);
+}
+
+void KeyCallback::SetCallback(KeyCallbackFunc func)
+{
+	m_callback = func;
+}
+
+CursorPosCallback::CursorPosCallback(void) : m_id(-1), m_callback(nullptr)
+{
+}
+
+CursorPosCallback::CursorPosCallback(CursorPosCallbackFunc func) : m_id(-1)
+{
+	SetCallback(func);
+}
+
+void CursorPosCallback::SetCallback(CursorPosCallbackFunc func)
+{
+	m_callback = func;
+}
+
+MouseButtonCallback::MouseButtonCallback(void) : m_id(-1), m_callback(nullptr)
+{
+}
+
+MouseButtonCallback::MouseButtonCallback(MouseButtonCallbackFunc func) : m_id(-1)
+{
+	SetCallback(func);
+}
+
+void MouseButtonCallback::SetCallback(MouseButtonCallbackFunc func)
+{
+	m_callback = func;
+}
+
+unsigned int Input::s_nextKey = 0;
+std::unordered_map<int, KeyCallback> Input::s_keyCallbacks;
+std::unordered_map<int, CursorPosCallback> Input::s_cursorPosCallbacks;
+std::unordered_map<int, MouseButtonCallback> Input::s_mouseButtonCallbacks;
+
+// The key callback function which is binded to glfw
+void Input::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	// Invoke all the callback listeners
+	for (unsigned int i = 0; i < s_keyCallbacks.size(); i++)
+	{
+		if (s_keyCallbacks[i].m_callback)
+			s_keyCallbacks[i].m_callback(window, key, scancode, action, mods);
+	}
+}
+
+void Input::cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	// Invoke all the callback listeners
+	for (unsigned int i = 0; i < s_cursorPosCallbacks.size(); i++)
+	{
+		if (s_cursorPosCallbacks[i].m_callback)
+			s_cursorPosCallbacks[i].m_callback(window, xpos, ypos);
+	}
+}
+
+void Input::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+	// Get the cursor position
+	double xpos, ypos;
+	glfwGetCursorPos(window, &xpos, &ypos);
+
+	// Invoke all the callback listeners
+	for (unsigned int i = 0; i < s_mouseButtonCallbacks.size(); i++)
+	{
+		if (s_mouseButtonCallbacks[i].m_callback)
+			s_mouseButtonCallbacks[i].m_callback(window, button, action, xpos, ypos);
+	}
+}
+
+// Initialize the Input Manager
+void Input::Init(GLFWwindow* window)
+{
+	s_nextKey = 0;
+	glfwSetKeyCallback(window, key_callback);
+	glfwSetCursorPosCallback(window, cursor_position_callback);
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
+}
+
+void Input::AddKeyCallback(KeyCallback callback)
+{
+	if (callback.m_id != -1)
+		return;
+
+	KeyCallback newCallback(callback);
+	s_keyCallbacks[s_nextKey] = newCallback;
+	callback.m_id = s_nextKey;
+	s_nextKey++;
+}
+
+void Input::RemoveKeyCallback(KeyCallback callback)
+{
+	if (callback.m_id == -1)
+		return;
+
+	s_keyCallbacks.erase(callback.m_id);
+	callback.m_id = -1;
+}
+
+void Input::RemoveAllKeyCallbacks()
+{
+	while (s_keyCallbacks.size() > 0)
+	{
+		RemoveKeyCallback(s_keyCallbacks.at(0));
+	}
+}
+void Input::AddMouseButtonCallback(MouseButtonCallback callback)
+{
+	if (callback.m_id != -1)
+		return;
+
+	MouseButtonCallback newCallback(callback);
+	s_mouseButtonCallbacks[s_nextKey] = newCallback;
+	callback.m_id = s_nextKey;
+	s_nextKey++;
+}
+
+void Input::RemoveMouseButtonCallback(MouseButtonCallback callback)
+{
+	if (callback.m_id == -1)
+		return;
+
+	s_mouseButtonCallbacks.erase(callback.m_id);
+	callback.m_id = -1;
+}
+
+void Input::RemoveAllMouseButtonCallbacks()
+{
+	while (s_mouseButtonCallbacks.size() > 0)
+	{
+		RemoveMouseButtonCallback(s_mouseButtonCallbacks.at(0));
+	}
+}
+
+void Input::AddCursorPosCallback(CursorPosCallback callback)
+{
+	if (callback.m_id != -1)
+		return;
+
+	CursorPosCallback newCallback(callback);
+	s_cursorPosCallbacks[s_nextKey] = newCallback;
+	callback.m_id = s_nextKey;
+	s_nextKey++;
+}
+
+void Input::RemoveCursorPosCallback(CursorPosCallback callback)
+{
+	if (callback.m_id == -1)
+		return;
+
+	s_cursorPosCallbacks.erase(callback.m_id);
+	callback.m_id = -1;
+}
+
+void Input::RemoveAllCursorPosCallbacks()
+{
+	while (s_cursorPosCallbacks.size() > 0)
+	{
+		RemoveCursorPosCallback(s_cursorPosCallbacks.at(0));
+	}
+}
+
 #pragma endregion
 
 #pragma endregion
@@ -1532,7 +1813,7 @@ void Tree::SetGeneration(int gen)
 		(*it)->GetTransform().SetLocalScale(glm::vec3(.5f * gen * .8f, .8f * gen * .6f, .5f * gen * .8f));
 
 		// Set the position of the leaves
-		(*it)->GetTransform().SetLocalPosition(glm::vec3(.0f, i + i * .3f + 1, .0f));
+		(*it)->GetTransform().SetLocalPosition(glm::vec3(.0f, i + i * .1f + 1, .0f));
 
 		// Set leaves active
 		(*it)->SetActive(i < gen);
@@ -1544,6 +1825,128 @@ void Tree::SetGeneration(int gen)
 int Tree::GetGeneration() const
 {
 	return m_generation;
+}
+#pragma endregion
+
+#pragma region Cloud
+class Cloud : public GameObject
+{
+public:
+	virtual GLfloat* GetVertices() const;
+	virtual GLuint* GetIndices() const;
+	virtual GLuint GetVerticesCount() const;
+	virtual GLuint GetIndicesCount() const;
+
+private:
+	Cloud();
+	~Cloud();
+
+	friend GameObject;
+};
+
+Cloud::Cloud() : GameObject()
+{
+
+}
+
+Cloud::~Cloud()
+{
+
+}
+
+GLfloat* Cloud::GetVertices() const
+{
+	static GLfloat l_vertices[] =
+	{
+		// Top
+		-1.f, 1.f, 1.f,
+		1.0f, 1.f, 1.f,
+
+		1.f, 1.f, 1.f,
+		.8f, .8f, .8f,
+
+		1.f, 1.f, -1.f,
+		.9f, .9f, .9f,
+
+		.0f, 1.f, -1.f,
+		.9f, .9f, .9f,
+
+		.0f, 1.f, -.5f,
+		.85f, .85f, .85f,
+
+		-1.f, 1.f, -.5f,
+		.85f, .85f, .85f,
+
+		// Bottom
+		-1.f, .0f, 1.f,
+		1.0f, 1.f, 1.f,
+
+		1.f, .0f, 1.f,
+		1.0f, 1.f, 1.f,
+
+		1.f, .0f, -1.f,
+		.9f, .9f, .9f,
+
+		.0f, .0f, -1.f,
+		.9f, .9f, .9f,
+
+		.0f, .0f, -.5f,
+		.85f, .85f, .85f,
+
+		-1.f, .0f, -.5f,
+		.85f, .85f, .85f,
+	};
+
+	return l_vertices;
+}
+
+GLuint* Cloud::GetIndices() const
+{
+	static GLuint l_indices[] =
+	{
+		// Top
+		0, 1, 5,
+		1, 5, 4,
+		1, 4, 3,
+		1, 3, 2,
+
+		// Botoom
+		6, 7, 11,
+		7, 11, 10,
+		7, 10, 9,
+		7, 9, 8,
+
+		// Left
+		0, 5, 6,
+		6, 5, 11,
+		3, 4, 10,
+		9, 10, 3,
+
+		// Back
+		2, 3, 8,
+		2, 9, 8,
+		4, 5, 11,
+		4, 11, 10,
+
+		// Front
+		0, 7, 6,
+		0, 1, 7,
+
+		// Right
+		1, 2, 8,
+		1, 8, 7,
+	};
+
+	return l_indices;
+}
+
+GLuint Cloud::GetVerticesCount() const
+{
+	return 72;
+}
+GLuint Cloud::GetIndicesCount() const
+{
+	return 60;
 }
 #pragma endregion
 
@@ -1569,7 +1972,7 @@ FirstPersonPlayer::FirstPersonPlayer() : Object(), m_camera(new Camera())
 
 FirstPersonPlayer::~FirstPersonPlayer()
 {
-
+	delete m_camera;
 }
 
 void FirstPersonPlayer::SetActive(bool active)
@@ -1587,8 +1990,156 @@ bool FirstPersonPlayer::IsActive() const
 #pragma region Forest Scene
 class ForestScene : public Scene
 {
+public:
+	ForestScene();
+	~ForestScene();
 
+	virtual void OnInitialize();
+	virtual void OnPaint();
+	virtual void OnEnd();
+
+	static ForestScene* GetInstance();
+
+private:
+	static ForestScene* s_instnace;
+
+	Camera* m_mainCamera;
+	Terrain* m_terrain;
+	std::list<Tree*> m_trees;
+	std::list<Cloud*> m_clouds;
+
+	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+	static void cursor_pos_callback(GLFWwindow* window, double xpos, double ypos);
 };
+
+ForestScene::ForestScene()
+{
+	// Create Camera
+	m_mainCamera = new Camera();
+	m_mainCamera->GetTransform().SetPosition(glm::vec3(4.0f, 3.0f, 10.f));
+	m_mainCamera->GetTransform().SetRotation(glm::vec3(-10.f, 20.0f, .0f));
+	Camera::SetMain(m_mainCamera);
+
+	// Create terrain
+	m_terrain = GameObject::InstantiateOfType<Terrain>();
+	m_terrain->GetTransform().SetScale(glm::vec3(50.f, .5f, 50.f));
+	m_terrain->GetTransform().SetPosition(glm::vec3(1.f, .0f, 1.f));
+	m_terrain->SetActive(true);
+	AddObject(m_terrain);
+
+	for (int x = 5; x < 100; x += 3)
+	{
+		for (int y = 5; y < 100; y += 3)
+		{
+			int r = rand() % 100;
+
+			if (r < 60)
+			{
+				// Create Trees
+				Tree* newTree = new Tree();
+				newTree->GetTransform().SetPosition(glm::vec3((float)x, .8f, (float)y));
+				m_trees.push_back(newTree);
+				newTree->SetActive(true);
+				AddObject(newTree);
+			}
+
+			if (r > 80)
+			{
+				// Create Clouds
+				Cloud* newCloud = GameObject::InstantiateOfType<Cloud>();
+				newCloud->GetTransform().SetLocalPosition(glm::vec3(x, 50.f, y));
+				m_clouds.push_back(newCloud);
+				newCloud->SetActive(true);
+				AddObject(newCloud);
+			}
+		}
+	}
+
+	ForestScene::s_instnace = this;
+}
+ForestScene::~ForestScene()
+{
+
+}
+
+void ForestScene::OnInitialize()
+{
+	// Add Input Listener
+	Input::AddKeyCallback(ForestScene::key_callback);
+	Input::AddCursorPosCallback(ForestScene::cursor_pos_callback);
+}
+
+void ForestScene::OnPaint()
+{
+	// Move the clouds
+
+	// Grow the trees by chance
+}
+
+void ForestScene::OnEnd()
+{
+}
+ForestScene* ForestScene::GetInstance()
+{
+	return s_instnace;
+}
+
+ForestScene* ForestScene::s_instnace = nullptr;
+
+void ForestScene::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	Camera* cam = GetInstance()->m_mainCamera;
+	// Camera Moving
+	if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+		cam->GetTransform().SetPosition(cam->GetTransform().GetPosition() + cam->GetTransform().GetForward());
+	}
+	if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+		cam->GetTransform().SetPosition(cam->GetTransform().GetPosition() + cam->GetTransform().GetLeft());
+	}
+
+	if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+		cam->GetTransform().SetPosition(cam->GetTransform().GetPosition() + cam->GetTransform().GetBackward());
+	}
+	if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+		cam->GetTransform().SetPosition(cam->GetTransform().GetPosition() + cam->GetTransform().GetRight());
+	}
+}
+
+void ForestScene::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	const static float speed = .1f; // The speed of the camera
+	static int wWidth, wHeight; // Window width and height
+
+	// Get the center position of the window
+	glfwGetWindowSize(window, &wWidth, &wHeight);
+	static glm::vec2 center = glm::vec2(wWidth / 2, wHeight / 2);
+
+	// Do not proceed if the position is the center of the window
+	if (xpos == center.x && ypos == center.y)
+		return;
+
+	// Get Main Camera
+	Camera* cam = ForestScene::GetInstance()->m_mainCamera;
+
+	// handle the mouse input
+	glm::vec2 newPos = glm::vec2(xpos, ypos);
+	glm::vec2 deltaPos = newPos - center;
+
+	glm::vec3 cameraRotation = cam->GetTransform().GetRotation();
+	cameraRotation += glm::vec3(deltaPos.y * speed * -1.f, deltaPos.x * speed * -1.f, .0f);
+
+	// Clamp the rotation value
+	if (cameraRotation.x >= 360.f || cameraRotation.x <= -360.f)
+		cameraRotation.x = .0f;
+	if (cameraRotation.y >= 360.f || cameraRotation.y <= -360.f)
+		cameraRotation.y = .0f;
+
+	// Set the rotation of the camera
+	cam->GetTransform().SetRotation(cameraRotation);
+
+	// Fix the cursor position to the center of the screen
+	glfwSetCursorPos(window, wWidth / 2, wHeight / 2);
+}
 #pragma endregion
 
 #pragma endregion
@@ -1682,41 +2233,17 @@ void installShaders() {
 	glUseProgram(programID);
 }
 
-Camera* mainCamera;
-Terrain* terrain;
-std::list<Tree*> trees;
+ForestScene* fs;
 
 void sendDataToOpenGL() {
 	// TODO:
 	// create 3D objects and/or 2D objects and/or lines (points) here and bind to VAOs & VBOs
+	Renderer::SetClearColor(glm::vec4(.5f, .8f, .9f, 1.f));
 
-	// Create Camera
-	mainCamera = new Camera();
-	mainCamera->GetTransform().SetPosition(glm::vec3(4.0f, 3.0f, 10.f));
-	mainCamera->GetTransform().SetRotation(glm::vec3(-10.f, 20.0f, .0f));
-	Camera::SetMain(mainCamera);
+	fs = new ForestScene();
+	SceneManager::SetActiveScene(fs);
 
-	// Create terrain
-	terrain = GameObject::InstantiateOfType<Terrain>();
-	terrain->GetTransform().SetScale(glm::vec3(100.f, .5f, 100.f));
-	terrain->GetTransform().SetPosition(glm::vec3(1.f, .0f, 1.f));
-	terrain->SetActive(true);
-
-	// Create Trees
-	for (int x = 5; x < 100; x += 3)
-	{
-		for (int y = 5; y < 100; y += 3)
-		{
-			int r = rand() % 100;
-			if (r < 30)
-				continue;
-
-			Tree* newTree = new Tree();
-			newTree->GetTransform().SetPosition(glm::vec3((float)x, .8f, (float)y));
-			newTree->SetActive(true);
-			trees.push_back(newTree);
-		}
-	}
+	// Set clear color
 
 	SceneManager::OnInitialize();
 }
@@ -1737,55 +2264,25 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
-	// Camera Moving
-	if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + mainCamera->GetTransform().GetForward());
-	}
-	if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + mainCamera->GetTransform().GetLeft());
-	}
-
-	if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + mainCamera->GetTransform().GetBackward());
-	}
-	if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-		mainCamera->GetTransform().SetPosition(mainCamera->GetTransform().GetPosition() + mainCamera->GetTransform().GetRight());
-	}
-
-	// Camera turnning
-	if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-		mainCamera->GetTransform().SetRotation(mainCamera->GetTransform().GetRotation() + glm::vec3(10.f, .0f, .0f));
-	}
-	if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-		mainCamera->GetTransform().SetRotation(mainCamera->GetTransform().GetRotation() + glm::vec3(.0f, 10.f, .0f));
-	}
-
-	if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-		mainCamera->GetTransform().SetRotation(mainCamera->GetTransform().GetRotation() + glm::vec3(-10.f, .0f, .0f));
-	}
-	if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-		mainCamera->GetTransform().SetRotation(mainCamera->GetTransform().GetRotation() + glm::vec3(.0f, -10.f, .0f));
-	}
-
 	// Grow Tree
 	if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
 	{
-		int r = rand() % trees.size();
-		std::list<Tree*>::iterator it = trees.begin();
-		for (int i = 0; i < r; i++)
-			it++;
-		(*it)->Grow();
+		//int r = rand() % trees.size();
+		//std::list<Tree*>::iterator it = trees.begin();
+		//for (int i = 0; i < r; i++)
+		//	it++;
+		//(*it)->Grow();
 	}
 
 	// TODO: Change to chop tree with mouse
 	// Chop Tree 
 	if (key == GLFW_KEY_ENTER && action == GLFW_PRESS)
 	{
-		int r = rand() % trees.size();
-		std::list<Tree*>::iterator it = trees.begin();
-		for (int i = 0; i < r; i++)
-			it++;
-		(*it)->Chop();
+		//int r = rand() % trees.size();
+		//std::list<Tree*>::iterator it = trees.begin();
+		//for (int i = 0; i < r; i++)
+		//	it++;
+		//(*it)->Chop();
 	}
 }
 
@@ -1798,39 +2295,6 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
 	on_mouse_button(button, action, xpos, ypos);
-}
-
-void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
-{
-	const static float speed = .1f; // The speed of the camera
-	static int wWidth, wHeight; // Window width and height
-
-	// Get the center position of the window
-	glfwGetWindowSize(window, &wWidth, &wHeight);
-	static glm::vec2 center = glm::vec2(wWidth / 2, wHeight / 2);
-
-	// Do not proceed if the position is the center of the window
-	if (xpos == center.x && ypos == center.y)
-		return;
-
-	// handle the mouse input
-	glm::vec2 newPos = glm::vec2(xpos, ypos);
-	glm::vec2 deltaPos = newPos - center;
-
-	glm::vec3 cameraRotation = mainCamera->GetTransform().GetRotation();
-	cameraRotation += glm::vec3(deltaPos.y * speed * -1.f, deltaPos.x * speed * -1.f, .0f);
-
-	// Clamp the rotation value
-	if (cameraRotation.x >= 360.f || cameraRotation.x <= -360.f)
-		cameraRotation.x = .0f;
-	if (cameraRotation.y >= 360.f || cameraRotation.y <= -360.f)
-		cameraRotation.y = .0f;
-
-	// Set the rotation of the camera
-	mainCamera->GetTransform().SetRotation(cameraRotation);
-
-	// Fix the cursor position to the center of the screen
-	glfwSetCursorPos(window, wWidth / 2, wHeight / 2);
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -1880,12 +2344,12 @@ int main(int argc, char* argv[]) {
 	/* Make the window's context current */
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetKeyCallback(window, key_callback); // TODO
+	//glfwSetKeyCallback(window, key_callback); // TODO
 	// TODO: mouse callback, etc.
 	// Hide mouse cursor
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-	glfwSetMouseButtonCallback(window, mouse_button_callback);
-	glfwSetCursorPosCallback(window, cursor_position_callback);
+	Input::Init(window);
+	Input::AddKeyCallback(KeyCallback(key_callback));
 
 	/* Initialize the glew */
 	if (GLEW_OK != glewInit()) {
