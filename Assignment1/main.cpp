@@ -1953,8 +1953,6 @@ GLuint Cloud::GetIndicesCount() const
 #pragma endregion
 
 #pragma region AxeBlade
-
-#pragma region AxeBlade
 class AxeBlade : public GameObject
 {
 public:
@@ -2012,8 +2010,181 @@ GLuint AxeBlade::GetIndicesCount() const
 }
 #pragma endregion
 
-#pragma endregion
+#pragma region Player Controller
+class PlayerController : public Object
+{
+public:
+	PlayerController();
+	~PlayerController();
 
+	void SetVelocity(glm::vec3 value);
+	glm::vec3 GetVelocity() const;
+
+	virtual void SetActive(bool active);
+	virtual bool IsActive() const;
+
+	virtual void OnPaint();
+
+	void SetCamera(Camera* camera);
+	void SetBody(Transform* body);
+
+private:
+	static PlayerController* s_activeController;
+	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+	static void cursor_pos_callback(GLFWwindow* window, double xpos, double ypos);
+
+	float m_speed;
+	float m_controlSpeed;
+	glm::vec3 m_velocity;
+	Camera* m_camera;
+	Transform* m_body;
+};
+
+PlayerController::PlayerController() : m_velocity(glm::vec3()), m_camera(nullptr), m_body(nullptr), m_speed(.1f), m_controlSpeed(.1f)
+{
+	static bool init = false;
+	if (!init)
+	{
+		Input::AddKeyCallback(PlayerController::key_callback);
+		Input::AddCursorPosCallback(PlayerController::cursor_pos_callback);
+	}
+}
+
+PlayerController::~PlayerController()
+{
+}
+
+void PlayerController::SetVelocity(glm::vec3 value)
+{
+	m_velocity = value;
+}
+
+glm::vec3 PlayerController::GetVelocity() const
+{
+	return glm::vec3();
+}
+
+void PlayerController::SetActive(bool active)
+{
+	Object::SetActive(active);
+
+	if (active)
+	{
+		s_activeController = this;
+		Camera::SetMain(m_camera);
+	}
+	else if (s_activeController == this)
+	{
+		s_activeController = nullptr;
+		Camera::SetMain(nullptr);
+	}
+}
+
+bool PlayerController::IsActive() const
+{
+	return PlayerController::s_activeController == this;
+}
+
+void PlayerController::OnPaint()
+{
+	m_body->SetPosition(m_body->GetPosition() + m_velocity);
+}
+
+void PlayerController::SetCamera(Camera* camera)
+{
+	m_camera = camera;
+}
+
+void PlayerController::SetBody(Transform* body)
+{
+	m_body = body;
+}
+
+PlayerController* PlayerController::s_activeController = nullptr;
+
+void PlayerController::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (s_activeController == nullptr)
+	{
+		return;
+	}
+
+	if (action == GLFW_PRESS || action == GLFW_REPEAT)
+	{
+		switch (key)
+		{
+		case GLFW_KEY_W:
+			s_activeController->m_velocity = s_activeController->m_body->GetForward();
+			break;
+
+		case GLFW_KEY_A:
+			s_activeController->m_velocity = s_activeController->m_body->GetLeft();
+			break;
+
+		case GLFW_KEY_D:
+			s_activeController->m_velocity = s_activeController->m_body->GetRight();
+			break;
+
+		case GLFW_KEY_S:
+			s_activeController->m_velocity = s_activeController->m_body->GetBackward();
+			break;
+		}
+	}
+	else if (action == GLFW_RELEASE)
+	{
+		s_activeController->m_velocity = glm::vec3();
+	}
+}
+
+void PlayerController::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	if (s_activeController == nullptr)
+	{
+		return;
+	}
+
+	static int wWidth, wHeight; // Window width and height
+
+	// Get the center position of the window
+	glfwGetWindowSize(window, &wWidth, &wHeight);
+	static glm::vec2 center = glm::vec2(wWidth / 2, wHeight / 2);
+
+	// Do not proceed if the position is the center of the window
+	if (xpos == center.x && ypos == center.y)
+		return;
+
+	PlayerController* pc = PlayerController::s_activeController;
+
+	// Get Main Camera
+	Camera* cam = pc->m_camera;
+	// Get Controller Body
+	Transform* body = pc->m_body;
+
+	// handle the mouse input
+	glm::vec2 newPos = glm::vec2(xpos, ypos);
+	glm::vec2 deltaPos = newPos - center;
+
+	glm::vec3 cameraRotation = cam->GetTransform().GetRotation();
+	cameraRotation += glm::vec3(deltaPos.y * pc->m_controlSpeed * -1.f, .0f, .0f);
+
+	glm::vec3 bodyRotation = body->GetRotation();
+	bodyRotation += glm::vec3(.0f, deltaPos.x * pc->m_controlSpeed * -1.f, .0f);
+
+	// Clamp the rotation value
+	if (cameraRotation.x >= 360.f || cameraRotation.x <= -360.f)
+		cameraRotation.x = .0f;
+	if (bodyRotation.y >= 360.f || bodyRotation.y <= -360.f)
+		bodyRotation.y = .0f;
+
+	// Set the rotation of the camera
+	cam->GetTransform().SetRotation(cameraRotation);
+	body->SetRotation(bodyRotation);
+
+	// Fix the cursor position to the center of the screen
+	glfwSetCursorPos(window, wWidth / 2, wHeight / 2);
+}
+
+#pragma endregion
 
 #pragma region First Person Player
 class FirstPersonPlayer : public Object
@@ -2027,22 +2198,39 @@ public:
 
 private:
 	Camera* m_camera;
+	PlayerController* m_controller;
 };
 
-FirstPersonPlayer::FirstPersonPlayer() : Object(), m_camera(new Camera())
+FirstPersonPlayer::FirstPersonPlayer() : Object(), m_camera(new Camera()), m_controller(new PlayerController())
 {
 	m_camera->GetTransform().SetPosition(glm::vec3(.0f, .5f, .0f));
 	m_camera->GetTransform().SetParent(&GetTransform());
+
+	m_controller->SetBody(&GetTransform());
+	m_controller->SetCamera(m_camera);
 }
 
 FirstPersonPlayer::~FirstPersonPlayer()
 {
 	delete m_camera;
+	delete m_controller;
 }
 
 void FirstPersonPlayer::SetActive(bool active)
 {
-	m_isActive = active;
+	Object::SetActive(active);
+	m_controller->SetActive(active);
+	if (active)
+	{
+		Camera::SetMain(m_camera);
+	}
+	else 
+	{
+		if (Camera::GetMain() == m_camera)
+		{
+			Camera::SetMain(nullptr);
+		}
+	}
 }
 
 bool FirstPersonPlayer::IsActive() const
@@ -2068,7 +2256,7 @@ public:
 private:
 	static ForestScene* s_instnace;
 
-	Camera* m_mainCamera;
+	FirstPersonPlayer* m_player;
 	Terrain* m_terrain;
 	std::list<Tree*> m_trees;
 	std::list<Cloud*> m_clouds;
@@ -2079,11 +2267,16 @@ private:
 
 ForestScene::ForestScene()
 {
-	// Create Camera
-	m_mainCamera = new Camera();
-	m_mainCamera->GetTransform().SetPosition(glm::vec3(4.0f, 3.0f, 10.f));
-	m_mainCamera->GetTransform().SetRotation(glm::vec3(-10.f, 20.0f, .0f));
-	Camera::SetMain(m_mainCamera);
+	//// Create Camera
+	//m_mainCamera = new Camera();
+	//m_mainCamera->GetTransform().SetPosition(glm::vec3(4.0f, 3.0f, 10.f));
+	//m_mainCamera->GetTransform().SetRotation(glm::vec3(-10.f, 20.0f, .0f));
+	//Camera::SetMain(m_mainCamera);
+
+	// First Person Controller
+	m_player = new FirstPersonPlayer();
+	m_player->GetTransform().SetLocalPosition(glm::vec3(.0f, 1.f, .0f));
+	m_player->SetActive(true);
 
 	// Create terrain
 	m_terrain = GameObject::InstantiateOfType<Terrain>();
@@ -2127,7 +2320,7 @@ ForestScene::ForestScene()
 }
 ForestScene::~ForestScene()
 {
-
+	
 }
 
 void ForestScene::OnInitialize()
@@ -2137,7 +2330,7 @@ void ForestScene::OnInitialize()
 	Input::AddCursorPosCallback(ForestScene::cursor_pos_callback);
 }
 
-void ForestScene::OnPaint()
+void ForestScene::OnPaint() 
 {
 	static glm::vec3 cloudSpeed = glm::vec3(.0f, .0f, .05f);
 	static float cloudBound = 1.f;
@@ -2171,6 +2364,7 @@ void ForestScene::OnPaint()
 void ForestScene::OnEnd()
 {
 }
+
 ForestScene* ForestScene::GetInstance()
 {
 	return s_instnace;
@@ -2180,57 +2374,11 @@ ForestScene* ForestScene::s_instnace = nullptr;
 
 void ForestScene::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	Camera* cam = GetInstance()->m_mainCamera;
-	// Camera Moving
-	if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-		cam->GetTransform().SetPosition(cam->GetTransform().GetPosition() + cam->GetTransform().GetForward());
-	}
-	if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-		cam->GetTransform().SetPosition(cam->GetTransform().GetPosition() + cam->GetTransform().GetLeft());
-	}
-
-	if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-		cam->GetTransform().SetPosition(cam->GetTransform().GetPosition() + cam->GetTransform().GetBackward());
-	}
-	if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-		cam->GetTransform().SetPosition(cam->GetTransform().GetPosition() + cam->GetTransform().GetRight());
-	}
 }
 
 void ForestScene::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
 {
-	const static float speed = .1f; // The speed of the camera
-	static int wWidth, wHeight; // Window width and height
-
-	// Get the center position of the window
-	glfwGetWindowSize(window, &wWidth, &wHeight);
-	static glm::vec2 center = glm::vec2(wWidth / 2, wHeight / 2);
-
-	// Do not proceed if the position is the center of the window
-	if (xpos == center.x && ypos == center.y)
-		return;
-
-	// Get Main Camera
-	Camera* cam = ForestScene::GetInstance()->m_mainCamera;
-
-	// handle the mouse input
-	glm::vec2 newPos = glm::vec2(xpos, ypos);
-	glm::vec2 deltaPos = newPos - center;
-
-	glm::vec3 cameraRotation = cam->GetTransform().GetRotation();
-	cameraRotation += glm::vec3(deltaPos.y * speed * -1.f, deltaPos.x * speed * -1.f, .0f);
-
-	// Clamp the rotation value
-	if (cameraRotation.x >= 360.f || cameraRotation.x <= -360.f)
-		cameraRotation.x = .0f;
-	if (cameraRotation.y >= 360.f || cameraRotation.y <= -360.f)
-		cameraRotation.y = .0f;
-
-	// Set the rotation of the camera
-	cam->GetTransform().SetRotation(cameraRotation);
-
-	// Fix the cursor position to the center of the screen
-	glfwSetCursorPos(window, wWidth / 2, wHeight / 2);
+	
 }
 #pragma endregion
 
@@ -2355,38 +2503,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	// TODO:
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
-
-	// Grow Tree
-	if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-	{
-		//int r = rand() % trees.size();
-		//std::list<Tree*>::iterator it = trees.begin();
-		//for (int i = 0; i < r; i++)
-		//	it++;
-		//(*it)->Grow();
-	}
-
-	// TODO: Change to chop tree with mouse
-	// Chop Tree 
-	if (key == GLFW_KEY_ENTER && action == GLFW_PRESS)
-	{
-		//int r = rand() % trees.size();
-		//std::list<Tree*>::iterator it = trees.begin();
-		//for (int i = 0; i < r; i++)
-		//	it++;
-		//(*it)->Chop();
-	}
-}
-
-void on_mouse_button(int button, int action, double xpos, double ypos)
-{
-}
-
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
-{
-	double xpos, ypos;
-	glfwGetCursorPos(window, &xpos, &ypos);
-	on_mouse_button(button, action, xpos, ypos);
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
