@@ -2241,6 +2241,9 @@ bool FirstPersonPlayer::IsActive() const
 #pragma endregion
 
 #pragma region Forest Scene
+#define SKY_COLOR_DAY glm::vec3(.5f, .8f, .9f)
+#define SKY_COLOR_NIGHT glm::vec3(.0f, .3f, .4f)
+
 class ForestScene : public Scene
 {
 public:
@@ -2261,6 +2264,9 @@ private:
 	std::list<Tree*> m_trees;
 	std::list<Cloud*> m_clouds;
 
+	glm::vec3 m_skyColor;
+	glm::vec3 m_dayCycleSpeed;
+
 	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 	static void cursor_pos_callback(GLFWwindow* window, double xpos, double ypos);
 };
@@ -2272,6 +2278,11 @@ ForestScene::ForestScene()
 	//m_mainCamera->GetTransform().SetPosition(glm::vec3(4.0f, 3.0f, 10.f));
 	//m_mainCamera->GetTransform().SetRotation(glm::vec3(-10.f, 20.0f, .0f));
 	//Camera::SetMain(m_mainCamera);
+	
+	// Set clear color
+	m_skyColor = glm::vec3(SKY_COLOR_DAY);
+	m_dayCycleSpeed = glm::vec3(.001f);
+	Renderer::SetClearColor(glm::vec4(m_skyColor, 1.f));
 
 	// First Person Controller
 	m_player = new FirstPersonPlayer();
@@ -2359,6 +2370,13 @@ void ForestScene::OnPaint()
 
 		(*itt)->Grow();
 	}
+
+	// Cycle day night
+	m_skyColor -= m_dayCycleSpeed;
+	if (m_skyColor.x < SKY_COLOR_NIGHT.x || m_skyColor.x > SKY_COLOR_DAY.x) {
+		m_dayCycleSpeed *= -1.f;
+	}
+	Renderer::SetClearColor(glm::vec4(m_skyColor, 1.f));
 }
 
 void ForestScene::OnEnd()
@@ -2374,6 +2392,18 @@ ForestScene* ForestScene::s_instnace = nullptr;
 
 void ForestScene::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+	// Change day cycle speed
+	if (key == GLFW_KEY_SPACE) {
+		glm::vec3 speed = s_instnace->m_dayCycleSpeed;
+		if (action == GLFW_PRESS)
+		{
+			s_instnace->m_dayCycleSpeed = glm::vec3(speed.x * 5.f, speed.y * 5.f, speed.z * 5.f);
+		}
+		else if(action == GLFW_RELEASE)
+		{
+			s_instnace->m_dayCycleSpeed = glm::vec3(speed.x / 5.f, speed.y / 5.f, speed.z / 5.f);
+		}
+	}
 }
 
 void ForestScene::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
@@ -2478,12 +2508,9 @@ ForestScene* fs;
 void sendDataToOpenGL() {
 	// TODO:
 	// create 3D objects and/or 2D objects and/or lines (points) here and bind to VAOs & VBOs
-	Renderer::SetClearColor(glm::vec4(.5f, .8f, .9f, 1.f));
 
 	fs = new ForestScene();
 	SceneManager::SetActiveScene(fs);
-
-	// Set clear color
 
 	SceneManager::OnInitialize();
 }
