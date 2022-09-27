@@ -2269,16 +2269,14 @@ private:
 
 	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 	static void cursor_pos_callback(GLFWwindow* window, double xpos, double ypos);
+	static void mouse_button_callback(GLFWwindow* window, int button, int action, double xpos, int ypos);
+
+	static void chop_nearest_tree();
+	static Tree* get_nearest_tree();
 };
 
 ForestScene::ForestScene()
 {
-	//// Create Camera
-	//m_mainCamera = new Camera();
-	//m_mainCamera->GetTransform().SetPosition(glm::vec3(4.0f, 3.0f, 10.f));
-	//m_mainCamera->GetTransform().SetRotation(glm::vec3(-10.f, 20.0f, .0f));
-	//Camera::SetMain(m_mainCamera);
-	
 	// Set clear color
 	m_skyColor = glm::vec3(SKY_COLOR_DAY);
 	m_dayCycleSpeed = glm::vec3(.001f);
@@ -2286,7 +2284,8 @@ ForestScene::ForestScene()
 
 	// First Person Controller
 	m_player = new FirstPersonPlayer();
-	m_player->GetTransform().SetLocalPosition(glm::vec3(.0f, 1.f, .0f));
+	m_player->GetTransform().SetLocalPosition(glm::vec3(50.f, 1.f, 50.f));
+	m_player->GetTransform().SetLocalRotation(glm::vec3(.0f, 50.f, .0f));
 	m_player->SetActive(true);
 
 	// Create terrain
@@ -2339,6 +2338,7 @@ void ForestScene::OnInitialize()
 	// Add Input Listener
 	Input::AddKeyCallback(ForestScene::key_callback);
 	Input::AddCursorPosCallback(ForestScene::cursor_pos_callback);
+	Input::AddMouseButtonCallback(ForestScene::mouse_button_callback);
 }
 
 void ForestScene::OnPaint() 
@@ -2404,11 +2404,51 @@ void ForestScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 			s_instnace->m_dayCycleSpeed = glm::vec3(speed.x / 5.f, speed.y / 5.f, speed.z / 5.f);
 		}
 	}
+
+	if (key == GLFW_KEY_ENTER && action == GLFW_PRESS)
+	{
+		chop_nearest_tree();
+	}
 }
 
 void ForestScene::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	
+}
+
+void ForestScene::mouse_button_callback(GLFWwindow* window, int button, int action, double xpos, int ypos)
+{
+}
+
+
+void ForestScene::chop_nearest_tree()
+{
+	for (int i = 0; i < 10; i++)
+	{
+		int r = rand() % s_instnace->m_trees.size();
+		std::list<Tree*>::iterator it = s_instnace->m_trees.begin();
+		for (int j = 0; j < r; it++, j++);
+
+		(*it)->Chop();
+	}
+}
+Tree* ForestScene::get_nearest_tree()
+{
+	if (s_instnace == nullptr)
+	{
+		return nullptr;
+	}
+
+	Tree* closes = nullptr;
+	float distance = 999999.f;
+	for (std::list<Tree*>::iterator it = s_instnace->m_trees.begin(); it != s_instnace->m_trees.end(); it++)
+	{
+		float d = glm::distance(s_instnace->m_player->GetTransform().GetPosition(), (*it)->GetTransform().GetPosition());
+		if (d < distance)
+			closes = (*it);
+		distance = d;
+	}
+	return closes;
 }
 #pragma endregion
 
