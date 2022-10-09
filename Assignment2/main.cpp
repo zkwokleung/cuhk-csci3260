@@ -1277,6 +1277,8 @@ void Input::RemoveAllCursorPosCallbacks()
 
 #pragma endregion
 
+#pragma region Assignment given APIs
+
 // screen setting
 const int SCR_WIDTH = 800;
 const int SCR_HEIGHT = 600;
@@ -1404,8 +1406,10 @@ Model loadOBJ(const char* objPath)
 	return model;
 }
 
+#pragma endregion
 
 #pragma region Assignment Specific Classes
+#pragma region ModelObject
 class ModelObject : Object
 {
 public:
@@ -1419,6 +1423,239 @@ private:
 
 };
 
+#pragma endregion
+
+#pragma region Player Controller
+class PlayerController : public Object
+{
+public:
+	PlayerController();
+	~PlayerController();
+
+	void SetVelocity(glm::vec3 value);
+	glm::vec3 GetVelocity() const;
+
+	virtual void SetActive(bool active);
+	virtual bool IsActive() const;
+
+	virtual void OnPaint();
+
+	void SetCamera(Camera* camera);
+	void SetBody(Transform* body);
+
+private:
+	static PlayerController* s_activeController;
+	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+	static void cursor_pos_callback(GLFWwindow* window, double xpos, double ypos);
+
+	float m_speed;
+	float m_controlSpeed;
+	glm::vec3 m_velocity;
+	Camera* m_camera;
+	Transform* m_body;
+};
+
+PlayerController::PlayerController() : m_velocity(glm::vec3()), m_camera(nullptr), m_body(nullptr), m_speed(.1f), m_controlSpeed(.1f)
+{
+	static bool init = false;
+	if (!init)
+	{
+		Input::AddKeyCallback(PlayerController::key_callback);
+		Input::AddCursorPosCallback(PlayerController::cursor_pos_callback);
+	}
+}
+
+PlayerController::~PlayerController()
+{
+}
+
+void PlayerController::SetVelocity(glm::vec3 value)
+{
+	m_velocity = value;
+}
+
+glm::vec3 PlayerController::GetVelocity() const
+{
+	return glm::vec3();
+}
+
+void PlayerController::SetActive(bool active)
+{
+	Object::SetActive(active);
+
+	if (active)
+	{
+		s_activeController = this;
+		Camera::SetMain(m_camera);
+	}
+	else if (s_activeController == this)
+	{
+		s_activeController = nullptr;
+		Camera::SetMain(nullptr);
+	}
+}
+
+bool PlayerController::IsActive() const
+{
+	return PlayerController::s_activeController == this;
+}
+
+void PlayerController::OnPaint()
+{
+	m_body->SetPosition(m_body->GetPosition() + m_velocity);
+}
+
+void PlayerController::SetCamera(Camera* camera)
+{
+	m_camera = camera;
+}
+
+void PlayerController::SetBody(Transform* body)
+{
+	m_body = body;
+}
+
+PlayerController* PlayerController::s_activeController = nullptr;
+
+void PlayerController::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (s_activeController == nullptr)
+	{
+		return;
+	}
+
+	if (action == GLFW_PRESS || action == GLFW_REPEAT)
+	{
+		switch (key)
+		{
+		case GLFW_KEY_W:
+			s_activeController->m_velocity = s_activeController->m_body->GetForward();
+			break;
+
+		case GLFW_KEY_A:
+			s_activeController->m_velocity = s_activeController->m_body->GetLeft();
+			break;
+
+		case GLFW_KEY_D:
+			s_activeController->m_velocity = s_activeController->m_body->GetRight();
+			break;
+
+		case GLFW_KEY_S:
+			s_activeController->m_velocity = s_activeController->m_body->GetBackward();
+			break;
+		}
+	}
+	else if (action == GLFW_RELEASE)
+	{
+		s_activeController->m_velocity = glm::vec3();
+	}
+}
+
+void PlayerController::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	if (s_activeController == nullptr)
+	{
+		return;
+	}
+
+	static int wWidth, wHeight; // Window width and height
+
+	// Get the center position of the window
+	glfwGetWindowSize(window, &wWidth, &wHeight);
+	static glm::vec2 center = glm::vec2(wWidth / 2, wHeight / 2);
+
+	// Do not proceed if the position is the center of the window
+	if (xpos == center.x && ypos == center.y)
+		return;
+
+	PlayerController* pc = PlayerController::s_activeController;
+
+	// Get Main Camera
+	Camera* cam = pc->m_camera;
+	// Get Controller Body
+	Transform* body = pc->m_body;
+
+	// handle the mouse input
+	glm::vec2 newPos = glm::vec2(xpos, ypos);
+	glm::vec2 deltaPos = newPos - center;
+
+	glm::vec3 cameraRotation = cam->GetTransform().GetRotation();
+	cameraRotation += glm::vec3(deltaPos.y * pc->m_controlSpeed * -1.f, .0f, .0f);
+
+	glm::vec3 bodyRotation = body->GetRotation();
+	bodyRotation += glm::vec3(.0f, deltaPos.x * pc->m_controlSpeed * -1.f, .0f);
+
+	// Clamp the rotation value
+	if (cameraRotation.x >= 360.f || cameraRotation.x <= -360.f)
+		cameraRotation.x = .0f;
+	if (bodyRotation.y >= 360.f || bodyRotation.y <= -360.f)
+		bodyRotation.y = .0f;
+
+	// Set the rotation of the camera
+	cam->GetTransform().SetRotation(cameraRotation);
+	body->SetRotation(bodyRotation);
+
+	// Fix the cursor position to the center of the screen
+	glfwSetCursorPos(window, wWidth / 2, wHeight / 2);
+}
+
+#pragma endregion
+
+#pragma region First Person Player
+class FirstPersonPlayer : public Object
+{
+public:
+	FirstPersonPlayer();
+	~FirstPersonPlayer();
+
+	virtual void SetActive(bool active);
+	virtual bool IsActive() const;
+
+private:
+	Camera* m_camera;
+	PlayerController* m_controller;
+};
+
+FirstPersonPlayer::FirstPersonPlayer() : Object(), m_camera(new Camera()), m_controller(new PlayerController())
+{
+	m_camera->GetTransform().SetPosition(glm::vec3(.0f, .5f, .0f));
+	m_camera->GetTransform().SetParent(&GetTransform());
+
+	m_controller->SetBody(&GetTransform());
+	m_controller->SetCamera(m_camera);
+}
+
+FirstPersonPlayer::~FirstPersonPlayer()
+{
+	delete m_camera;
+	delete m_controller;
+}
+
+void FirstPersonPlayer::SetActive(bool active)
+{
+	Object::SetActive(active);
+	m_controller->SetActive(active);
+	if (active)
+	{
+		Camera::SetMain(m_camera);
+	}
+	else
+	{
+		if (Camera::GetMain() == m_camera)
+		{
+			Camera::SetMain(nullptr);
+		}
+	}
+}
+
+bool FirstPersonPlayer::IsActive() const
+{
+	return m_isActive;
+}
+
+#pragma endregion
+
+#pragma region Main Scene
 class MountainScene : Scene
 {
 public:
@@ -1430,11 +1667,38 @@ public:
 	virtual void OnEnd();
 
 private:
-
+	FirstPersonPlayer* m_player;
 };
+
+
+MountainScene::MountainScene() : m_player(new FirstPersonPlayer())
+{
+}
+
+MountainScene::~MountainScene()
+{
+	delete m_player;
+}
+
+void MountainScene::OnInitialize()
+{
+	m_player->SetActive(true);
+}
+
+void MountainScene::OnPaint(Shader* shader)
+{
+}
+
+void MountainScene::OnEnd()
+{
+}
+
+#pragma endregion
+
 #pragma endregion
 
 Shader* shader;
+MountainScene* mountainScene;
 
 void get_OpenGL_info()
 {
@@ -1452,7 +1716,7 @@ void sendDataToOpenGL()
 	//TODO
 	//Load objects and bind to VAO and VBO
 	//Load textures
-
+	mountainScene = new MountainScene();
 }
 
 void initializedGL(void) //run only once
@@ -1572,9 +1836,3 @@ int main(int argc, char* argv[])
 
 	return 0;
 }
-
-
-
-
-
-
