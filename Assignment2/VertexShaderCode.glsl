@@ -4,12 +4,12 @@ in layout(location=0) vec3 position;
 in layout(location=1) vec2 uv;
 in layout(location=2) vec3 normal;
 
+// MVP
 uniform mat4 u_modelMatrix;
 uniform mat4 u_viewMatrix;
 uniform mat4 u_projectionMatrix;
 
-out vec3 vertColor;
-out vec2 v_TexCoord;
+out vec2 v_uv;
 
 void main()
 {
@@ -18,4 +18,5 @@ void main()
 	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * v;
 
 	// UV
+	v_uv = uv;
 }
