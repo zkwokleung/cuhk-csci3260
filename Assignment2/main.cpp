@@ -19,10 +19,165 @@ Student Name:
 #include <unordered_map>
 #include <map>
 
+#pragma region Assignment given APIs
+
+// screen setting
+const int SCR_WIDTH = 800;
+const int SCR_HEIGHT = 600;
+
+// struct for storing the obj file
+struct Vertex {
+	glm::vec3 position;
+	glm::vec2 uv;
+	glm::vec3 normal;
+};
+
+struct Model {
+	std::vector<Vertex> vertices;
+	std::vector<unsigned int> indices;
+};
+
+Model loadOBJ(const char* objPath)
+{
+	// function to load the obj file
+	// Note: this simple function cannot load all obj files.
+
+	struct V {
+		// struct for identify if a vertex has showed up
+		unsigned int index_position, index_uv, index_normal;
+		bool operator == (const V& v) const {
+			return index_position == v.index_position && index_uv == v.index_uv && index_normal == v.index_normal;
+		}
+		bool operator < (const V& v) const {
+			return (index_position < v.index_position) ||
+				(index_position == v.index_position && index_uv < v.index_uv) ||
+				(index_position == v.index_position && index_uv == v.index_uv && index_normal < v.index_normal);
+		}
+	};
+
+	std::vector<glm::vec3> temp_positions;
+	std::vector<glm::vec2> temp_uvs;
+	std::vector<glm::vec3> temp_normals;
+
+	std::map<V, unsigned int> temp_vertices;
+
+	Model model;
+	unsigned int num_vertices = 0;
+
+	std::cout << "\nLoading OBJ file " << objPath << "..." << std::endl;
+
+	std::ifstream file;
+	file.open(objPath);
+
+	// Check for Error
+	if (file.fail()) {
+		std::cerr << "Impossible to open the file! Do you use the right path? See Tutorial 6 for details" << std::endl;
+		exit(1);
+	}
+
+	while (!file.eof()) {
+		// process the object file
+		char lineHeader[128];
+		file >> lineHeader;
+
+		if (strcmp(lineHeader, "v") == 0) {
+			// geometric vertices
+			glm::vec3 position;
+			file >> position.x >> position.y >> position.z;
+			temp_positions.push_back(position);
+		}
+		else if (strcmp(lineHeader, "vt") == 0) {
+			// texture coordinates
+			glm::vec2 uv;
+			file >> uv.x >> uv.y;
+			temp_uvs.push_back(uv);
+		}
+		else if (strcmp(lineHeader, "vn") == 0) {
+			// vertex normals
+			glm::vec3 normal;
+			file >> normal.x >> normal.y >> normal.z;
+			temp_normals.push_back(normal);
+		}
+		else if (strcmp(lineHeader, "f") == 0) {
+			// Face elements
+			V vertices[3];
+			for (int i = 0; i < 3; i++) {
+				char ch;
+				file >> vertices[i].index_position >> ch >> vertices[i].index_uv >> ch >> vertices[i].index_normal;
+			}
+
+			// Check if there are more than three vertices in one face.
+			std::string redundency;
+			std::getline(file, redundency);
+			if (redundency.length() >= 5) {
+				std::cerr << "There may exist some errors while load the obj file. Error content: [" << redundency << " ]" << std::endl;
+				std::cerr << "Please note that we only support the faces drawing with triangles. There are more than three vertices in one face." << std::endl;
+				std::cerr << "Your obj file can't be read properly by our simple parser :-( Try exporting with other options." << std::endl;
+				exit(1);
+			}
+
+			for (int i = 0; i < 3; i++) {
+				if (temp_vertices.find(vertices[i]) == temp_vertices.end()) {
+					// the vertex never shows before
+					Vertex vertex;
+					vertex.position = temp_positions[vertices[i].index_position - 1];
+					vertex.uv = temp_uvs[vertices[i].index_uv - 1];
+					vertex.normal = temp_normals[vertices[i].index_normal - 1];
+
+					model.vertices.push_back(vertex);
+					model.indices.push_back(num_vertices);
+					temp_vertices[vertices[i]] = num_vertices;
+					num_vertices += 1;
+				}
+				else {
+					// reuse the existing vertex
+					unsigned int index = temp_vertices[vertices[i]];
+					model.indices.push_back(index);
+				}
+			} // for
+		} // else if
+		else {
+			// it's not a vertex, texture coordinate, normal or face
+			char stupidBuffer[1024];
+			file.getline(stupidBuffer, 1024);
+		}
+	}
+	file.close();
+
+	std::cout << "There are " << num_vertices << " vertices in the obj file.\n" << std::endl;
+	return model;
+}
+
+#pragma endregion
+
 #pragma region My API
 /***************************************************************
 	Classes and functions created by me to simplify some codes
 ****************************************************************/
+#pragma region Debug
+class Debug
+{
+public:
+	static void Log(std::string message);
+	static void Warning(std::string message);
+	static void Error(std::string message);
+};
+
+void Debug::Log(std::string message)
+{
+	std::cout << message << std::endl;
+}
+
+void Debug::Warning(std::string message)
+{
+	std::cout << "\033[33m" << "Warning: " << message << "\033[49m" << std::endl;
+}
+
+void Debug::Error(std::string message)
+{
+	std::cout << "\033[1;31m" << "!!" << message << "!!" << "\033[49m" << std::endl;
+}
+#pragma endregion
 
 #pragma region Render Related
 /**********************
@@ -526,6 +681,12 @@ void Camera::SetMain(Camera* camera)
 
 void Camera::OnPaint(Shader* shader)
 {
+	if (s_main == nullptr)
+	{
+		Debug::Error("No Main Camera Set");
+		return;
+	}
+
 	// Set the shader's projection and view uniform
 	glm::mat4 v = s_main->GetViewMatrix();
 	glm::mat4 p = s_main->GetProjectionMatrix();
@@ -1009,14 +1170,6 @@ std::list<Object*> Scene::GetObjects() const
 }
 #pragma endregion
 
-#pragma region Physics Related
-class Physics
-{
-public:
-	bool Raycast(glm::vec3 origin, glm::vec3 direction, GLfloat maxDistance);
-};
-#pragma endregion
-
 #pragma region Input Related
 typedef void(*KeyCallbackFunc)(GLFWwindow* window, int key, int scancode, int action, int mods);
 typedef void(*CursorPosCallbackFunc)(GLFWwindow* window, double xpos, double ypos);
@@ -1275,136 +1428,55 @@ void Input::RemoveAllCursorPosCallbacks()
 
 #pragma endregion
 
-#pragma endregion
-
-#pragma region Assignment given APIs
-
-// screen setting
-const int SCR_WIDTH = 800;
-const int SCR_HEIGHT = 600;
-
-// struct for storing the obj file
-struct Vertex {
-	glm::vec3 position;
-	glm::vec2 uv;
-	glm::vec3 normal;
-};
-
-struct Model {
-	std::vector<Vertex> vertices;
-	std::vector<unsigned int> indices;
-};
-
-Model loadOBJ(const char* objPath)
+#pragma region Lighting
+class Light : Object
 {
-	// function to load the obj file
-	// Note: this simple function cannot load all obj files.
+public:
+	Light();
+	~Light();
 
-	struct V {
-		// struct for identify if a vertex has showed up
-		unsigned int index_position, index_uv, index_normal;
-		bool operator == (const V& v) const {
-			return index_position == v.index_position && index_uv == v.index_uv && index_normal == v.index_normal;
-		}
-		bool operator < (const V& v) const {
-			return (index_position < v.index_position) ||
-				(index_position == v.index_position && index_uv < v.index_uv) ||
-				(index_position == v.index_position && index_uv == v.index_uv && index_normal < v.index_normal);
-		}
-	};
+	void SetAmbient(glm::vec3 ambient);
+	void SetDiffuse(glm::vec3 diffuse);
+	void SetSpecular(glm::vec3 specular);
 
-	std::vector<glm::vec3> temp_positions;
-	std::vector<glm::vec2> temp_uvs;
-	std::vector<glm::vec3> temp_normals;
+	virtual void OnPaint(Shader* shader);
 
-	std::map<V, unsigned int> temp_vertices;
+private:
+	glm::vec3 m_ambient;
+	glm::vec3 m_diffuse;
+	glm::vec3 m_specular;
+};
 
-	Model model;
-	unsigned int num_vertices = 0;
+Light::Light() : Object(), m_ambient(glm::vec3()), m_diffuse(glm::vec3()), m_specular(glm::vec3())
+{
 
-	std::cout << "\nLoading OBJ file " << objPath << "..." << std::endl;
-
-	std::ifstream file;
-	file.open(objPath);
-
-	// Check for Error
-	if (file.fail()) {
-		std::cerr << "Impossible to open the file! Do you use the right path? See Tutorial 6 for details" << std::endl;
-		exit(1);
-	}
-
-	while (!file.eof()) {
-		// process the object file
-		char lineHeader[128];
-		file >> lineHeader;
-
-		if (strcmp(lineHeader, "v") == 0) {
-			// geometric vertices
-			glm::vec3 position;
-			file >> position.x >> position.y >> position.z;
-			temp_positions.push_back(position);
-		}
-		else if (strcmp(lineHeader, "vt") == 0) {
-			// texture coordinates
-			glm::vec2 uv;
-			file >> uv.x >> uv.y;
-			temp_uvs.push_back(uv);
-		}
-		else if (strcmp(lineHeader, "vn") == 0) {
-			// vertex normals
-			glm::vec3 normal;
-			file >> normal.x >> normal.y >> normal.z;
-			temp_normals.push_back(normal);
-		}
-		else if (strcmp(lineHeader, "f") == 0) {
-			// Face elements
-			V vertices[3];
-			for (int i = 0; i < 3; i++) {
-				char ch;
-				file >> vertices[i].index_position >> ch >> vertices[i].index_uv >> ch >> vertices[i].index_normal;
-			}
-
-			// Check if there are more than three vertices in one face.
-			std::string redundency;
-			std::getline(file, redundency);
-			if (redundency.length() >= 5) {
-				std::cerr << "There may exist some errors while load the obj file. Error content: [" << redundency << " ]" << std::endl;
-				std::cerr << "Please note that we only support the faces drawing with triangles. There are more than three vertices in one face." << std::endl;
-				std::cerr << "Your obj file can't be read properly by our simple parser :-( Try exporting with other options." << std::endl;
-				exit(1);
-			}
-
-			for (int i = 0; i < 3; i++) {
-				if (temp_vertices.find(vertices[i]) == temp_vertices.end()) {
-					// the vertex never shows before
-					Vertex vertex;
-					vertex.position = temp_positions[vertices[i].index_position - 1];
-					vertex.uv = temp_uvs[vertices[i].index_uv - 1];
-					vertex.normal = temp_normals[vertices[i].index_normal - 1];
-
-					model.vertices.push_back(vertex);
-					model.indices.push_back(num_vertices);
-					temp_vertices[vertices[i]] = num_vertices;
-					num_vertices += 1;
-				}
-				else {
-					// reuse the existing vertex
-					unsigned int index = temp_vertices[vertices[i]];
-					model.indices.push_back(index);
-				}
-			} // for
-		} // else if
-		else {
-			// it's not a vertex, texture coordinate, normal or face
-			char stupidBuffer[1024];
-			file.getline(stupidBuffer, 1024);
-		}
-	}
-	file.close();
-
-	std::cout << "There are " << num_vertices << " vertices in the obj file.\n" << std::endl;
-	return model;
 }
+
+Light::~Light()
+{
+
+}
+
+void Light::SetAmbient(glm::vec3 ambient)
+{
+	m_ambient = ambient;
+}
+
+void Light::SetDiffuse(glm::vec3 diffuse)
+{
+	m_diffuse = diffuse;
+}
+
+void Light::SetSpecular(glm::vec3 specular)
+{
+	m_specular = specular;
+}
+
+void Light::OnPaint(Shader* shader)
+{
+
+}
+#pragma endregion
 
 #pragma endregion
 
@@ -1414,15 +1486,58 @@ class ModelObject : Object
 {
 public:
 	ModelObject();
+	ModelObject(Model model, Texture texture);
 	~ModelObject();
 
 	void LoadModel(const char* path);
+	void LoadTexture(const char* path);
+	void SetTexture(Texture texture);
+
+	virtual void OnPaint(Shader* shader);
 
 private:
 	Model m_model;
-
+	Texture m_texture;
+	VAO m_vao;
+	VBO m_vbo;
+	EBO m_ebo;
 };
 
+ModelObject::ModelObject() : Object(), m_model(), m_vao(), m_vbo(), m_ebo(), m_texture()
+{
+
+}
+
+ModelObject::ModelObject(Model model, Texture texture) : Object(), m_model(model), m_vao(), m_vbo((GLfloat*)&(model.vertices[0]), model.vertices.size() * sizeof(Vertex)), m_ebo((GLuint*)&model.indices[0], model.indices.size()), m_texture(texture)
+{
+	m_vao.LinkAttrib(m_vbo, 0, 3, sizeof(Vertex), GL_FLOAT, (void*)offsetof(Vertex, position));
+}
+
+ModelObject::~ModelObject()
+{
+	m_vao.Delete();
+	m_vbo.Delete();
+	m_ebo.Delete();
+}
+
+void ModelObject::LoadModel(const char* path)
+{
+	m_model = loadOBJ(path);
+	m_vbo = VBO((GLfloat*)&(m_model.vertices[0]), m_model.vertices.size() * sizeof(Vertex));
+	m_ebo = EBO((GLuint*)&m_model.indices[0], m_model.indices.size());
+}
+
+void ModelObject::LoadTexture(const char* path)
+{
+	m_texture.setupTexture(path);
+}
+
+void ModelObject::OnPaint(Shader* shader)
+{
+	Object::OnPaint(shader);
+	m_texture.bind(0);
+	Renderer::Draw(m_vao, m_ebo);
+}
 #pragma endregion
 
 #pragma region Player Controller
@@ -1667,22 +1782,22 @@ public:
 	virtual void OnEnd();
 
 private:
-	FirstPersonPlayer* m_player;
+	Camera* m_cam;
 };
 
 
-MountainScene::MountainScene() : m_player(new FirstPersonPlayer())
+MountainScene::MountainScene() : m_cam(new Camera())
 {
 }
 
 MountainScene::~MountainScene()
 {
-	delete m_player;
+	delete m_cam;
 }
 
 void MountainScene::OnInitialize()
 {
-	m_player->SetActive(true);
+	Camera::SetMain(m_cam);
 }
 
 void MountainScene::OnPaint(Shader* shader)
@@ -1716,7 +1831,10 @@ void sendDataToOpenGL()
 	//TODO
 	//Load objects and bind to VAO and VBO
 	//Load textures
+	Renderer::SetClearColor(glm::vec4(.5f, .7f, 1.f, 1.f));
+
 	mountainScene = new MountainScene();
+	SceneManager::SetActiveScene((Scene*)mountainScene);
 }
 
 void initializedGL(void) //run only once
