@@ -1,9 +1,12 @@
 #version 430
 
-layout(location = 0) out vec4 FragColor;
-in vec2 v_uv;
+layout(location = 0) out vec3 FragColor;
 
-uniform sample2D u_Texture;
+in vec3 v_position;
+in vec2 v_uv;
+in vec3 v_normal;
+
+uniform sampler2D u_Texture;
 
 void main()
 {
