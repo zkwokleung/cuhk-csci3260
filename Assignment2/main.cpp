@@ -1809,14 +1809,13 @@ public:
 	virtual void OnEnd();
 
 private:
-	Camera* m_cam;
 	FirstPersonPlayer* m_player;
 	ModelObject* m_tiger;
 	ModelObject* m_ground;
 };
 
 
-MountainScene::MountainScene() : m_cam(new Camera()), m_player(new FirstPersonPlayer()),
+MountainScene::MountainScene() : Scene(), m_player(new FirstPersonPlayer()),
 m_tiger(new ModelObject("resources/tiger/tiger.obj", "resources/tiger/tiger_01.jpg")),
 m_ground(new ModelObject("resources/ground/ground.obj", "resources/ground/ground_01.jpg"))
 {
@@ -1824,14 +1823,19 @@ m_ground(new ModelObject("resources/ground/ground.obj", "resources/ground/ground
 
 MountainScene::~MountainScene()
 {
-	delete m_cam;
+	delete m_player;
+	delete m_tiger;
+	delete m_ground;
 }
 
 void MountainScene::OnInitialize()
 {
-	//Camera::SetMain(m_cam);
+	// Player
 	m_player->SetActive(true);
+
+	// Ground
 	m_ground->GetTransform().SetLocalPosition(glm::vec3(0, -1, 0));
+	m_ground->GetTransform().SetLocalScale(glm::vec3(10, 1, 10));
 	m_ground->SetActive(true);
 
 	m_tiger->GetTransform().SetLocalPosition(glm::vec3(0, 0, -3.f));
