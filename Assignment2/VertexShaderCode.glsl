@@ -9,6 +9,7 @@ uniform mat4 u_modelMatrix;
 uniform mat4 u_viewMatrix;
 uniform mat4 u_projectionMatrix;
 
+// Output to fragment shader
 out vec3 v_position;
 out vec2 v_uv;
 out vec3 v_normal;
@@ -22,5 +23,5 @@ void main()
 	// UV and lighting
 	v_position = position;
 	v_uv = uv;
-	v_normal = normal;
+	v_normal = normalize(normal);
 }

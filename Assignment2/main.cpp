@@ -1429,6 +1429,7 @@ void Input::RemoveAllCursorPosCallbacks()
 #pragma endregion
 
 #pragma region Lighting
+// Base Light
 class Light : Object
 {
 public:
@@ -1476,16 +1477,19 @@ void Light::OnPaint(Shader* shader)
 {
 
 }
+
+// Directional Light
 #pragma endregion
 
 #pragma endregion
 
 #pragma region Assignment Specific Classes
 #pragma region ModelObject
-class ModelObject : Object
+class ModelObject : public Object
 {
 public:
 	ModelObject();
+	ModelObject(const char* modelPath, const char* texturePath);
 	ModelObject(Model model, Texture texture);
 	~ModelObject();
 
@@ -1508,9 +1512,26 @@ ModelObject::ModelObject() : Object(), m_model(), m_vao(), m_vbo(), m_ebo(), m_t
 
 }
 
-ModelObject::ModelObject(Model model, Texture texture) : Object(), m_model(model), m_vao(), m_vbo((GLfloat*)&(model.vertices[0]), model.vertices.size() * sizeof(Vertex)), m_ebo((GLuint*)&model.indices[0], model.indices.size()), m_texture(texture)
+ModelObject::ModelObject(const char* modelPath, const char* texturePath) : Object(),
+m_model(loadOBJ(modelPath)), m_texture(),
+m_vao(), m_vbo((GLfloat*)&(m_model.vertices[0]), m_model.vertices.size() * sizeof(Vertex)),
+m_ebo((GLuint*)&m_model.indices[0], m_model.indices.size())
 {
-	m_vao.LinkAttrib(m_vbo, 0, 3, sizeof(Vertex), GL_FLOAT, (void*)offsetof(Vertex, position));
+	m_texture.setupTexture(texturePath);
+
+	m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, position));
+	m_vao.LinkAttrib(m_vbo, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, uv));
+	m_vao.LinkAttrib(m_vbo, 2, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+}
+
+ModelObject::ModelObject(Model model, Texture texture) : Object(),
+m_model(model), m_texture(texture),
+m_vao(), m_vbo((GLfloat*)&(m_model.vertices[0]), m_model.vertices.size() * sizeof(Vertex)),
+m_ebo((GLuint*)&m_model.indices[0], m_model.indices.size())
+{
+	m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, position));
+	m_vao.LinkAttrib(m_vbo, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, uv));
+	m_vao.LinkAttrib(m_vbo, 2, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, normal));
 }
 
 ModelObject::~ModelObject()
@@ -1530,6 +1551,11 @@ void ModelObject::LoadModel(const char* path)
 void ModelObject::LoadTexture(const char* path)
 {
 	m_texture.setupTexture(path);
+}
+
+void ModelObject::SetTexture(Texture texture)
+{
+	m_texture = texture;
 }
 
 void ModelObject::OnPaint(Shader* shader)
@@ -1577,6 +1603,7 @@ PlayerController::PlayerController() : m_velocity(glm::vec3()), m_camera(nullptr
 	{
 		Input::AddKeyCallback(PlayerController::key_callback);
 		Input::AddCursorPosCallback(PlayerController::cursor_pos_callback);
+		init = true;
 	}
 }
 
@@ -1770,8 +1797,8 @@ bool FirstPersonPlayer::IsActive() const
 
 #pragma endregion
 
-#pragma region Main Scene
-class MountainScene : Scene
+#pragma region Mountain Scene
+class MountainScene : public Scene
 {
 public:
 	MountainScene();
@@ -1783,10 +1810,15 @@ public:
 
 private:
 	Camera* m_cam;
+	FirstPersonPlayer* m_player;
+	ModelObject* m_tiger;
+	ModelObject* m_ground;
 };
 
 
-MountainScene::MountainScene() : m_cam(new Camera())
+MountainScene::MountainScene() : m_cam(new Camera()), m_player(new FirstPersonPlayer()),
+m_tiger(new ModelObject("resources/tiger/tiger.obj", "resources/tiger/tiger_01.jpg")),
+m_ground(new ModelObject("resources/ground/ground.obj", "resources/ground/ground_01.jpg"))
 {
 }
 
@@ -1797,11 +1829,18 @@ MountainScene::~MountainScene()
 
 void MountainScene::OnInitialize()
 {
-	Camera::SetMain(m_cam);
+	//Camera::SetMain(m_cam);
+	m_player->SetActive(true);
+	m_ground->GetTransform().SetLocalPosition(glm::vec3(0, -1, 0));
+	m_ground->SetActive(true);
+
+	m_tiger->GetTransform().SetLocalPosition(glm::vec3(0, 0, -3.f));
+	m_tiger->SetActive(true);
 }
 
 void MountainScene::OnPaint(Shader* shader)
 {
+
 }
 
 void MountainScene::OnEnd()
@@ -1934,6 +1973,7 @@ int main(int argc, char* argv[])
 	glfwSetScrollCallback(window, scroll_callback);
 	glfwSetCursorPosCallback(window, cursor_position_callback);
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
+	Input::Init(window);
 
 	initializedGL();
 
