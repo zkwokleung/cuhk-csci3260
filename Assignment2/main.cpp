@@ -18,6 +18,8 @@ Student Name:
 #include <list>
 #include <unordered_map>
 #include <map>
+#include <stdlib.h>
+#include <time.h>
 
 #pragma region Assignment given APIs
 
@@ -1881,9 +1883,10 @@ public:
 
 private:
 	// Objects
-	FirstPersonPlayer* m_player;
+	Camera* m_cam;
 	ModelObject* m_tiger;
 	ModelObject* m_ground;
+	Object* m_tigerContainer;
 
 	// Textures
 	Texture m_tigerTex1;
@@ -1896,11 +1899,13 @@ private:
 	static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
 	static void mouse_button_callback(GLFWwindow* window, int button, int action, double xpos, int ypos);
 	static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+	
+	static bool s_IsMouseLeftButtonDown;
 };
 
 
-MountainScene::MountainScene() : Scene(), m_player(new FirstPersonPlayer()),
-m_tiger(new ModelObject(loadOBJ("resources/tiger/tiger.obj"))),
+MountainScene::MountainScene() : Scene(), m_cam(new Camera()),
+m_tiger(new ModelObject(loadOBJ("resources/tiger/tiger.obj"))), m_tigerContainer(new Object()),
 m_ground(new ModelObject(loadOBJ("resources/ground/ground.obj"))),
 m_tigerTex1(), m_tigerTex2(), m_groundTex1(), m_groundTex2()
 {
@@ -1917,7 +1922,7 @@ m_tigerTex1(), m_tigerTex2(), m_groundTex1(), m_groundTex2()
 
 MountainScene::~MountainScene()
 {
-	delete m_player;
+	delete m_cam;
 	delete m_tiger;
 	delete m_ground;
 }
@@ -1930,8 +1935,9 @@ void MountainScene::OnInitialize()
 	Input::AddMouseButtonCallback(MountainScene::mouse_button_callback);
 	Input::AddScrollCallback(MountainScene::scroll_callback);
 
-	// Player
-	m_player->SetActive(true);
+	// Camera
+	Camera::SetMain(m_cam);
+	m_cam->GetTransform().SetLocalPosition(glm::vec3(.0f, .5f, .0f));
 
 	// Ground
 	m_ground->GetTransform().SetLocalPosition(glm::vec3(0, -1, 0));
@@ -1939,8 +1945,11 @@ void MountainScene::OnInitialize()
 	m_ground->SetActive(true);
 
 	// Tiger
-	m_tiger->GetTransform().SetLocalPosition(glm::vec3(0, 0, -1.0f));
+	m_tiger->GetTransform().SetParent(&m_tigerContainer->GetTransform());
+	m_tiger->GetTransform().SetLocalRotation(glm::vec3(.0f, -135.f, .0f));
 	m_tiger->SetActive(true);
+	m_tigerContainer->GetTransform().SetLocalPosition(glm::vec3(0, 0, -1.0f));
+	m_tigerContainer->SetActive(true);
 }
 
 void MountainScene::OnPaint(Shader* shader)
@@ -1959,6 +1968,10 @@ MountainScene* MountainScene::GetInstance()
 
 void MountainScene::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+	// Quit the game
+	if (key == GLFW_KEY_ESCAPE)
+		glfwDestroyWindow(window);
+
 	if (action == GLFW_PRESS)
 	{
 		// Press key “w” and key “s” to increase and reduce the brightness of directional light
@@ -1983,39 +1996,114 @@ void MountainScene::key_callback(GLFWwindow* window, int key, int scancode, int 
 			GetInstance()->m_ground->SetTexture(&GetInstance()->m_groundTex2);
 		}
 
+		static float speed = .5f;
 		// Press arrow keys and L to control the movements of the tiger.
-		// up and down arrow indicate up and downward movement respectively.
 		if (key == GLFW_KEY_UP)
 		{
-
+			// Move forward
+			GetInstance()->m_tigerContainer->GetTransform().SetLocalPosition(
+				GetInstance()->m_tigerContainer->GetTransform().GetLocalPosition() + speed * GetInstance()->m_tigerContainer->GetTransform().GetForward());
 		}
 		else if (key == GLFW_KEY_DOWN)
 		{
-
-		} 
+			// Move backward
+			GetInstance()->m_tigerContainer->GetTransform().SetLocalPosition(
+				GetInstance()->m_tigerContainer->GetTransform().GetLocalPosition() + speed * GetInstance()->m_tigerContainer->GetTransform().GetBackward());
+		}
 		// left and right arrow indicate left and right rotation respectively
 		else if (key == GLFW_KEY_LEFT)
 		{
-			GetInstance()->m_tiger->GetTransform().SetLocalRotation(GetInstance()->m_tiger->GetTransform().GetLocalRotation() + glm::vec3(.0f, 30.f, .0f));
+			GetInstance()->m_tigerContainer->GetTransform().SetLocalRotation(GetInstance()->m_tigerContainer->GetTransform().GetLocalRotation() + glm::vec3(.0f, 30.f, .0f));
 		}
 		else if (key == GLFW_KEY_RIGHT)
 		{
-			GetInstance()->m_tiger->GetTransform().SetLocalRotation(GetInstance()->m_tiger->GetTransform().GetLocalRotation() + glm::vec3(.0f, -30.f, .0f));
+			GetInstance()->m_tigerContainer->GetTransform().SetLocalRotation(GetInstance()->m_tigerContainer->GetTransform().GetLocalRotation() + glm::vec3(.0f, -30.f, .0f));
 		}
 		else if (key == GLFW_KEY_L)
 		{
 			// ‘L’indicate the random movement in the horizon plane
+			int r = rand() % 4;
+			glm::vec3 dir = glm::vec3();
+			switch (r)
+			{
+			case 0:
+				dir = glm::vec3(speed, .0f, .0f);
+				break;
 
+			case 1:
+				dir = glm::vec3(-speed, .0f, .0f);
+				break;
+
+			case 2:
+				dir = glm::vec3(.0f, .0f, speed);
+				break;
+			default:
+				dir = glm::vec3(.0f, .0f, -speed);
+			}
+
+			GetInstance()->m_tigerContainer->GetTransform().SetLocalPosition(GetInstance()->m_tigerContainer->GetTransform().GetPosition() + dir);
 		}
 	}
 }
 
 void MountainScene::cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
+	if (!s_IsMouseLeftButtonDown)
+		return;
+
+	static int wWidth, wHeight; // Window width and height
+
+	// Get the center position of the window
+	glfwGetWindowSize(window, &wWidth, &wHeight);
+	static glm::vec2 center = glm::vec2(wWidth / 2, wHeight / 2);
+
+	// Do not proceed if the position is the center of the window
+	if (xpos == center.x && ypos == center.y)
+		return;
+
+	// Get Main Camera
+	Camera* cam = Camera::GetMain();
+
+	// The speed of the camera movement
+	static float speed = .1f;
+
+	// handle the mouse input
+	glm::vec2 newPos = glm::vec2(xpos, ypos);
+	glm::vec2 deltaPos = newPos - center;
+
+	// Up down
+	glm::vec3 cameraRotation = cam->GetTransform().GetRotation();
+	cameraRotation += glm::vec3(deltaPos.y * speed * -1.f, .0f, .0f);
+
+	// Left right
+	cameraRotation += glm::vec3(.0f, deltaPos.x * speed * -1.f, .0f);
+
+	// Clamp the rotation value
+	if (cameraRotation.x >= 360.f || cameraRotation.x <= -360.f)
+		cameraRotation.x = .0f;
+	if (cameraRotation.y >= 360.f || cameraRotation.y <= -360.f)
+		cameraRotation.y = .0f;
+
+	// Set the rotation of the camera
+	cam->GetTransform().SetRotation(cameraRotation);
+
+	// Fix the cursor position to the center of the screen
+	glfwSetCursorPos(window, wWidth / 2, wHeight / 2);
 }
 
 void MountainScene::mouse_button_callback(GLFWwindow* window, int button, int action, double xpos, int ypos)
 {
+	if (button == GLFW_MOUSE_BUTTON_LEFT)
+	{
+		if (action == GLFW_PRESS)
+		{
+			s_IsMouseLeftButtonDown = true;
+		}
+		else if (action == GLFW_RELEASE)
+		{
+			s_IsMouseLeftButtonDown = false;
+		}
+	}
 }
 
 void MountainScene::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
@@ -2023,6 +2111,7 @@ void MountainScene::scroll_callback(GLFWwindow* window, double xoffset, double y
 }
 
 MountainScene* MountainScene::s_instance = nullptr;
+bool MountainScene::s_IsMouseLeftButtonDown = false;
 
 #pragma endregion
 
@@ -2068,6 +2157,8 @@ void initializedGL(void) //run only once
 	shader->setupShader("VertexShaderCode.glsl", "FragmentShaderCode.glsl");
 	shader->use();
 
+	srand(time(NULL));
+
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 }
@@ -2087,6 +2178,7 @@ void paintGL(void)  //always run
 void onEnd(void)
 {
 	delete shader;
+	delete mountainScene;
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
