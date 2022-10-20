@@ -1494,6 +1494,7 @@ class Light : Object
 {
 public:
 	Light();
+	Light(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular);
 	~Light();
 
 	void SetAmbient(glm::vec3 ambient);
@@ -1502,7 +1503,7 @@ public:
 
 	virtual void OnPaint(Shader* shader);
 
-private:
+protected:
 	glm::vec3 m_ambient;
 	glm::vec3 m_diffuse;
 	glm::vec3 m_specular;
@@ -1511,6 +1512,11 @@ private:
 Light::Light() : Object(), m_ambient(glm::vec3()), m_diffuse(glm::vec3()), m_specular(glm::vec3())
 {
 
+}
+
+Light::Light(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) : Object(),
+m_ambient(ambient), m_diffuse(diffuse), m_specular(specular)
+{
 }
 
 Light::~Light()
@@ -1535,10 +1541,71 @@ void Light::SetSpecular(glm::vec3 specular)
 
 void Light::OnPaint(Shader* shader)
 {
-
 }
 
 // Directional Light
+class DirectionalLight : public Light
+{
+public:
+	DirectionalLight();
+	DirectionalLight(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, glm::vec3 direction);
+	~DirectionalLight();
+
+	virtual void OnPaint(Shader* shader);
+
+private:
+	glm::vec3 m_direction;
+};
+
+DirectionalLight::DirectionalLight() : Light(), m_direction()
+{
+
+}
+DirectionalLight::DirectionalLight(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, glm::vec3 direction) :
+	Light(ambient, diffuse, specular), m_direction(direction)
+{
+}
+
+DirectionalLight::~DirectionalLight()
+{
+}
+
+void DirectionalLight::OnPaint(Shader* shader)
+{
+
+}
+
+// Point Light
+class PointLight : public Light
+{
+public:
+	PointLight();
+	PointLight(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular,
+		float constant, float linear, float quaratic);
+	~PointLight();
+
+	virtual void OnPaint(Shader* shader);
+
+private:
+	float m_constant, m_linear, m_quadratic;
+};
+
+PointLight::PointLight() : Light(), m_constant(.0f), m_linear(.0f), m_quadratic(.0f)
+{
+
+}
+PointLight::PointLight(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float constant, float linear, float quaratic) :
+	Light(ambient, diffuse, specular), m_constant(constant), m_linear(linear), m_quadratic(quaratic)
+{
+}
+
+PointLight::~PointLight()
+{
+}
+void PointLight::OnPaint(Shader* shader)
+{
+
+}
 #pragma endregion
 
 #pragma endregion
