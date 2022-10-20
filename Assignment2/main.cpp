@@ -1174,6 +1174,7 @@ std::list<Object*> Scene::GetObjects() const
 typedef void(*KeyCallbackFunc)(GLFWwindow* window, int key, int scancode, int action, int mods);
 typedef void(*CursorPosCallbackFunc)(GLFWwindow* window, double xpos, double ypos);
 typedef void(*MouseButtonCallbackFunc)(GLFWwindow* window, int button, int action, double xpos, int ypos);
+typedef void(*ScrollCallbackFunc)(GLFWwindow* window, double xoffset, double yoffset);
 
 // A event listener that listen to the input event
 class KeyCallback
@@ -1219,6 +1220,20 @@ private:
 	MouseButtonCallbackFunc m_callback;
 };
 
+class ScrollCallback
+{
+public:
+	ScrollCallback(void);
+	ScrollCallback(ScrollCallbackFunc func);
+	void SetCallback(ScrollCallbackFunc func);
+
+private :
+	friend class Input;
+
+	int m_id;
+	ScrollCallbackFunc m_callback;
+};
+
 // The Input Manager to handle all the input events
 class Input
 {
@@ -1240,15 +1255,22 @@ public:
 	static void RemoveCursorPosCallback(CursorPosCallback callback);
 	static void RemoveAllCursorPosCallbacks();
 
+	// Scroll callback
+	static void AddScrollCallback(ScrollCallback callback);
+	static void RemoveScrollCallback(ScrollCallback callback);
+	static void RemoveAllScrollCallbacks();
+
 private:
 	static unsigned int s_nextKey;
 	static std::unordered_map<int, KeyCallback> s_keyCallbacks;
 	static std::unordered_map<int, CursorPosCallback> s_cursorPosCallbacks;
 	static std::unordered_map<int, MouseButtonCallback> s_mouseButtonCallbacks;
+	static std::unordered_map<int, ScrollCallback> s_scrollCallbacks;
 
 	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 	static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
 	static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+	static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 };
 
 KeyCallback::KeyCallback(void) : m_id(-1), m_callback(nullptr)
@@ -1294,10 +1316,25 @@ void MouseButtonCallback::SetCallback(MouseButtonCallbackFunc func)
 	m_callback = func;
 }
 
+ScrollCallback::ScrollCallback(void) : m_id(-1), m_callback(nullptr)
+{
+}
+
+ScrollCallback::ScrollCallback(ScrollCallbackFunc func) : m_id(-1)
+{
+	SetCallback(func);
+}
+
+void ScrollCallback::SetCallback(ScrollCallbackFunc func)
+{
+	m_callback = func;
+}
+
 unsigned int Input::s_nextKey = 0;
 std::unordered_map<int, KeyCallback> Input::s_keyCallbacks;
 std::unordered_map<int, CursorPosCallback> Input::s_cursorPosCallbacks;
 std::unordered_map<int, MouseButtonCallback> Input::s_mouseButtonCallbacks;
+std::unordered_map<int, ScrollCallback> Input::s_scrollCallbacks;
 
 // The key callback function which is binded to glfw
 void Input::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -1334,6 +1371,16 @@ void Input::mouse_button_callback(GLFWwindow* window, int button, int action, in
 	}
 }
 
+void Input::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	// Invoke all the callback listeners
+	for (unsigned int i = 0; i < s_scrollCallbacks.size(); i++)
+	{
+		if (s_scrollCallbacks[i].m_callback)
+			s_scrollCallbacks[i].m_callback(window, xoffset, yoffset);
+	}
+}
+
 // Initialize the Input Manager
 void Input::Init(GLFWwindow* window)
 {
@@ -1341,6 +1388,7 @@ void Input::Init(GLFWwindow* window)
 	glfwSetKeyCallback(window, key_callback);
 	glfwSetCursorPosCallback(window, cursor_position_callback);
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
+	glfwSetScrollCallback(window, scroll_callback);
 }
 
 void Input::AddKeyCallback(KeyCallback callback)
@@ -1423,6 +1471,34 @@ void Input::RemoveAllCursorPosCallbacks()
 	while (s_cursorPosCallbacks.size() > 0)
 	{
 		RemoveCursorPosCallback(s_cursorPosCallbacks.at(0));
+	}
+}
+
+void Input::AddScrollCallback(ScrollCallback callback)
+{
+	if (callback.m_id != -1)
+		return;
+
+	ScrollCallback newCallback(callback);
+	s_scrollCallbacks[s_nextKey] = newCallback;
+	callback.m_id = s_nextKey;
+	s_nextKey++;
+}
+
+void Input::RemoveScrollCallback(ScrollCallback callback)
+{
+	if (callback.m_id == -1)
+		return;
+
+	s_scrollCallbacks.erase(callback.m_id);
+	callback.m_id = -1;
+}
+
+void Input::RemoveAllScrollCallbacks()
+{
+	while (s_scrollCallbacks.size() > 0)
+	{
+		RemoveScrollCallback(s_scrollCallbacks.at(0));
 	}
 }
 
@@ -1921,27 +1997,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
-{
-	// Sets the mouse-button callback for the current window.	
-}
-
-void cursor_position_callback(GLFWwindow* window, double x, double y)
-{
-	// Sets the cursor position callback for the current window
-}
-
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-	// Sets the scoll callback for the current window.
-}
-
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	// Sets the Keyboard callback for the current window.
-}
-
-
 int main(int argc, char* argv[])
 {
 	GLFWwindow* window;
@@ -1973,10 +2028,6 @@ int main(int argc, char* argv[])
 
 	/*register callback functions*/
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetKeyCallback(window, key_callback);                                                                  //    
-	glfwSetScrollCallback(window, scroll_callback);
-	glfwSetCursorPosCallback(window, cursor_position_callback);
-	glfwSetMouseButtonCallback(window, mouse_button_callback);
 	Input::Init(window);
 
 	initializedGL();
