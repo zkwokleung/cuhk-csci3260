@@ -521,23 +521,23 @@ glm::mat4 Transform::GetTransformMat4() const
 {
 	glm::mat4 model = glm::mat4(1.0f);
 
-	// Scale
-	glm::mat4 s = glm::scale(glm::mat4(1.0f), GetLocalScale());
+	// Translate
+	model = glm::translate(model, GetLocalPosition());
 
 	// Rotate
-	glm::mat4 rx = glm::rotate(glm::mat4(1.0f), glm::radians(GetLocalRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
-	glm::mat4 ry = glm::rotate(glm::mat4(1.0f), glm::radians(GetLocalRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 rz = glm::rotate(glm::mat4(1.0f), glm::radians(GetLocalRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::rotate(model, glm::radians(GetLocalRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(GetLocalRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(GetLocalRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
 
-	// Translate
-	glm::mat4 t = glm::translate(glm::mat4(1.0f), GetLocalPosition());
+	// Scale
+	model = glm::scale(model, GetLocalScale());
 
 	if (m_parent != nullptr)
 	{
-		return m_parent->GetTransformMat4() * t * rz * ry * rx * s;
+		return m_parent->GetTransformMat4() * model;
 	}
 
-	return t * rz * ry * rx * s;
+	return model;
 }
 
 glm::vec3 Transform::GetLocalPosition() const
