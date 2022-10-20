@@ -522,40 +522,22 @@ glm::mat4 Transform::GetTransformMat4() const
 	glm::mat4 model = glm::mat4(1.0f);
 
 	// Scale
-	model = glm::scale(model, GetLocalScale());
+	glm::mat4 s = glm::scale(glm::mat4(1.0f), GetLocalScale());
 
 	// Rotate
-	model = glm::rotate(model, glm::radians(GetLocalRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(GetLocalRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(GetLocalRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::mat4 rx = glm::rotate(glm::mat4(1.0f), glm::radians(GetLocalRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
+	glm::mat4 ry = glm::rotate(glm::mat4(1.0f), glm::radians(GetLocalRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 rz = glm::rotate(glm::mat4(1.0f), glm::radians(GetLocalRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	// Translate
-	model = glm::translate(model, GetLocalPosition());
-
-	//static int i = 0;
-	//if (i != 2)
-	//{
-	//	std::cout << "position: (" << m_position.x << ", " << m_position.y << ", " << m_position.z << ")" << std::endl;
-	//	std::cout << "rotation: (" << m_rotation.x << ", " << m_rotation.y << ", " << m_rotation.z << ")" << std::endl;
-	//	std::cout << "scale: (" << m_scale.x << ", " << m_scale.y << ", " << m_scale.z << ")" << std::endl;
-	//	std::cout << "Transform: " << std::endl;
-	//	for (int i = 0; i < 4; i++)
-	//	{
-	//		for (int j = 0; j < 4; j++)
-	//		{
-	//			std::cout << model[j][i] << " ";
-	//		}
-	//		std::cout << std::endl;
-	//	}
-	//	i++;
-	//}
+	glm::mat4 t = glm::translate(glm::mat4(1.0f), GetLocalPosition());
 
 	if (m_parent != nullptr)
 	{
-		return m_parent->GetTransformMat4() * model;
+		return m_parent->GetTransformMat4() * t * rz * ry * rx * s;
 	}
 
-	return model;
+	return t * rz * ry * rx * s;
 }
 
 glm::vec3 Transform::GetLocalPosition() const
@@ -1566,18 +1548,19 @@ class ModelObject : public Object
 public:
 	ModelObject();
 	ModelObject(const char* modelPath, const char* texturePath);
-	ModelObject(Model model, Texture texture);
+	ModelObject(Model model);
+	ModelObject(Model model, Texture* texture);
 	~ModelObject();
 
 	void LoadModel(const char* path);
 	void LoadTexture(const char* path);
-	void SetTexture(Texture texture);
+	void SetTexture(Texture* texture);
 
 	virtual void OnPaint(Shader* shader);
 
 private:
 	Model m_model;
-	Texture m_texture;
+	Texture* m_texture;
 	VAO m_vao;
 	VBO m_vbo;
 	EBO m_ebo;
@@ -1589,18 +1572,28 @@ ModelObject::ModelObject() : Object(), m_model(), m_vao(), m_vbo(), m_ebo(), m_t
 }
 
 ModelObject::ModelObject(const char* modelPath, const char* texturePath) : Object(),
-m_model(loadOBJ(modelPath)), m_texture(),
+m_model(loadOBJ(modelPath)), m_texture(new Texture()),
 m_vao(), m_vbo((GLfloat*)&(m_model.vertices[0]), m_model.vertices.size() * sizeof(Vertex)),
 m_ebo((GLuint*)&m_model.indices[0], m_model.indices.size())
 {
-	m_texture.setupTexture(texturePath);
+	m_texture->setupTexture(texturePath);
 
 	m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, position));
 	m_vao.LinkAttrib(m_vbo, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, uv));
 	m_vao.LinkAttrib(m_vbo, 2, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, normal));
 }
 
-ModelObject::ModelObject(Model model, Texture texture) : Object(),
+ModelObject::ModelObject(Model model) : Object(),
+m_model(model), m_texture(nullptr),
+m_vao(), m_vbo((GLfloat*)&(m_model.vertices[0]), m_model.vertices.size() * sizeof(Vertex)),
+m_ebo((GLuint*)&m_model.indices[0], m_model.indices.size())
+{
+	m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, position));
+	m_vao.LinkAttrib(m_vbo, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, uv));
+	m_vao.LinkAttrib(m_vbo, 2, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+}
+
+ModelObject::ModelObject(Model model, Texture* texture) : Object(),
 m_model(model), m_texture(texture),
 m_vao(), m_vbo((GLfloat*)&(m_model.vertices[0]), m_model.vertices.size() * sizeof(Vertex)),
 m_ebo((GLuint*)&m_model.indices[0], m_model.indices.size())
@@ -1626,10 +1619,10 @@ void ModelObject::LoadModel(const char* path)
 
 void ModelObject::LoadTexture(const char* path)
 {
-	m_texture.setupTexture(path);
+	m_texture->setupTexture(path);
 }
 
-void ModelObject::SetTexture(Texture texture)
+void ModelObject::SetTexture(Texture* texture)
 {
 	m_texture = texture;
 }
@@ -1637,7 +1630,7 @@ void ModelObject::SetTexture(Texture texture)
 void ModelObject::OnPaint(Shader* shader)
 {
 	Object::OnPaint(shader);
-	m_texture.bind(0);
+	m_texture->bind(0);
 	Renderer::Draw(m_vao, m_ebo);
 }
 #pragma endregion
@@ -1884,17 +1877,42 @@ public:
 	virtual void OnPaint(Shader* shader);
 	virtual void OnEnd();
 
+	static MountainScene* GetInstance();
+
 private:
+	// Objects
 	FirstPersonPlayer* m_player;
 	ModelObject* m_tiger;
 	ModelObject* m_ground;
+
+	// Textures
+	Texture m_tigerTex1;
+	Texture m_tigerTex2;
+	Texture m_groundTex1;
+	Texture m_groundTex2;
+
+	static MountainScene* s_instance;
+	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+	static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
+	static void mouse_button_callback(GLFWwindow* window, int button, int action, double xpos, int ypos);
+	static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 };
 
 
 MountainScene::MountainScene() : Scene(), m_player(new FirstPersonPlayer()),
-m_tiger(new ModelObject("resources/tiger/tiger.obj", "resources/tiger/tiger_01.jpg")),
-m_ground(new ModelObject("resources/ground/ground.obj", "resources/ground/ground_01.jpg"))
+m_tiger(new ModelObject(loadOBJ("resources/tiger/tiger.obj"))),
+m_ground(new ModelObject(loadOBJ("resources/ground/ground.obj"))),
+m_tigerTex1(), m_tigerTex2(), m_groundTex1(), m_groundTex2()
 {
+	// Tiger Texture
+	m_tigerTex1.setupTexture("resources/tiger/tiger_01.jpg");
+	m_tigerTex2.setupTexture("resources/tiger/tiger_02.jpg");
+	m_tiger->SetTexture(&m_tigerTex1);
+
+	// Ground Texture
+	m_groundTex1.setupTexture("resources/ground/ground_01.jpg");
+	m_groundTex2.setupTexture("resources/ground/ground_02.jpg");
+	m_ground->SetTexture(&m_groundTex1);
 }
 
 MountainScene::~MountainScene()
@@ -1906,6 +1924,12 @@ MountainScene::~MountainScene()
 
 void MountainScene::OnInitialize()
 {
+	s_instance = this;
+	Input::AddCursorPosCallback(MountainScene::cursor_position_callback);
+	Input::AddKeyCallback(MountainScene::key_callback);
+	Input::AddMouseButtonCallback(MountainScene::mouse_button_callback);
+	Input::AddScrollCallback(MountainScene::scroll_callback);
+
 	// Player
 	m_player->SetActive(true);
 
@@ -1914,7 +1938,8 @@ void MountainScene::OnInitialize()
 	m_ground->GetTransform().SetLocalScale(glm::vec3(10, 1, 10));
 	m_ground->SetActive(true);
 
-	m_tiger->GetTransform().SetLocalPosition(glm::vec3(0, 0, -3.f));
+	// Tiger
+	m_tiger->GetTransform().SetLocalPosition(glm::vec3(0, 0, -1.0f));
 	m_tiger->SetActive(true);
 }
 
@@ -1926,6 +1951,78 @@ void MountainScene::OnPaint(Shader* shader)
 void MountainScene::OnEnd()
 {
 }
+
+MountainScene* MountainScene::GetInstance()
+{
+	return s_instance;
+}
+
+void MountainScene::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (action == GLFW_PRESS)
+	{
+		// Press key “w” and key “s” to increase and reduce the brightness of directional light
+
+		// Press key ’1’ and ’2’ to switch two different textures for the tiger
+		if (key == GLFW_KEY_1)
+		{
+			GetInstance()->m_tiger->SetTexture(&GetInstance()->m_tigerTex1);
+		}
+		else if (key == GLFW_KEY_2)
+		{
+			GetInstance()->m_tiger->SetTexture(&GetInstance()->m_tigerTex2);
+		}
+
+		// Press key ’3’ and ’4’ to switch two different textures for the ground surface
+		if (key == GLFW_KEY_3)
+		{
+			GetInstance()->m_ground->SetTexture(&GetInstance()->m_groundTex1);
+		}
+		else if (key == GLFW_KEY_4)
+		{
+			GetInstance()->m_ground->SetTexture(&GetInstance()->m_groundTex2);
+		}
+
+		// Press arrow keys and L to control the movements of the tiger.
+		// up and down arrow indicate up and downward movement respectively.
+		if (key == GLFW_KEY_UP)
+		{
+
+		}
+		else if (key == GLFW_KEY_DOWN)
+		{
+
+		} 
+		// left and right arrow indicate left and right rotation respectively
+		else if (key == GLFW_KEY_LEFT)
+		{
+			GetInstance()->m_tiger->GetTransform().SetLocalRotation(GetInstance()->m_tiger->GetTransform().GetLocalRotation() + glm::vec3(.0f, 30.f, .0f));
+		}
+		else if (key == GLFW_KEY_RIGHT)
+		{
+			GetInstance()->m_tiger->GetTransform().SetLocalRotation(GetInstance()->m_tiger->GetTransform().GetLocalRotation() + glm::vec3(.0f, -30.f, .0f));
+		}
+		else if (key == GLFW_KEY_L)
+		{
+			// ‘L’indicate the random movement in the horizon plane
+
+		}
+	}
+}
+
+void MountainScene::cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
+{
+}
+
+void MountainScene::mouse_button_callback(GLFWwindow* window, int button, int action, double xpos, int ypos)
+{
+}
+
+void MountainScene::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+}
+
+MountainScene* MountainScene::s_instance = nullptr;
 
 #pragma endregion
 
