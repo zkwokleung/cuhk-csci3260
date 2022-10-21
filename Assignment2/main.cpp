@@ -627,7 +627,7 @@ std::list<Transform*> Transform::GetChilds() const
 }
 #pragma endregion
 
-#pragma region Camera Related
+#pragma region Camera
 /**********************
 	Camera related
 ***********************/
@@ -676,6 +676,7 @@ void Camera::OnPaint(Shader* shader)
 	glm::mat4 p = s_main->GetProjectionMatrix();
 	shader->setMat4("u_viewMatrix", v);
 	shader->setMat4("u_projectionMatrix", p);
+	shader->setVec3("u_viewPos", GetMain()->GetTransform().GetPosition());
 }
 
 Camera::Camera() : m_transform()
@@ -1014,6 +1015,63 @@ void GameObject::Init()
 }
 #pragma endregion
 
+#pragma region Material
+class Material
+{
+public:
+	Material();
+	Material(glm::vec3 diffuse, glm::vec3 specular, float shininess);
+	~Material();
+	virtual void OnPaint(Shader* shader);
+
+	void SetDiffuse(glm::vec3 diffuse);
+	void SetSpecular(glm::vec3 specular);
+	void SetShininess(float shininess);
+
+private:
+	glm::vec3 m_diffuse;
+	glm::vec3 m_specular;
+	float m_shininess;
+};
+
+Material::Material() : m_diffuse(1.f), m_specular(1.f), m_shininess(.5f)
+{
+
+}
+
+Material::Material(glm::vec3 diffuse, glm::vec3 specular, float shininess) :
+	m_diffuse(diffuse), m_specular(specular), m_shininess(shininess)
+{
+
+}
+
+Material::~Material()
+{
+}
+
+void Material::OnPaint(Shader* shader)
+{
+	shader->setVec3("material.diffuse", m_diffuse);
+	shader->setVec3("material.specular", m_specular);
+	shader->setFloat("material.shininess", m_shininess);
+}
+
+void Material::SetDiffuse(glm::vec3 diffuse)
+{
+	m_diffuse = diffuse;
+}
+
+void Material::SetSpecular(glm::vec3 specular)
+{
+	m_specular = specular;
+}
+
+void Material::SetShininess(float shininess)
+{
+	m_shininess = shininess;
+}
+#pragma endregion
+
 #pragma region ModelObject
 class ModelObject : public Object
 {
@@ -1033,6 +1091,7 @@ public:
 private:
 	Model m_model;
 	Texture* m_texture;
+	Material m_material;
 	VAO m_vao;
 	VBO m_vbo;
 	EBO m_ebo;
@@ -1044,7 +1103,7 @@ ModelObject::ModelObject() : Object(), m_model(), m_vao(), m_vbo(), m_ebo(), m_t
 }
 
 ModelObject::ModelObject(const char* modelPath, const char* texturePath) : Object(),
-m_model(loadOBJ(modelPath)), m_texture(new Texture()),
+m_model(loadOBJ(modelPath)), m_texture(new Texture()), m_material(),
 m_vao(), m_vbo((GLfloat*)&(m_model.vertices[0]), m_model.vertices.size() * sizeof(Vertex)),
 m_ebo((GLuint*)&m_model.indices[0], m_model.indices.size())
 {
@@ -1056,7 +1115,7 @@ m_ebo((GLuint*)&m_model.indices[0], m_model.indices.size())
 }
 
 ModelObject::ModelObject(Model model) : Object(),
-m_model(model), m_texture(nullptr),
+m_model(model), m_texture(nullptr), m_material(),
 m_vao(), m_vbo((GLfloat*)&(m_model.vertices[0]), m_model.vertices.size() * sizeof(Vertex)),
 m_ebo((GLuint*)&m_model.indices[0], m_model.indices.size())
 {
@@ -1066,7 +1125,7 @@ m_ebo((GLuint*)&m_model.indices[0], m_model.indices.size())
 }
 
 ModelObject::ModelObject(Model model, Texture* texture) : Object(),
-m_model(model), m_texture(texture),
+m_model(model), m_texture(texture), m_material(),
 m_vao(), m_vbo((GLfloat*)&(m_model.vertices[0]), m_model.vertices.size() * sizeof(Vertex)),
 m_ebo((GLuint*)&m_model.indices[0], m_model.indices.size())
 {
@@ -1080,6 +1139,7 @@ ModelObject::~ModelObject()
 	m_vao.Delete();
 	m_vbo.Delete();
 	m_ebo.Delete();
+	//delete m_texture;
 }
 
 void ModelObject::LoadModel(const char* path)
@@ -1103,6 +1163,7 @@ void ModelObject::OnPaint(Shader* shader)
 {
 	Object::OnPaint(shader);
 	m_texture->bind(0);
+	m_material.OnPaint(shader);
 	Renderer::Draw(m_vao, m_ebo);
 }
 #pragma endregion
@@ -1583,7 +1644,7 @@ void Input::RemoveAllScrollCallbacks()
 
 #pragma region Lighting
 // Base Light
-class Light : Object
+class Light : public Object
 {
 public:
 	Light();
@@ -1600,6 +1661,8 @@ protected:
 	glm::vec3 m_ambient;
 	glm::vec3 m_diffuse;
 	glm::vec3 m_specular;
+
+	virtual std::string GetUniformNamePrefix() const;
 };
 
 Light::Light() : Object(), m_ambient(glm::vec3()), m_diffuse(glm::vec3()), m_specular(glm::vec3())
@@ -1634,6 +1697,14 @@ void Light::SetSpecular(glm::vec3 specular)
 
 void Light::OnPaint(Shader* shader)
 {
+	shader->setVec3(GetUniformNamePrefix() + ".ambient", m_ambient);
+	shader->setVec3(GetUniformNamePrefix() + ".diffuse", m_diffuse);
+	shader->setVec3(GetUniformNamePrefix() + ".specular", m_specular);
+}
+
+std::string Light::GetUniformNamePrefix() const
+{
+	return "light";
 }
 
 // Directional Light
@@ -1644,10 +1715,14 @@ public:
 	DirectionalLight(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, glm::vec3 direction);
 	~DirectionalLight();
 
+	void SetDirection(glm::vec3 direction);
+
 	virtual void OnPaint(Shader* shader);
 
 private:
 	glm::vec3 m_direction;
+
+	virtual std::string GetUniformNamePrefix() const;
 };
 
 DirectionalLight::DirectionalLight() : Light(), m_direction()
@@ -1663,9 +1738,20 @@ DirectionalLight::~DirectionalLight()
 {
 }
 
+void DirectionalLight::SetDirection(glm::vec3 direction)
+{
+	m_direction = direction;
+}
+
 void DirectionalLight::OnPaint(Shader* shader)
 {
+	Light::OnPaint(shader);
+	shader->setVec3(GetUniformNamePrefix() + ".direction", m_direction);
+}
 
+std::string DirectionalLight::GetUniformNamePrefix() const
+{
+	return "dirLight";
 }
 
 // Point Light
@@ -1697,6 +1783,7 @@ PointLight::~PointLight()
 }
 void PointLight::OnPaint(Shader* shader)
 {
+	Light::OnPaint(shader);
 
 }
 #pragma endregion
@@ -1969,6 +2056,9 @@ private:
 	Texture m_groundTex1;
 	Texture m_groundTex2;
 
+	// Lights
+	DirectionalLight* m_dirLight;
+
 	static MountainScene* s_instance;
 	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 	static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
@@ -1984,13 +2074,14 @@ m_tiger(new ModelObject(loadOBJ("resources/tiger/tiger.obj"))), m_tigerContainer
 m_ground(new ModelObject(loadOBJ("resources/ground/ground.obj"))),
 m_cottage(new ModelObject("resources/cottage/cottage.obj", "resources/cottage/Cottage_Dirt_Base_Color.png")),
 m_tower(new ModelObject("resources/tower/tower.obj", "resources/tower/woodenplank.jpg")),
-m_mountain(new ModelObject("resources/mountain/mount.obj", "resources/ground/ground_01.jpg")),
-m_mountain2(new ModelObject("resources/mountain/mount.obj", "resources/ground/ground_01.jpg")),
-m_mountain3(new ModelObject("resources/mountain/mount.obj", "resources/ground/ground_01.jpg")),
-m_mountain4(new ModelObject("resources/mountain/mount.obj", "resources/ground/ground_01.jpg")),
-m_mountain5(new ModelObject("resources/mountain/mount.obj", "resources/ground/ground_01.jpg")),
-m_mountain6(new ModelObject("resources/mountain/mount.obj", "resources/ground/ground_01.jpg")),
-m_tigerTex1(), m_tigerTex2(), m_groundTex1(), m_groundTex2()
+m_mountain(new ModelObject("resources/mountain/mount.obj", "resources/mountain/rock-mountain.png")),
+m_mountain2(new ModelObject("resources/mountain/mount.obj", "resources/mountain/rock-mountain.png")),
+m_mountain3(new ModelObject("resources/mountain/mount.obj", "resources/mountain/rock-mountain.png")),
+m_mountain4(new ModelObject("resources/mountain/mount.obj", "resources/mountain/rock-mountain.png")),
+m_mountain5(new ModelObject("resources/mountain/mount.obj", "resources/mountain/rock-mountain.png")),
+m_mountain6(new ModelObject("resources/mountain/mount.obj", "resources/mountain/rock-mountain.png")),
+m_tigerTex1(), m_tigerTex2(), m_groundTex1(), m_groundTex2(),
+m_dirLight(new DirectionalLight(glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f)))
 {
 	// Tiger Texture
 	m_tigerTex1.setupTexture("resources/tiger/tiger_01.jpg");
@@ -2076,7 +2167,12 @@ void MountainScene::OnInitialize()
 	m_mountain6->GetTransform().SetScale(glm::vec3(10.f, 10.f, 10.f));
 	m_mountain6->SetActive(true);
 
-
+	// Directional Light
+	m_dirLight->SetActive(true);
+	m_dirLight->SetAmbient(glm::vec3(.0f, 0.f, 1.f));
+	//m_dirLight->SetDiffuse(glm::vec3(1.0f, 1.0f, 1.0f));
+	//m_dirLight->SetSpecular(glm::vec3(1.0f, 1.0f, 1.0f));
+	m_dirLight->SetDirection(glm::vec3(.0f, -.5f, -.5f));
 }
 
 void MountainScene::OnPaint(Shader* shader)
