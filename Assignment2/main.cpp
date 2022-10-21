@@ -1014,6 +1014,99 @@ void GameObject::Init()
 }
 #pragma endregion
 
+#pragma region ModelObject
+class ModelObject : public Object
+{
+public:
+	ModelObject();
+	ModelObject(const char* modelPath, const char* texturePath);
+	ModelObject(Model model);
+	ModelObject(Model model, Texture* texture);
+	~ModelObject();
+
+	void LoadModel(const char* path);
+	void LoadTexture(const char* path);
+	void SetTexture(Texture* texture);
+
+	virtual void OnPaint(Shader* shader);
+
+private:
+	Model m_model;
+	Texture* m_texture;
+	VAO m_vao;
+	VBO m_vbo;
+	EBO m_ebo;
+};
+
+ModelObject::ModelObject() : Object(), m_model(), m_vao(), m_vbo(), m_ebo(), m_texture()
+{
+
+}
+
+ModelObject::ModelObject(const char* modelPath, const char* texturePath) : Object(),
+m_model(loadOBJ(modelPath)), m_texture(new Texture()),
+m_vao(), m_vbo((GLfloat*)&(m_model.vertices[0]), m_model.vertices.size() * sizeof(Vertex)),
+m_ebo((GLuint*)&m_model.indices[0], m_model.indices.size())
+{
+	m_texture->setupTexture(texturePath);
+
+	m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, position));
+	m_vao.LinkAttrib(m_vbo, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, uv));
+	m_vao.LinkAttrib(m_vbo, 2, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+}
+
+ModelObject::ModelObject(Model model) : Object(),
+m_model(model), m_texture(nullptr),
+m_vao(), m_vbo((GLfloat*)&(m_model.vertices[0]), m_model.vertices.size() * sizeof(Vertex)),
+m_ebo((GLuint*)&m_model.indices[0], m_model.indices.size())
+{
+	m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, position));
+	m_vao.LinkAttrib(m_vbo, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, uv));
+	m_vao.LinkAttrib(m_vbo, 2, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+}
+
+ModelObject::ModelObject(Model model, Texture* texture) : Object(),
+m_model(model), m_texture(texture),
+m_vao(), m_vbo((GLfloat*)&(m_model.vertices[0]), m_model.vertices.size() * sizeof(Vertex)),
+m_ebo((GLuint*)&m_model.indices[0], m_model.indices.size())
+{
+	m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, position));
+	m_vao.LinkAttrib(m_vbo, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, uv));
+	m_vao.LinkAttrib(m_vbo, 2, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+}
+
+ModelObject::~ModelObject()
+{
+	m_vao.Delete();
+	m_vbo.Delete();
+	m_ebo.Delete();
+}
+
+void ModelObject::LoadModel(const char* path)
+{
+	m_model = loadOBJ(path);
+	m_vbo = VBO((GLfloat*)&(m_model.vertices[0]), m_model.vertices.size() * sizeof(Vertex));
+	m_ebo = EBO((GLuint*)&m_model.indices[0], m_model.indices.size());
+}
+
+void ModelObject::LoadTexture(const char* path)
+{
+	m_texture->setupTexture(path);
+}
+
+void ModelObject::SetTexture(Texture* texture)
+{
+	m_texture = texture;
+}
+
+void ModelObject::OnPaint(Shader* shader)
+{
+	Object::OnPaint(shader);
+	m_texture->bind(0);
+	Renderer::Draw(m_vao, m_ebo);
+}
+#pragma endregion
+
 #pragma region Scene
 class Scene
 {
@@ -1211,7 +1304,7 @@ public:
 	ScrollCallback(ScrollCallbackFunc func);
 	void SetCallback(ScrollCallbackFunc func);
 
-private :
+private:
 	friend class Input;
 
 	int m_id;
@@ -1611,99 +1704,6 @@ void PointLight::OnPaint(Shader* shader)
 #pragma endregion
 
 #pragma region Assignment Specific Classes
-#pragma region ModelObject
-class ModelObject : public Object
-{
-public:
-	ModelObject();
-	ModelObject(const char* modelPath, const char* texturePath);
-	ModelObject(Model model);
-	ModelObject(Model model, Texture* texture);
-	~ModelObject();
-
-	void LoadModel(const char* path);
-	void LoadTexture(const char* path);
-	void SetTexture(Texture* texture);
-
-	virtual void OnPaint(Shader* shader);
-
-private:
-	Model m_model;
-	Texture* m_texture;
-	VAO m_vao;
-	VBO m_vbo;
-	EBO m_ebo;
-};
-
-ModelObject::ModelObject() : Object(), m_model(), m_vao(), m_vbo(), m_ebo(), m_texture()
-{
-
-}
-
-ModelObject::ModelObject(const char* modelPath, const char* texturePath) : Object(),
-m_model(loadOBJ(modelPath)), m_texture(new Texture()),
-m_vao(), m_vbo((GLfloat*)&(m_model.vertices[0]), m_model.vertices.size() * sizeof(Vertex)),
-m_ebo((GLuint*)&m_model.indices[0], m_model.indices.size())
-{
-	m_texture->setupTexture(texturePath);
-
-	m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, position));
-	m_vao.LinkAttrib(m_vbo, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, uv));
-	m_vao.LinkAttrib(m_vbo, 2, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, normal));
-}
-
-ModelObject::ModelObject(Model model) : Object(),
-m_model(model), m_texture(nullptr),
-m_vao(), m_vbo((GLfloat*)&(m_model.vertices[0]), m_model.vertices.size() * sizeof(Vertex)),
-m_ebo((GLuint*)&m_model.indices[0], m_model.indices.size())
-{
-	m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, position));
-	m_vao.LinkAttrib(m_vbo, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, uv));
-	m_vao.LinkAttrib(m_vbo, 2, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, normal));
-}
-
-ModelObject::ModelObject(Model model, Texture* texture) : Object(),
-m_model(model), m_texture(texture),
-m_vao(), m_vbo((GLfloat*)&(m_model.vertices[0]), m_model.vertices.size() * sizeof(Vertex)),
-m_ebo((GLuint*)&m_model.indices[0], m_model.indices.size())
-{
-	m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, position));
-	m_vao.LinkAttrib(m_vbo, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, uv));
-	m_vao.LinkAttrib(m_vbo, 2, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, normal));
-}
-
-ModelObject::~ModelObject()
-{
-	m_vao.Delete();
-	m_vbo.Delete();
-	m_ebo.Delete();
-}
-
-void ModelObject::LoadModel(const char* path)
-{
-	m_model = loadOBJ(path);
-	m_vbo = VBO((GLfloat*)&(m_model.vertices[0]), m_model.vertices.size() * sizeof(Vertex));
-	m_ebo = EBO((GLuint*)&m_model.indices[0], m_model.indices.size());
-}
-
-void ModelObject::LoadTexture(const char* path)
-{
-	m_texture->setupTexture(path);
-}
-
-void ModelObject::SetTexture(Texture* texture)
-{
-	m_texture = texture;
-}
-
-void ModelObject::OnPaint(Shader* shader)
-{
-	Object::OnPaint(shader);
-	m_texture->bind(0);
-	Renderer::Draw(m_vao, m_ebo);
-}
-#pragma endregion
-
 #pragma region Player Controller
 class PlayerController : public Object
 {
@@ -1954,6 +1954,14 @@ private:
 	ModelObject* m_tiger;
 	ModelObject* m_ground;
 	Object* m_tigerContainer;
+	ModelObject* m_cottage;
+	ModelObject* m_tower;
+	ModelObject* m_mountain;
+	ModelObject* m_mountain2;
+	ModelObject* m_mountain3;
+	ModelObject* m_mountain4;
+	ModelObject* m_mountain5;
+	ModelObject* m_mountain6;
 
 	// Textures
 	Texture m_tigerTex1;
@@ -1966,7 +1974,7 @@ private:
 	static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
 	static void mouse_button_callback(GLFWwindow* window, int button, int action, double xpos, int ypos);
 	static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-	
+
 	static bool s_IsMouseLeftButtonDown;
 };
 
@@ -1974,6 +1982,14 @@ private:
 MountainScene::MountainScene() : Scene(), m_cam(new Camera()),
 m_tiger(new ModelObject(loadOBJ("resources/tiger/tiger.obj"))), m_tigerContainer(new Object()),
 m_ground(new ModelObject(loadOBJ("resources/ground/ground.obj"))),
+m_cottage(new ModelObject("resources/cottage/cottage.obj", "resources/cottage/Cottage_Dirt_Base_Color.png")),
+m_tower(new ModelObject("resources/tower/tower.obj", "resources/tower/woodenplank.jpg")),
+m_mountain(new ModelObject("resources/mountain/mount.obj", "resources/ground/ground_01.jpg")),
+m_mountain2(new ModelObject("resources/mountain/mount.obj", "resources/ground/ground_01.jpg")),
+m_mountain3(new ModelObject("resources/mountain/mount.obj", "resources/ground/ground_01.jpg")),
+m_mountain4(new ModelObject("resources/mountain/mount.obj", "resources/ground/ground_01.jpg")),
+m_mountain5(new ModelObject("resources/mountain/mount.obj", "resources/ground/ground_01.jpg")),
+m_mountain6(new ModelObject("resources/mountain/mount.obj", "resources/ground/ground_01.jpg")),
 m_tigerTex1(), m_tigerTex2(), m_groundTex1(), m_groundTex2()
 {
 	// Tiger Texture
@@ -1992,6 +2008,12 @@ MountainScene::~MountainScene()
 	delete m_cam;
 	delete m_tiger;
 	delete m_ground;
+	delete m_tigerContainer;
+	delete m_cottage;
+	delete m_tower;
+	delete m_mountain;
+	delete m_mountain2;
+	delete m_mountain3;
 }
 
 void MountainScene::OnInitialize()
@@ -2017,6 +2039,44 @@ void MountainScene::OnInitialize()
 	m_tiger->SetActive(true);
 	m_tigerContainer->GetTransform().SetLocalPosition(glm::vec3(0, 0, -1.0f));
 	m_tigerContainer->SetActive(true);
+
+	// Cottage
+	m_cottage->GetTransform().SetLocalPosition(glm::vec3(.0f, .0f, -10.f));
+	m_cottage->GetTransform().SetLocalScale(glm::vec3(.1f, .1f, .1f));
+	m_cottage->GetTransform().SetLocalRotation(glm::vec3(.0f, -75.f, .0f));
+	//m_cottage->SetActive(true);
+
+	// tower
+	m_tower->GetTransform().SetLocalPosition(glm::vec3(.0f, -2.f, -10.f));
+	m_tower->GetTransform().SetLocalRotation(glm::vec3(.0f, -75.f, .0f));
+	m_tower->SetActive(true);
+
+	// Mountain 
+	m_mountain->GetTransform().SetLocalPosition(glm::vec3(.0f, -2.0f, -100.f));
+	m_mountain->GetTransform().SetScale(glm::vec3(10.f, 10.f, 10.f));
+	m_mountain->SetActive(true);
+
+	m_mountain2->GetTransform().SetLocalPosition(glm::vec3(-100.0f, -5.0f, -100.f));
+	m_mountain2->GetTransform().SetScale(glm::vec3(10.f, 10.f, 10.f));
+	m_mountain2->SetActive(true);
+
+	m_mountain3->GetTransform().SetLocalPosition(glm::vec3(100.0f, -5.0f, -100.f));
+	m_mountain3->GetTransform().SetScale(glm::vec3(10.f, 10.f, 10.f));
+	m_mountain3->SetActive(true);
+
+	m_mountain4->GetTransform().SetLocalPosition(glm::vec3(50.0f, -5.0f, 50.f));
+	m_mountain4->GetTransform().SetScale(glm::vec3(10.f, 10.f, 10.f));
+	m_mountain4->SetActive(true);
+
+	m_mountain5->GetTransform().SetLocalPosition(glm::vec3(-50.0f, -5.0f, -50.f));
+	m_mountain5->GetTransform().SetScale(glm::vec3(10.f, 10.f, 10.f));
+	m_mountain5->SetActive(true);
+
+	m_mountain6->GetTransform().SetLocalPosition(glm::vec3(-100.0f, -5.0f, 100.f));
+	m_mountain6->GetTransform().SetScale(glm::vec3(10.f, 10.f, 10.f));
+	m_mountain6->SetActive(true);
+
+
 }
 
 void MountainScene::OnPaint(Shader* shader)
