@@ -2160,7 +2160,6 @@ void MountainScene::OnInitialize()
 
 	// Ground
 	m_ground->GetTransform().SetLocalPosition(glm::vec3(0, -1, 0));
-	m_ground->GetTransform().SetLocalScale(glm::vec3(10, 1, 10));
 	m_ground->SetActive(true);
 
 	// Tiger
@@ -2211,7 +2210,7 @@ void MountainScene::OnInitialize()
 	m_dirLight->SetAmbient(glm::vec3(.2f));
 	m_dirLight->SetDiffuse(glm::vec3(.2f));
 	m_dirLight->SetSpecular(glm::vec3(1.f));
-	m_dirLight->SetDirection(glm::vec3(.0f, -.5f, -.5f));
+	m_dirLight->SetDirection(glm::vec3(-0.2f, -0.3f, -1.0f));
 
 	// Point Light
 	m_pointLight->SetAmbient(glm::vec3(.0f, .0f, .0f));

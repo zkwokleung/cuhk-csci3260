@@ -22,7 +22,7 @@ void main()
 	vec4 n = u_modelMatrix * vec4(normal, 1.0);
 
 	// UV and lighting
-	v_position = position;
+	v_position = normalize(vec3(u_modelMatrix * v));
 	v_uv = uv;
 	v_normal = normalize(vec3(n));
 }
