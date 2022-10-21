@@ -19,9 +19,10 @@ void main()
 	// Position
 	vec4 v = vec4(position, 1.0);
 	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * v;
+	vec4 n = u_modelMatrix * vec4(normal, 1.0);
 
 	// UV and lighting
 	v_position = position;
 	v_uv = uv;
-	v_normal = normalize(normal);
+	v_normal = normalize(vec3(n));
 }

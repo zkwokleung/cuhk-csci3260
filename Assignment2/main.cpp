@@ -20,6 +20,7 @@ Student Name:
 #include <map>
 #include <stdlib.h>
 #include <time.h>
+#include <sstream>
 
 #pragma region Assignment given APIs
 
@@ -1764,28 +1765,64 @@ public:
 	~PointLight();
 
 	virtual void OnPaint(Shader* shader);
+	virtual std::string GetUniformNamePrefix() const;
+	virtual void SetActive(bool active);
 
 private:
+	int m_id;
 	float m_constant, m_linear, m_quadratic;
+
+	static int s_activeCount;
 };
 
-PointLight::PointLight() : Light(), m_constant(.0f), m_linear(.0f), m_quadratic(.0f)
+PointLight::PointLight() : Light(), m_constant(.0f), m_linear(.0f), m_quadratic(.0f), m_id(-1)
 {
 
 }
 PointLight::PointLight(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float constant, float linear, float quaratic) :
-	Light(ambient, diffuse, specular), m_constant(constant), m_linear(linear), m_quadratic(quaratic)
+	Light(ambient, diffuse, specular), m_constant(constant), m_linear(linear), m_quadratic(quaratic),
+	m_id(-1)
 {
 }
 
 PointLight::~PointLight()
 {
 }
+
 void PointLight::OnPaint(Shader* shader)
 {
 	Light::OnPaint(shader);
+	shader->setFloat(GetUniformNamePrefix() + ".constant", m_constant);
+	shader->setFloat(GetUniformNamePrefix() + ".linear", m_linear);
+	shader->setFloat(GetUniformNamePrefix() + ".quadratic", m_quadratic);
 
+	shader->setVec3(GetUniformNamePrefix() + ".constant", GetTransform().GetPosition());
 }
+
+std::string PointLight::GetUniformNamePrefix() const
+{
+	std::stringstream ss;
+	char id = m_id + '0';
+	ss << "pointLights[" << id << "]";
+	return ss.str();
+}
+
+void PointLight::SetActive(bool active)
+{
+	if (active)
+	{
+		m_id = s_activeCount++;
+	}
+	else if (IsActive())
+	{
+		m_id = -1;
+		s_activeCount--;
+	}
+
+	Object::SetActive(active);
+}
+
+int PointLight::s_activeCount = 0;
 #pragma endregion
 
 #pragma endregion
@@ -2058,6 +2095,7 @@ private:
 
 	// Lights
 	DirectionalLight* m_dirLight;
+	PointLight* m_pointLight;
 
 	static MountainScene* s_instance;
 	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -2081,7 +2119,8 @@ m_mountain4(new ModelObject("resources/mountain/mount.obj", "resources/mountain/
 m_mountain5(new ModelObject("resources/mountain/mount.obj", "resources/mountain/rock-mountain.png")),
 m_mountain6(new ModelObject("resources/mountain/mount.obj", "resources/mountain/rock-mountain.png")),
 m_tigerTex1(), m_tigerTex2(), m_groundTex1(), m_groundTex2(),
-m_dirLight(new DirectionalLight(glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f)))
+m_dirLight(new DirectionalLight(glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f))),
+m_pointLight(new PointLight(glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), 1.0f, 0.7f, 1.8f))
 {
 	// Tiger Texture
 	m_tigerTex1.setupTexture("resources/tiger/tiger_01.jpg");
@@ -2169,10 +2208,15 @@ void MountainScene::OnInitialize()
 
 	// Directional Light
 	m_dirLight->SetActive(true);
-	m_dirLight->SetAmbient(glm::vec3(.0f, 0.f, 1.f));
-	//m_dirLight->SetDiffuse(glm::vec3(1.0f, 1.0f, 1.0f));
-	//m_dirLight->SetSpecular(glm::vec3(1.0f, 1.0f, 1.0f));
+	m_dirLight->SetAmbient(glm::vec3(.2f));
+	m_dirLight->SetDiffuse(glm::vec3(.2f));
+	m_dirLight->SetSpecular(glm::vec3(1.f));
 	m_dirLight->SetDirection(glm::vec3(.0f, -.5f, -.5f));
+
+	// Point Light
+	m_pointLight->SetAmbient(glm::vec3(.0f, .0f, .0f));
+	m_pointLight->GetTransform().SetLocalPosition(glm::vec3(.0f, 5.f, 2.f));
+	m_pointLight->SetActive(true);
 }
 
 void MountainScene::OnPaint(Shader* shader)

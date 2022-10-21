@@ -51,7 +51,7 @@ struct PointLight {
     vec3 diffuse;
     vec3 specular;
 };  
-#define NR_POINT_LIGHTS 4  
+#define NR_POINT_LIGHTS 1  
 uniform PointLight pointLights[NR_POINT_LIGHTS];
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 
@@ -70,8 +70,8 @@ void main()
     vec3 result = CalcDirLight(dirLight, norm, viewDir);
 
     // Point Lights
-    // for(int i = 0; i < NR_POINT_LIGHTS; i++)
-    //     result += CalcPointLight(pointLights[i], norm, v_position, viewDir);
+    for(int i = 0; i < NR_POINT_LIGHTS; i++)
+        result += CalcPointLight(pointLights[i], norm, v_position, viewDir);
 
 	FragColor = texture(u_Texture, v_uv).rgb * result;
 }
