@@ -416,6 +416,9 @@ public:
 	void SetLocalScale(glm::vec3 value);
 
 	glm::mat4 GetTransformMat4() const;
+	glm::mat4 GetRotationMat4() const;
+	glm::mat4 GetScaleMat4() const;
+	glm::mat4 GetPositionMat4() const;
 
 	glm::vec3 GetForward() const;
 	glm::vec3 GetBackward() const;
@@ -518,6 +521,15 @@ void Transform::OnPaint(Shader* shader)
 {
 	glm::mat4 m = GetTransformMat4();
 	shader->setMat4("u_modelMatrix", m);
+
+	glm::mat4 pos = GetPositionMat4();
+	shader->setMat4("u_positionMat4", pos);
+
+	glm::mat4 rot = GetRotationMat4();
+	shader->setMat4("u_rotationMat4", rot);
+
+	glm::mat4 s = GetScaleMat4();
+	shader->setMat4("u_scaleMat4", s);
 }
 
 glm::mat4 Transform::GetTransformMat4() const
@@ -541,6 +553,25 @@ glm::mat4 Transform::GetTransformMat4() const
 	}
 
 	return model;
+}
+
+glm::mat4 Transform::GetRotationMat4() const
+{
+	glm::mat4 r = glm::mat4(1.0f);
+	r = glm::rotate(r, glm::radians(GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
+	r = glm::rotate(r, glm::radians(GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+	r = glm::rotate(r, glm::radians(GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
+	return r;
+}
+
+glm::mat4 Transform::GetScaleMat4() const
+{
+	return glm::scale(glm::mat4(1.0f), GetScale());
+}
+
+glm::mat4 Transform::GetPositionMat4() const
+{
+	return glm::translate(glm::mat4(1.f), GetPosition());
 }
 
 glm::vec3 Transform::GetLocalPosition() const
@@ -603,7 +634,7 @@ glm::vec3 Transform::GetLeft() const
 
 glm::vec3 Transform::GetUp() const
 {
-	return glm::cross(GetForward(), GetRight());
+	return glm::cross(GetForward(), GetLeft());
 }
 
 glm::vec3 Transform::GetDown() const
@@ -1789,20 +1820,23 @@ public:
 	virtual std::string GetUniformNamePrefix() const;
 	virtual void SetActive(bool active);
 
+	void SetIntensity(float intensity);
+	float GetIntensity() const;
+
 private:
 	int m_id;
-	float m_constant, m_linear, m_quadratic;
+	float m_constant, m_linear, m_quadratic, m_intensity;
 
 	static int s_activeCount;
 };
 
-PointLight::PointLight() : Light(), m_constant(.0f), m_linear(.0f), m_quadratic(.0f), m_id(-1)
+PointLight::PointLight() : Light(), m_constant(.0f), m_linear(.0f), m_quadratic(.0f), m_intensity(1.f), m_id(-1)
 {
 
 }
 PointLight::PointLight(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float constant, float linear, float quaratic) :
 	Light(ambient, diffuse, specular), m_constant(constant), m_linear(linear), m_quadratic(quaratic),
-	m_id(-1)
+	m_intensity(1.f), m_id(-1)
 {
 }
 
@@ -1817,7 +1851,9 @@ void PointLight::OnPaint(Shader* shader)
 	shader->setFloat(GetUniformNamePrefix() + ".linear", m_linear);
 	shader->setFloat(GetUniformNamePrefix() + ".quadratic", m_quadratic);
 
-	shader->setVec3(GetUniformNamePrefix() + ".constant", GetTransform().GetPosition());
+	shader->setVec3(GetUniformNamePrefix() + ".position", GetTransform().GetPosition());
+
+	shader->setFloat(GetUniformNamePrefix() + ".intensity", m_intensity);
 }
 
 std::string PointLight::GetUniformNamePrefix() const
@@ -1843,7 +1879,107 @@ void PointLight::SetActive(bool active)
 	Object::SetActive(active);
 }
 
+void PointLight::SetIntensity(float intensity)
+{
+	m_intensity = intensity;
+}
+
+float PointLight::GetIntensity() const
+{
+	return m_intensity;
+}
+
 int PointLight::s_activeCount = 0;
+
+// Spot Light
+class SpotLight : public PointLight
+{
+public:
+	SpotLight();
+	SpotLight(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, 
+		float constant, float linear, float quaratic,
+		glm::vec3 direction, float cutOff, float innerCutOff);
+	~SpotLight();
+
+	virtual std::string GetUniformNamePrefix() const;
+	virtual void OnPaint(Shader* shader);
+
+	void SetDirection(glm::vec3 direction);
+	glm::vec3 GetDirection() const;
+
+	void SetCutOff(float cutOff);
+	float GetCutOff() const;
+	void SetInnerCutOff(float innerCutOff);
+	float GetInnerCutOff() const;
+
+private:
+	glm::vec3 m_direction;
+	float m_cutOff;
+	float m_innerCutOff;
+};
+
+SpotLight::SpotLight() : PointLight(), m_direction(glm::vec3(.0f, -1.f, .0f)), m_cutOff(12.5f), m_innerCutOff(0.99f)
+{
+
+}
+
+SpotLight::SpotLight(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, 
+	float constant, float linear, float quaratic,
+	glm::vec3 direction, float cutOff, float innerCutOff) :
+	PointLight(ambient, diffuse, specular, constant, linear, quaratic), 
+	m_direction(direction), m_cutOff(cutOff), m_innerCutOff(innerCutOff)
+{
+}
+
+SpotLight::~SpotLight()
+{
+}
+
+std::string SpotLight::GetUniformNamePrefix() const
+{
+	return "spotLight";
+}
+
+void SpotLight::OnPaint(Shader* shader)
+{
+	PointLight::OnPaint(shader);
+	shader->setVec3(GetUniformNamePrefix() + ".position", GetTransform().GetPosition());
+	shader->setVec3(GetUniformNamePrefix() + ".direction", m_direction);
+	shader->setFloat(GetUniformNamePrefix() + ".cutOff", m_cutOff);
+	shader->setFloat(GetUniformNamePrefix() + ".innerCutOff", m_innerCutOff);
+}
+
+void SpotLight::SetDirection(glm::vec3 direction)
+{
+	m_direction = direction;
+}
+
+glm::vec3 SpotLight::GetDirection() const
+{
+	return m_direction;
+}
+
+void SpotLight::SetCutOff(float cutOff)
+{
+	m_cutOff = cutOff;
+}
+
+float SpotLight::GetCutOff() const
+{
+	return m_cutOff;
+}
+
+void SpotLight::SetInnerCutOff(float innerCutOff)
+{
+	m_innerCutOff = innerCutOff;
+}
+
+float SpotLight::GetInnerCutOff() const
+{
+	return m_innerCutOff;
+}
+
+
 #pragma endregion
 
 #pragma endregion
@@ -2097,10 +2233,14 @@ private:
 	// Objects
 	Camera* m_cam;
 	ModelObject* m_tiger;
-	ModelObject* m_ground;
 	Object* m_tigerContainer;
+	ModelObject* m_ground;
+
+	// Objects
 	ModelObject* m_cottage;
 	ModelObject* m_tower;
+
+	// Mountain
 	ModelObject* m_mountain;
 	ModelObject* m_mountain2;
 	ModelObject* m_mountain3;
@@ -2117,6 +2257,7 @@ private:
 	// Lights
 	DirectionalLight* m_dirLight;
 	PointLight* m_pointLight;
+	SpotLight* m_spotLight;
 
 	static MountainScene* s_instance;
 	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -2141,7 +2282,8 @@ m_mountain5(new ModelObject("resources/mountain/mount.obj", "resources/mountain/
 m_mountain6(new ModelObject("resources/mountain/mount.obj", "resources/mountain/rock-mountain.png")),
 m_tigerTex1(), m_tigerTex2(), m_groundTex1(), m_groundTex2(),
 m_dirLight(new DirectionalLight(glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), .5f)),
-m_pointLight(new PointLight(glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), 1.0f, 0.7f, 1.8f))
+m_pointLight(new PointLight(glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), 1.0f, 0.7f, 1.8f)),
+m_spotLight(new SpotLight())
 {
 	// Tiger Texture
 	m_tigerTex1.setupTexture("resources/tiger/tiger_01.jpg");
@@ -2180,24 +2322,25 @@ void MountainScene::OnInitialize()
 	m_cam->GetTransform().SetLocalPosition(glm::vec3(.0f, .5f, .0f));
 
 	// Ground
-	m_ground->GetTransform().SetLocalPosition(glm::vec3(0, -1, 0));
+	m_ground->GetTransform().SetLocalPosition(glm::vec3(0, -2, 0));
+	m_ground->GetTransform().SetLocalScale(glm::vec3(100.f, 100.f, 100.f));
 	m_ground->SetActive(true);
 
 	// Tiger
 	m_tiger->GetTransform().SetParent(&m_tigerContainer->GetTransform());
 	m_tiger->GetTransform().SetLocalRotation(glm::vec3(.0f, -135.f, .0f));
 	m_tiger->SetActive(true);
-	m_tigerContainer->GetTransform().SetLocalPosition(glm::vec3(0, 0, -1.0f));
+	m_tigerContainer->GetTransform().SetLocalPosition(glm::vec3(0, 0, -2.0f));
 	m_tigerContainer->SetActive(true);
 
 	// Cottage
-	m_cottage->GetTransform().SetLocalPosition(glm::vec3(.0f, .0f, -10.f));
+	m_cottage->GetTransform().SetLocalPosition(glm::vec3(.0f, .0f, 10.f));
 	m_cottage->GetTransform().SetLocalScale(glm::vec3(.1f, .1f, .1f));
 	m_cottage->GetTransform().SetLocalRotation(glm::vec3(.0f, -75.f, .0f));
-	//m_cottage->SetActive(true);
+	m_cottage->SetActive(true);
 
 	// tower
-	m_tower->GetTransform().SetLocalPosition(glm::vec3(.0f, -2.f, -10.f));
+	m_tower->GetTransform().SetLocalPosition(glm::vec3(.0f, -2.f, -5.f));
 	m_tower->GetTransform().SetLocalRotation(glm::vec3(.0f, -75.f, .0f));
 	m_tower->SetActive(true);
 
@@ -2231,12 +2374,18 @@ void MountainScene::OnInitialize()
 	m_dirLight->SetAmbient(glm::vec3(.2f));
 	m_dirLight->SetDiffuse(glm::vec3(.2f));
 	m_dirLight->SetSpecular(glm::vec3(1.f));
-	m_dirLight->SetDirection(glm::vec3(-0.2f, -0.3f, -1.0f));
+	m_dirLight->SetDirection(glm::vec3(-1.f, -1.f, 1.0f));
 
 	// Point Light
-	m_pointLight->SetAmbient(glm::vec3(.0f, .0f, .0f));
-	m_pointLight->GetTransform().SetLocalPosition(glm::vec3(.0f, 5.f, 2.f));
+	m_pointLight->SetAmbient(glm::vec3(.0f, 2.0f, 1.0f));
+	m_pointLight->GetTransform().SetLocalPosition(glm::vec3(-1.f, 5.f, -5.f));
 	m_pointLight->SetActive(true);
+
+	// Spot Light
+	m_spotLight->SetAmbient(glm::vec3(.0f, .0f, 1.f));
+	m_spotLight->GetTransform().SetLocalPosition(glm::vec3(1.f, 5.f, 1.f));
+	m_spotLight->SetDirection(glm::vec3(.0f, -1.f, .0f));
+	m_spotLight->SetActive(true);
 }
 
 void MountainScene::OnPaint(Shader* shader)
@@ -2297,13 +2446,13 @@ void MountainScene::key_callback(GLFWwindow* window, int key, int scancode, int 
 		{
 			// Move forward
 			GetInstance()->m_tigerContainer->GetTransform().SetLocalPosition(
-				GetInstance()->m_tigerContainer->GetTransform().GetLocalPosition() + speed * GetInstance()->m_tigerContainer->GetTransform().GetForward());
+				GetInstance()->m_tigerContainer->GetTransform().GetLocalPosition() + speed * GetInstance()->m_tigerContainer->GetTransform().GetUp());
 		}
 		else if (key == GLFW_KEY_DOWN)
 		{
 			// Move backward
 			GetInstance()->m_tigerContainer->GetTransform().SetLocalPosition(
-				GetInstance()->m_tigerContainer->GetTransform().GetLocalPosition() + speed * GetInstance()->m_tigerContainer->GetTransform().GetBackward());
+				GetInstance()->m_tigerContainer->GetTransform().GetLocalPosition() + speed * GetInstance()->m_tigerContainer->GetTransform().GetDown());
 		}
 		// left and right arrow indicate left and right rotation respectively
 		else if (key == GLFW_KEY_LEFT)
@@ -2337,6 +2486,16 @@ void MountainScene::key_callback(GLFWwindow* window, int key, int scancode, int 
 			}
 
 			GetInstance()->m_tigerContainer->GetTransform().SetLocalPosition(GetInstance()->m_tigerContainer->GetTransform().GetPosition() + dir);
+		}
+
+		// Control Point Light Intensity
+		if (key == GLFW_KEY_I)
+		{
+			GetInstance()->m_pointLight->SetIntensity(GetInstance()->m_pointLight->GetIntensity() + 1.f);
+		}
+		else if (key == GLFW_KEY_J)
+		{
+			GetInstance()->m_pointLight->SetIntensity(GetInstance()->m_pointLight->GetIntensity() - 1.f);
 		}
 	}
 }
