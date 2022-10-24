@@ -1,13 +1,9 @@
 CSCI3260 Assignment 2 Texture Mapping/ Lighting Control  
 
-Name: 
-Student ID:
+Name: SZE-TO Kwok Leung
+Student ID: 
 
 Manipulation:
-	// For example:
-        // Key "Esc": exit
-        // Key "r": rotate cube model
+	Key "Esc": exit;
 
-        // Mouse
-        // ....................
 

@@ -1052,27 +1052,29 @@ class Material
 {
 public:
 	Material();
-	Material(glm::vec3 diffuse, glm::vec3 specular, float shininess);
+	Material(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float shininess);
 	~Material();
 	virtual void OnPaint(Shader* shader);
 
+	void SetAmbient(glm::vec3 ambient);
 	void SetDiffuse(glm::vec3 diffuse);
 	void SetSpecular(glm::vec3 specular);
 	void SetShininess(float shininess);
 
 private:
+	glm::vec3 m_ambient;
 	glm::vec3 m_diffuse;
 	glm::vec3 m_specular;
 	float m_shininess;
 };
 
-Material::Material() : m_diffuse(1.f), m_specular(1.f), m_shininess(.5f)
+Material::Material() : m_ambient(glm::vec3(1.f)), m_diffuse(1.f), m_specular(1.f), m_shininess(.5f)
 {
 
 }
 
-Material::Material(glm::vec3 diffuse, glm::vec3 specular, float shininess) :
-	m_diffuse(diffuse), m_specular(specular), m_shininess(shininess)
+Material::Material(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float shininess) :
+	m_ambient(ambient), m_diffuse(diffuse), m_specular(specular), m_shininess(shininess)
 {
 
 }
@@ -1083,9 +1085,15 @@ Material::~Material()
 
 void Material::OnPaint(Shader* shader)
 {
+	shader->setVec3("material.ambient", m_ambient);
 	shader->setVec3("material.diffuse", m_diffuse);
 	shader->setVec3("material.specular", m_specular);
 	shader->setFloat("material.shininess", m_shininess);
+}
+
+void Material::SetAmbient(glm::vec3 ambient)
+{
+	m_ambient = ambient;
 }
 
 void Material::SetDiffuse(glm::vec3 diffuse)
@@ -1117,6 +1125,8 @@ public:
 	void LoadModel(const char* path);
 	void LoadTexture(const char* path);
 	void SetTexture(Texture* texture);
+
+	Material& GetMaterial();
 
 	virtual void OnPaint(Shader* shader);
 
@@ -1189,6 +1199,11 @@ void ModelObject::LoadTexture(const char* path)
 void ModelObject::SetTexture(Texture* texture)
 {
 	m_texture = texture;
+}
+
+Material& ModelObject::GetMaterial()
+{
+	return m_material;
 }
 
 void ModelObject::OnPaint(Shader* shader)
@@ -1896,7 +1911,7 @@ class SpotLight : public PointLight
 {
 public:
 	SpotLight();
-	SpotLight(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, 
+	SpotLight(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular,
 		float constant, float linear, float quaratic,
 		glm::vec3 direction, float cutOff, float innerCutOff);
 	~SpotLight();
@@ -1923,10 +1938,10 @@ SpotLight::SpotLight() : PointLight(), m_direction(glm::vec3(.0f, -1.f, .0f)), m
 
 }
 
-SpotLight::SpotLight(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, 
+SpotLight::SpotLight(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular,
 	float constant, float linear, float quaratic,
 	glm::vec3 direction, float cutOff, float innerCutOff) :
-	PointLight(ambient, diffuse, specular, constant, linear, quaratic), 
+	PointLight(ambient, diffuse, specular, constant, linear, quaratic),
 	m_direction(direction), m_cutOff(cutOff), m_innerCutOff(innerCutOff)
 {
 }
@@ -1979,6 +1994,64 @@ float SpotLight::GetInnerCutOff() const
 	return m_innerCutOff;
 }
 
+
+#pragma endregion
+
+#pragma region Shadow
+class ShadowMapper {
+public:
+	ShadowMapper();
+	~ShadowMapper();
+
+	void Bind();
+	void Unbind();
+
+private:
+	unsigned int m_depthMapFBO;
+	unsigned int m_depthMap;
+
+	static const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+};
+
+ShadowMapper::ShadowMapper()
+{
+	// Freate frame buffer
+	glGenFramebuffers(1, &m_depthMapFBO);
+
+	// Create 2D texture
+	glGenTextures(1, &m_depthMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+		SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	// Attach
+	glBindFramebuffer(GL_FRAMEBUFFER, m_depthMapFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthMap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+ShadowMapper::~ShadowMapper()
+{
+	glDeleteFramebuffers(1, &m_depthMapFBO);
+	glDeleteTextures(1, &m_depthMap);
+}
+
+void ShadowMapper::Bind()
+{
+	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_depthMapFBO);
+	glClear(GL_DEPTH_BUFFER_BIT);
+}
+
+void ShadowMapper::Unbind()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
 
 #pragma endregion
 
@@ -2230,15 +2303,16 @@ public:
 	static MountainScene* GetInstance();
 
 private:
-	// Objects
+	// Main Objects
 	Camera* m_cam;
 	ModelObject* m_tiger;
 	Object* m_tigerContainer;
 	ModelObject* m_ground;
 
-	// Objects
+	// Side Objects
 	ModelObject* m_cottage;
 	ModelObject* m_tower;
+	ModelObject* m_car;
 
 	// Mountain
 	ModelObject* m_mountain;
@@ -2259,6 +2333,10 @@ private:
 	PointLight* m_pointLight;
 	SpotLight* m_spotLight;
 
+	// Car control variables
+	float m_carAngle;
+	float m_carSpeed;
+
 	static MountainScene* s_instance;
 	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 	static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
@@ -2274,6 +2352,7 @@ m_tiger(new ModelObject(loadOBJ("resources/tiger/tiger.obj"))), m_tigerContainer
 m_ground(new ModelObject(loadOBJ("resources/ground/ground.obj"))),
 m_cottage(new ModelObject("resources/cottage/cottage.obj", "resources/cottage/Cottage_Dirt_Base_Color.png")),
 m_tower(new ModelObject("resources/tower/tower.obj", "resources/tower/woodenplank.jpg")),
+m_car(new ModelObject("resources/car/car.obj", "resources/car/rust.jpg")),
 m_mountain(new ModelObject("resources/mountain/mount.obj", "resources/mountain/rock-mountain.png")),
 m_mountain2(new ModelObject("resources/mountain/mount.obj", "resources/mountain/rock-mountain.png")),
 m_mountain3(new ModelObject("resources/mountain/mount.obj", "resources/mountain/rock-mountain.png")),
@@ -2283,7 +2362,8 @@ m_mountain6(new ModelObject("resources/mountain/mount.obj", "resources/mountain/
 m_tigerTex1(), m_tigerTex2(), m_groundTex1(), m_groundTex2(),
 m_dirLight(new DirectionalLight(glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), .5f)),
 m_pointLight(new PointLight(glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), 1.0f, 0.7f, 1.8f)),
-m_spotLight(new SpotLight())
+m_spotLight(new SpotLight()),
+m_carAngle(0.f), m_carSpeed(1.f)
 {
 	// Tiger Texture
 	m_tigerTex1.setupTexture("resources/tiger/tiger_01.jpg");
@@ -2304,6 +2384,7 @@ MountainScene::~MountainScene()
 	delete m_tigerContainer;
 	delete m_cottage;
 	delete m_tower;
+	delete m_car;
 	delete m_mountain;
 	delete m_mountain2;
 	delete m_mountain3;
@@ -2322,8 +2403,8 @@ void MountainScene::OnInitialize()
 	m_cam->GetTransform().SetLocalPosition(glm::vec3(.0f, .5f, .0f));
 
 	// Ground
-	m_ground->GetTransform().SetLocalPosition(glm::vec3(0, -2, 0));
-	m_ground->GetTransform().SetLocalScale(glm::vec3(100.f, 100.f, 100.f));
+	m_ground->GetTransform().SetLocalPosition(glm::vec3(0.f, 0.f, 0.f));
+	m_ground->GetTransform().SetLocalScale(glm::vec3(10.f, 1.f, 10.f));
 	m_ground->SetActive(true);
 
 	// Tiger
@@ -2343,6 +2424,12 @@ void MountainScene::OnInitialize()
 	m_tower->GetTransform().SetLocalPosition(glm::vec3(.0f, -2.f, -5.f));
 	m_tower->GetTransform().SetLocalRotation(glm::vec3(.0f, -75.f, .0f));
 	m_tower->SetActive(true);
+
+	// Car
+	m_car->GetTransform().SetLocalPosition(glm::vec3(.0f, -1.2f, -10.f));
+	m_car->GetTransform().SetLocalScale(glm::vec3(.5f, .5f, .5f));
+	m_car->GetMaterial().SetAmbient(glm::vec3(1.f, .0f, .0f));
+	m_car->SetActive(true);
 
 	// Mountain 
 	m_mountain->GetTransform().SetLocalPosition(glm::vec3(.0f, -2.0f, -100.f));
@@ -2378,7 +2465,7 @@ void MountainScene::OnInitialize()
 
 	// Point Light
 	m_pointLight->SetAmbient(glm::vec3(.0f, 2.0f, 1.0f));
-	m_pointLight->GetTransform().SetLocalPosition(glm::vec3(-1.f, 5.f, -5.f));
+	m_pointLight->GetTransform().SetLocalPosition(glm::vec3(0.f, 5.f, -5.f));
 	m_pointLight->SetActive(true);
 
 	// Spot Light
@@ -2390,7 +2477,13 @@ void MountainScene::OnInitialize()
 
 void MountainScene::OnPaint(Shader* shader)
 {
-
+	// Let the car drift
+	m_carAngle += m_carSpeed;
+	if (m_carAngle > 360.f)
+		m_carAngle = 0.f;
+	glm::vec3 newPos = 6.f * glm::vec3(glm::sin(glm::radians(m_carAngle)), 0.f, glm::cos(glm::radians(m_carAngle)));
+	m_car->GetTransform().SetLocalRotation(glm::vec3(.0f, m_carAngle - 180.f, .0f));
+	m_car->GetTransform().SetLocalPosition(newPos);
 }
 
 void MountainScene::OnEnd()
@@ -2496,6 +2589,15 @@ void MountainScene::key_callback(GLFWwindow* window, int key, int scancode, int 
 		else if (key == GLFW_KEY_J)
 		{
 			GetInstance()->m_pointLight->SetIntensity(GetInstance()->m_pointLight->GetIntensity() - 1.f);
+		}
+		// Control car speed
+		else if (key == GLFW_KEY_M)
+		{
+			GetInstance()->m_carSpeed++;
+		}
+		else if (key == GLFW_KEY_N)
+		{
+			GetInstance()->m_carSpeed--;
 		}
 	}
 }

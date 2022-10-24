@@ -12,6 +12,7 @@ uniform sampler2D u_Texture;
 
 // Material
 struct Material {
+    vec3 ambient;
     vec3 diffuse;
     vec3 specular;
     float shininess;
@@ -101,7 +102,7 @@ void main()
     //     result += CalcSpotLight(spotLights[i], norm, v_position, viewDir);
     // result += CalcSpotLight(spotLight, norm, v_position, viewDir);
 
-	FragColor = texture(u_Texture, v_uv).rgb * result;
+	FragColor = material.ambient * texture(u_Texture, v_uv).rgb * result;
 }
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
