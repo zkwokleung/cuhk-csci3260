@@ -31,6 +31,7 @@ uniform Light light;
 // Directional Light
 struct DirLight {
     vec3 direction;
+    float intensity;
   
     vec3 ambient;
     vec3 diffuse;
@@ -88,9 +89,9 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
     // vec3 ambient  = light.ambient  * vec3(texture(material.diffuse, v_uv));
     // vec3 diffuse  = light.diffuse  * diff * vec3(texture(material.diffuse, v_uv));
     // vec3 specular = light.specular * spec * vec3(texture(material.specular, v_uv));
-    vec3 ambient  = light.ambient  * material.diffuse;
-    vec3 diffuse  = light.diffuse  * material.diffuse;
-    vec3 specular = light.specular * spec * material.specular;
+    vec3 ambient  = light.intensity * light.ambient  * material.diffuse;
+    vec3 diffuse  = light.intensity * light.diffuse  * material.diffuse;
+    vec3 specular = light.intensity * light.specular * spec * material.specular;
     return (ambient + diffuse + specular);
 }  
 

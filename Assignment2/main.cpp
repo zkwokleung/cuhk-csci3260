@@ -1713,25 +1713,30 @@ class DirectionalLight : public Light
 {
 public:
 	DirectionalLight();
-	DirectionalLight(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, glm::vec3 direction);
+	DirectionalLight(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, glm::vec3 direction, float intensity);
 	~DirectionalLight();
 
 	void SetDirection(glm::vec3 direction);
+	glm::vec3 GetDirection() const;
+
+	void SetIntensity(float intensity);
+	float GetIntensity() const;
 
 	virtual void OnPaint(Shader* shader);
 
 private:
 	glm::vec3 m_direction;
+	float m_intensity;
 
 	virtual std::string GetUniformNamePrefix() const;
 };
 
-DirectionalLight::DirectionalLight() : Light(), m_direction()
+DirectionalLight::DirectionalLight() : Light(), m_direction(), m_intensity(1.f)
 {
 
 }
-DirectionalLight::DirectionalLight(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, glm::vec3 direction) :
-	Light(ambient, diffuse, specular), m_direction(direction)
+DirectionalLight::DirectionalLight(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, glm::vec3 direction, float intensity) :
+	Light(ambient, diffuse, specular), m_direction(direction), m_intensity(intensity)
 {
 }
 
@@ -1744,10 +1749,26 @@ void DirectionalLight::SetDirection(glm::vec3 direction)
 	m_direction = direction;
 }
 
+glm::vec3 DirectionalLight::GetDirection() const
+{
+	return m_direction;
+}
+
+void DirectionalLight::SetIntensity(float intensity)
+{
+	m_intensity = intensity;
+}
+
+float DirectionalLight::GetIntensity() const
+{
+	return m_intensity;
+}
+
 void DirectionalLight::OnPaint(Shader* shader)
 {
 	Light::OnPaint(shader);
 	shader->setVec3(GetUniformNamePrefix() + ".direction", m_direction);
+	shader->setFloat(GetUniformNamePrefix() + ".intensity", m_intensity);
 }
 
 std::string DirectionalLight::GetUniformNamePrefix() const
@@ -2119,7 +2140,7 @@ m_mountain4(new ModelObject("resources/mountain/mount.obj", "resources/mountain/
 m_mountain5(new ModelObject("resources/mountain/mount.obj", "resources/mountain/rock-mountain.png")),
 m_mountain6(new ModelObject("resources/mountain/mount.obj", "resources/mountain/rock-mountain.png")),
 m_tigerTex1(), m_tigerTex2(), m_groundTex1(), m_groundTex2(),
-m_dirLight(new DirectionalLight(glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f))),
+m_dirLight(new DirectionalLight(glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), .5f)),
 m_pointLight(new PointLight(glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), 1.0f, 0.7f, 1.8f))
 {
 	// Tiger Texture
@@ -2241,6 +2262,14 @@ void MountainScene::key_callback(GLFWwindow* window, int key, int scancode, int 
 	if (action == GLFW_PRESS)
 	{
 		// Press key “w” and key “s” to increase and reduce the brightness of directional light
+		if (key == GLFW_KEY_W)
+		{
+			GetInstance()->m_dirLight->SetIntensity(GetInstance()->m_dirLight->GetIntensity() + .1f);
+		}
+		else if (key == GLFW_KEY_S)
+		{
+			GetInstance()->m_dirLight->SetIntensity(GetInstance()->m_dirLight->GetIntensity() - .1f);
+		}
 
 		// Press key ’1’ and ’2’ to switch two different textures for the tiger
 		if (key == GLFW_KEY_1)
@@ -2253,7 +2282,7 @@ void MountainScene::key_callback(GLFWwindow* window, int key, int scancode, int 
 		}
 
 		// Press key ’3’ and ’4’ to switch two different textures for the ground surface
-		if (key == GLFW_KEY_3)
+		else if (key == GLFW_KEY_3)
 		{
 			GetInstance()->m_ground->SetTexture(&GetInstance()->m_groundTex1);
 		}
