@@ -1869,6 +1869,8 @@ void PointLight::OnPaint(Shader* shader)
 	shader->setVec3(GetUniformNamePrefix() + ".position", GetTransform().GetPosition());
 
 	shader->setFloat(GetUniformNamePrefix() + ".intensity", m_intensity);
+
+	shader->setInt(GetUniformNamePrefix() + ".isActive", 1);
 }
 
 std::string PointLight::GetUniformNamePrefix() const
@@ -2331,6 +2333,7 @@ private:
 	// Lights
 	DirectionalLight* m_dirLight;
 	PointLight* m_pointLight;
+	PointLight* m_pointLightBlue;
 	SpotLight* m_spotLight;
 
 	// Car control variables
@@ -2362,6 +2365,7 @@ m_mountain6(new ModelObject("resources/mountain/mount.obj", "resources/mountain/
 m_tigerTex1(), m_tigerTex2(), m_groundTex1(), m_groundTex2(),
 m_dirLight(new DirectionalLight(glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), .5f)),
 m_pointLight(new PointLight(glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), 1.0f, 0.7f, 1.8f)),
+m_pointLightBlue(new PointLight(glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), 1.0f, 0.7f, 1.8f)),
 m_spotLight(new SpotLight()),
 m_carAngle(0.f), m_carSpeed(1.f)
 {
@@ -2467,6 +2471,10 @@ void MountainScene::OnInitialize()
 	m_pointLight->SetAmbient(glm::vec3(.0f, 2.0f, 1.0f));
 	m_pointLight->GetTransform().SetLocalPosition(glm::vec3(0.f, 5.f, -5.f));
 	m_pointLight->SetActive(true);
+
+	m_pointLightBlue->SetAmbient(glm::vec3(.0f, .0f, 1.f));
+	m_pointLightBlue->GetTransform().SetLocalPosition(glm::vec3(0.f, 1.f, 5.f));
+	m_pointLightBlue->SetActive(true);
 
 	// Spot Light
 	m_spotLight->SetAmbient(glm::vec3(.0f, .0f, 1.f));
@@ -2585,10 +2593,12 @@ void MountainScene::key_callback(GLFWwindow* window, int key, int scancode, int 
 		if (key == GLFW_KEY_I)
 		{
 			GetInstance()->m_pointLight->SetIntensity(GetInstance()->m_pointLight->GetIntensity() + 1.f);
+			GetInstance()->m_pointLightBlue->SetIntensity(GetInstance()->m_pointLightBlue->GetIntensity() + 1.f);
 		}
 		else if (key == GLFW_KEY_J)
 		{
 			GetInstance()->m_pointLight->SetIntensity(GetInstance()->m_pointLight->GetIntensity() - 1.f);
+			GetInstance()->m_pointLightBlue->SetIntensity(GetInstance()->m_pointLightBlue->GetIntensity() - 1.f);
 		}
 		// Control car speed
 		else if (key == GLFW_KEY_M)

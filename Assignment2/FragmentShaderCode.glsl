@@ -54,8 +54,10 @@ struct PointLight {
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+
+    int isActive;
 };  
-#define NR_POINT_LIGHTS 1  
+#define NR_POINT_LIGHTS 4
 uniform PointLight pointLights[NR_POINT_LIGHTS];
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 
@@ -95,7 +97,10 @@ void main()
 
     // Point Lights
     for(int i = 0; i < NR_POINT_LIGHTS; i++)
-        result += CalcPointLight(pointLights[i], norm, v_position, viewDir);
+    {
+        if (pointLights[i].isActive != 0)
+            result += CalcPointLight(pointLights[i], norm, v_position, viewDir);
+    }
 
     // Spot Lights
     // for(int i = 0; i < NR_SPOT_LIGHTS; i++)
