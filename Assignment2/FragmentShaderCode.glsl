@@ -57,7 +57,7 @@ struct PointLight {
 
     int isActive;
 };  
-#define NR_POINT_LIGHTS 4
+#define NR_POINT_LIGHTS 10
 uniform PointLight pointLights[NR_POINT_LIGHTS];
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 

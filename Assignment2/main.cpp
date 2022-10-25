@@ -1702,6 +1702,9 @@ public:
 	void SetDiffuse(glm::vec3 diffuse);
 	void SetSpecular(glm::vec3 specular);
 
+	virtual glm::mat4 GetProjectionMat4();
+	virtual glm::mat4 GetViewMat4();
+
 	virtual void OnPaint(Shader* shader);
 
 protected:
@@ -1742,6 +1745,16 @@ void Light::SetSpecular(glm::vec3 specular)
 	m_specular = specular;
 }
 
+glm::mat4 Light::GetProjectionMat4()
+{
+	return glm::mat4();
+}
+
+glm::mat4 Light::GetViewMat4()
+{
+	return glm::mat4();
+}
+
 void Light::OnPaint(Shader* shader)
 {
 	shader->setVec3(GetUniformNamePrefix() + ".ambient", m_ambient);
@@ -1767,6 +1780,9 @@ public:
 
 	void SetIntensity(float intensity);
 	float GetIntensity() const;
+
+	virtual glm::mat4 GetProjectionMat4();
+	virtual glm::mat4 GetViewMat4();
 
 	virtual void OnPaint(Shader* shader);
 
@@ -1815,6 +1831,18 @@ void DirectionalLight::OnPaint(Shader* shader)
 	Light::OnPaint(shader);
 	shader->setVec3(GetUniformNamePrefix() + ".direction", m_direction);
 	shader->setFloat(GetUniformNamePrefix() + ".intensity", m_intensity);
+}
+
+glm::mat4 DirectionalLight::GetProjectionMat4()
+{
+	float near_plane = 1.0f, far_plane = 7.5f;
+	glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+	return lightProjection;
+}
+
+glm::mat4 DirectionalLight::GetViewMat4()
+{
+	return glm::lookAt(GetTransform().GetPosition(), GetDirection(), GetTransform().GetUp());
 }
 
 std::string DirectionalLight::GetUniformNamePrefix() const
@@ -1885,12 +1913,18 @@ void PointLight::SetActive(bool active)
 {
 	if (active)
 	{
-		m_id = s_activeCount++;
+		if (!IsActive())
+		{
+			m_id = s_activeCount++;
+		}
 	}
-	else if (IsActive())
+	else
 	{
-		m_id = -1;
-		s_activeCount--;
+		if (IsActive())
+		{
+			m_id = -1;
+			s_activeCount--;
+		}
 	}
 
 	Object::SetActive(active);
@@ -2292,6 +2326,8 @@ bool FirstPersonPlayer::IsActive() const
 #pragma endregion
 
 #pragma region Mountain Scene
+
+#define DISCO_LIGHT_COUNT 9
 class MountainScene : public Scene
 {
 public:
@@ -2333,12 +2369,15 @@ private:
 	// Lights
 	DirectionalLight* m_dirLight;
 	PointLight* m_pointLight;
-	PointLight* m_pointLightBlue;
+	PointLight* m_discoLights[DISCO_LIGHT_COUNT];
 	SpotLight* m_spotLight;
 
 	// Car control variables
 	float m_carAngle;
 	float m_carSpeed;
+
+	// Disco
+	bool m_discoModeOn;
 
 	static MountainScene* s_instance;
 	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -2348,8 +2387,6 @@ private:
 
 	static bool s_IsMouseLeftButtonDown;
 };
-
-
 MountainScene::MountainScene() : Scene(), m_cam(new Camera()),
 m_tiger(new ModelObject(loadOBJ("resources/tiger/tiger.obj"))), m_tigerContainer(new Object()),
 m_ground(new ModelObject(loadOBJ("resources/ground/ground.obj"))),
@@ -2365,8 +2402,8 @@ m_mountain6(new ModelObject("resources/mountain/mount.obj", "resources/mountain/
 m_tigerTex1(), m_tigerTex2(), m_groundTex1(), m_groundTex2(),
 m_dirLight(new DirectionalLight(glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), .5f)),
 m_pointLight(new PointLight(glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), 1.0f, 0.7f, 1.8f)),
-m_pointLightBlue(new PointLight(glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), 1.0f, 0.7f, 1.8f)),
 m_spotLight(new SpotLight()),
+m_discoModeOn(false),
 m_carAngle(0.f), m_carSpeed(1.f)
 {
 	// Tiger Texture
@@ -2378,6 +2415,14 @@ m_carAngle(0.f), m_carSpeed(1.f)
 	m_groundTex1.setupTexture("resources/ground/ground_01.jpg");
 	m_groundTex2.setupTexture("resources/ground/ground_02.jpg");
 	m_ground->SetTexture(&m_groundTex1);
+
+	// Point Lights
+	for (int i = 0; i < DISCO_LIGHT_COUNT; i++)
+	{
+		m_discoLights[i] = new PointLight(
+			glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f), glm::vec3(.5f, .5f, .5f),
+			1.0f, 0.7f, 1.8f);
+	}
 }
 
 MountainScene::~MountainScene()
@@ -2419,20 +2464,20 @@ void MountainScene::OnInitialize()
 	m_tigerContainer->SetActive(true);
 
 	// Cottage
-	m_cottage->GetTransform().SetLocalPosition(glm::vec3(.0f, .0f, 10.f));
-	m_cottage->GetTransform().SetLocalScale(glm::vec3(.1f, .1f, .1f));
+	m_cottage->GetTransform().SetLocalPosition(glm::vec3(.0f, -1.f, 10.f));
+	m_cottage->GetTransform().SetLocalScale(glm::vec3(.2f, .2f, .2f));
 	m_cottage->GetTransform().SetLocalRotation(glm::vec3(.0f, -75.f, .0f));
 	m_cottage->SetActive(true);
 
 	// tower
-	m_tower->GetTransform().SetLocalPosition(glm::vec3(.0f, -2.f, -5.f));
+	m_tower->GetTransform().SetLocalPosition(glm::vec3(.0f, -2.f, -8.f));
 	m_tower->GetTransform().SetLocalRotation(glm::vec3(.0f, -75.f, .0f));
 	m_tower->SetActive(true);
 
 	// Car
 	m_car->GetTransform().SetLocalPosition(glm::vec3(.0f, -1.2f, -10.f));
 	m_car->GetTransform().SetLocalScale(glm::vec3(.5f, .5f, .5f));
-	m_car->GetMaterial().SetAmbient(glm::vec3(1.f, .0f, .0f));
+	m_car->GetMaterial().SetAmbient(glm::vec3(1.f, .4f, .4f));
 	m_car->SetActive(true);
 
 	// Mountain 
@@ -2469,12 +2514,28 @@ void MountainScene::OnInitialize()
 
 	// Point Light
 	m_pointLight->SetAmbient(glm::vec3(.0f, 2.0f, 1.0f));
-	m_pointLight->GetTransform().SetLocalPosition(glm::vec3(0.f, 5.f, -5.f));
+	m_pointLight->GetTransform().SetLocalPosition(glm::vec3(0.f, 5.f, -8.f));
 	m_pointLight->SetActive(true);
 
-	m_pointLightBlue->SetAmbient(glm::vec3(.0f, .0f, 1.f));
-	m_pointLightBlue->GetTransform().SetLocalPosition(glm::vec3(0.f, 1.f, 5.f));
-	m_pointLightBlue->SetActive(true);
+	// Disco Lights
+	m_discoLights[0]->SetAmbient(glm::vec3(.0f, .0f, 1.0f));
+	m_discoLights[1]->SetAmbient(glm::vec3(.0f, 1.0f, 1.0f));
+	m_discoLights[2]->SetAmbient(glm::vec3(1.0f, 1.0f, .0f));
+	m_discoLights[3]->SetAmbient(glm::vec3(1.0f, .0f, .0f));
+	m_discoLights[4]->SetAmbient(glm::vec3(1.0f, .0f, 1.0f));
+	m_discoLights[5]->SetAmbient(glm::vec3(.5f, 1.0f, .5f));
+	m_discoLights[6]->SetAmbient(glm::vec3(.5f, .5f, 1.0f));
+	m_discoLights[7]->SetAmbient(glm::vec3(1.0f, .5f, .5f));
+	m_discoLights[8]->SetAmbient(glm::vec3(.0f, 1.0f, .0f));
+
+	for (int i = 0; i < DISCO_LIGHT_COUNT; i++)
+	{
+		glm::vec3 pos = 5.f * glm::vec3(glm::cos(glm::radians(40.f * i)), .0f, glm::sin(glm::radians(40.f * i)));
+		pos += glm::vec3(.0f, 1.5f, 10.f);
+		m_discoLights[i]->GetTransform().SetLocalPosition(pos);
+		m_discoLights[i]->SetIntensity(2.f);
+		m_discoLights[i]->SetActive(true);
+	}
 
 	// Spot Light
 	m_spotLight->SetAmbient(glm::vec3(.0f, .0f, 1.f));
@@ -2489,9 +2550,23 @@ void MountainScene::OnPaint(Shader* shader)
 	m_carAngle += m_carSpeed;
 	if (m_carAngle > 360.f)
 		m_carAngle = 0.f;
-	glm::vec3 newPos = 6.f * glm::vec3(glm::sin(glm::radians(m_carAngle)), 0.f, glm::cos(glm::radians(m_carAngle)));
+	glm::vec3 newPos = 10.f * glm::vec3(glm::sin(glm::radians(m_carAngle)), 0.f, glm::cos(glm::radians(m_carAngle)));
+	newPos += glm::vec3(.0f, -.5f, .0f);
 	m_car->GetTransform().SetLocalRotation(glm::vec3(.0f, m_carAngle - 180.f, .0f));
 	m_car->GetTransform().SetLocalPosition(newPos);
+
+	// Cycle through disco lights
+	if (m_discoModeOn)
+	{
+		for (int i = 0; i < DISCO_LIGHT_COUNT; i++)
+		{
+			m_discoLights[i]->SetActive(false);
+		}
+
+		static int currentLight = 0;
+		currentLight = rand() % DISCO_LIGHT_COUNT;
+		m_discoLights[currentLight]->SetActive(true);
+	}
 }
 
 void MountainScene::OnEnd()
@@ -2593,12 +2668,10 @@ void MountainScene::key_callback(GLFWwindow* window, int key, int scancode, int 
 		if (key == GLFW_KEY_I)
 		{
 			GetInstance()->m_pointLight->SetIntensity(GetInstance()->m_pointLight->GetIntensity() + 1.f);
-			GetInstance()->m_pointLightBlue->SetIntensity(GetInstance()->m_pointLightBlue->GetIntensity() + 1.f);
 		}
 		else if (key == GLFW_KEY_J)
 		{
 			GetInstance()->m_pointLight->SetIntensity(GetInstance()->m_pointLight->GetIntensity() - 1.f);
-			GetInstance()->m_pointLightBlue->SetIntensity(GetInstance()->m_pointLightBlue->GetIntensity() - 1.f);
 		}
 		// Control car speed
 		else if (key == GLFW_KEY_M)
@@ -2608,6 +2681,16 @@ void MountainScene::key_callback(GLFWwindow* window, int key, int scancode, int 
 		else if (key == GLFW_KEY_N)
 		{
 			GetInstance()->m_carSpeed--;
+		}
+
+		// Enable disco Light
+		else if (key == GLFW_KEY_SPACE)
+		{
+			GetInstance()->m_discoModeOn = !GetInstance()->m_discoModeOn;
+			for (int i = 0; i < DISCO_LIGHT_COUNT; i++)
+			{
+				GetInstance()->m_discoLights[i]->SetActive(!GetInstance()->m_discoModeOn);
+			}
 		}
 	}
 }
