@@ -2676,11 +2676,11 @@ void MountainScene::key_callback(GLFWwindow* window, int key, int scancode, int 
 		// Control car speed
 		else if (key == GLFW_KEY_M)
 		{
-			GetInstance()->m_carSpeed++;
+			GetInstance()->m_carSpeed += .5f;
 		}
 		else if (key == GLFW_KEY_N)
 		{
-			GetInstance()->m_carSpeed--;
+			GetInstance()->m_carSpeed -= .5f;
 		}
 
 		// Enable disco Light
