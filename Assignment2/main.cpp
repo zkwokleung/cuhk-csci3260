@@ -1,7 +1,7 @@
 /*
 Student Information
-Student ID:
-Student Name:
+Student ID: 1155149068
+Student Name: SZE-TO Kwok Leung
 */
 
 #include "Dependencies/glew/glew.h"
