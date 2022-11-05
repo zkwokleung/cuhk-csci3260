@@ -1,6 +1,11 @@
 #pragma once
+#include <glew/glew.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image/stb_image.h>
 
-class Texture 
+#include <iostream>
+
+class Texture
 {
 public:
 	void setupTexture(const char* texturePath);

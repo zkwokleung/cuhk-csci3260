@@ -1,11 +1,5 @@
 #include "texture.h"
 
-#include <glew/glew.h>
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image/stb_image.h>
-
-#include <iostream>
-
 void Texture::setupTexture(const char* texturePath)
 {
 	// tell stb_image.h to flip loaded texture's on the y-axis.

@@ -1,9 +1,11 @@
 #pragma once
 #include <glew/glew.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <string>
 #include <iostream>
+#include <fstream>
 
 class Shader {
 public:

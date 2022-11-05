@@ -1,7 +1,4 @@
 #include "shader.h"
-#include <glm/gtc/type_ptr.hpp>
-
-#include <fstream>
 
 void Shader::setupShader(const char* vertexPath, const char* fragmentPath)
 {
