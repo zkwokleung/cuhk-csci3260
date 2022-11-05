@@ -1,7 +1,11 @@
 #include "object.h"
 
 Object::Object() :
-	m_transform(), m_isActive(false)
+	m_transform(), m_isActive(false), m_name("")
+{
+}
+
+Object::Object(std::string name) : m_transform(), m_isActive(false), m_name(name)
 {
 }
 
@@ -36,6 +40,16 @@ bool Object::IsActive() const
 void Object::OnPaint(Shader* shader)
 {
 	m_transform.OnPaint(shader);
+}
+
+void Object::SetName(std::string name)
+{
+	m_name = name;
+}
+
+std::string Object::GetName() const
+{
+	return m_name;
 }
 
 std::list<Object*> ObjectRenderPipeline::s_objects;

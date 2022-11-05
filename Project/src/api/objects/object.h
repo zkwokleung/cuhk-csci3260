@@ -8,6 +8,7 @@ class Object
 {
 public:
 	Object();
+	Object(std::string name);
 	~Object();
 
 	Transform& GetTransform();
@@ -17,7 +18,11 @@ public:
 
 	virtual void OnPaint(Shader* shader);
 
+	void SetName(std::string name);
+	std::string GetName() const;
+
 protected:
+	std::string m_name;
 	Transform m_transform;
 	bool m_isActive;
 };
