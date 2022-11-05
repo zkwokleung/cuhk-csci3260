@@ -1,4 +1,4 @@
-#include "Texture.h"
+#include "texture.h"
 
 #include <glew/glew.h>
 #define STB_IMAGE_IMPLEMENTATION
