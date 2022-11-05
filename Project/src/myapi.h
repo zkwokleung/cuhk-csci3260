@@ -1,0 +1,8 @@
+#pragma once
+#include "api/cameraModule.h"
+#include "api/debugModule.h"
+#include "api/inputModule.h"
+#include "api/lightingModule.h"
+#include "api/objectModule.h"
+#include "api/renderModule.h"
+#include "api/sceneModule.h"

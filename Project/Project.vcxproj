@@ -140,42 +140,76 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="FragmentShaderCode.glsl" />
-    <None Include="VertexShaderCode.glsl" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="camera.cpp" />
-    <ClCompile Include="debug.cpp" />
-    <ClCompile Include="input.cpp" />
-    <ClCompile Include="lights.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="material.cpp" />
-    <ClCompile Include="models.cpp" />
-    <ClCompile Include="objects.cpp" />
-    <ClCompile Include="renderer.cpp" />
-    <ClCompile Include="scene.cpp" />
-    <ClCompile Include="shader.cpp" />
-    <ClCompile Include="shadow.cpp" />
-    <ClCompile Include="texture.cpp" />
-    <ClCompile Include="transform.cpp" />
+    <None Include="resources\shaders\FragmentShaderCode.glsl" />
+    <None Include="resources\shaders\VertexShaderCode.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="README.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="camera.h" />
-    <ClInclude Include="debug.h" />
-    <ClInclude Include="inputs.h" />
-    <ClInclude Include="lights.h" />
-    <ClInclude Include="material.h" />
-    <ClInclude Include="models.h" />
-    <ClInclude Include="objects.h" />
-    <ClInclude Include="renderer.h" />
-    <ClInclude Include="scene.h" />
-    <ClInclude Include="shader.h" />
-    <ClInclude Include="shadows.h" />
-    <ClInclude Include="texture.h" />
-    <ClInclude Include="transform.h" />
+    <ClInclude Include="src\api\cameraModule.h" />
+    <ClInclude Include="src\api\cameras\camera.h" />
+    <ClInclude Include="src\api\cameras\perspectiveCamera.h" />
+    <ClInclude Include="src\api\debugModule.h" />
+    <ClInclude Include="src\api\debugs\debug.h" />
+    <ClInclude Include="src\api\inputModule.h" />
+    <ClInclude Include="src\api\inputs\callbacks.h" />
+    <ClInclude Include="src\api\inputs\input.h" />
+    <ClInclude Include="src\api\lightingModule.h" />
+    <ClInclude Include="src\api\lightings\directionalLight.h" />
+    <ClInclude Include="src\api\lightings\light.h" />
+    <ClInclude Include="src\api\lightings\pointLight.h" />
+    <ClInclude Include="src\api\lightings\shadows.h" />
+    <ClInclude Include="src\api\lightings\spotLight.h" />
+    <ClInclude Include="src\api\objectModule.h" />
+    <ClInclude Include="src\api\objects\coloredVerticesObject.h" />
+    <ClInclude Include="src\api\objects\indexedColoredVerticesObject.h" />
+    <ClInclude Include="src\api\objects\modelObject.h" />
+    <ClInclude Include="src\api\objects\models.h" />
+    <ClInclude Include="src\api\objects\object.h" />
+    <ClInclude Include="src\api\objects\transform.h" />
+    <ClInclude Include="src\api\objects\verticesObject.h" />
+    <ClInclude Include="src\api\renderModule.h" />
+    <ClInclude Include="src\api\renders\ebo.h" />
+    <ClInclude Include="src\api\renders\material.h" />
+    <ClInclude Include="src\api\renders\renderer.h" />
+    <ClInclude Include="src\api\renders\shader.h" />
+    <ClInclude Include="src\api\renders\texture.h" />
+    <ClInclude Include="src\api\renders\vao.h" />
+    <ClInclude Include="src\api\renders\vbo.h" />
+    <ClInclude Include="src\api\sceneModule.h" />
+    <ClInclude Include="src\api\scenes\scene.h" />
+    <ClInclude Include="src\api\scenes\sceneManager.h" />
+    <ClInclude Include="src\myapi.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\api\cameras\camera.cpp" />
+    <ClCompile Include="src\api\cameras\perspectiveCamera.cpp" />
+    <ClCompile Include="src\api\debugs\debug.cpp" />
+    <ClCompile Include="src\api\inputs\callbacks.cpp" />
+    <ClCompile Include="src\api\inputs\input.cpp" />
+    <ClCompile Include="src\api\lightings\directionalLight.cpp" />
+    <ClCompile Include="src\api\lightings\light.cpp" />
+    <ClCompile Include="src\api\lightings\pointLight.cpp" />
+    <ClCompile Include="src\api\lightings\shadow.cpp" />
+    <ClCompile Include="src\api\lightings\spotLight.cpp" />
+    <ClCompile Include="src\api\objects\coloredVerticesObject.cpp" />
+    <ClCompile Include="src\api\objects\indexedColoredVerticesObject.cpp" />
+    <ClCompile Include="src\api\objects\modelObject.cpp" />
+    <ClCompile Include="src\api\objects\models.cpp" />
+    <ClCompile Include="src\api\objects\object.cpp" />
+    <ClCompile Include="src\api\objects\transform.cpp" />
+    <ClCompile Include="src\api\objects\verticesObject.cpp" />
+    <ClCompile Include="src\api\renders\ebo.cpp" />
+    <ClCompile Include="src\api\renders\material.cpp" />
+    <ClCompile Include="src\api\renders\renderer.cpp" />
+    <ClCompile Include="src\api\renders\shader.cpp" />
+    <ClCompile Include="src\api\renders\texture.cpp" />
+    <ClCompile Include="src\api\renders\vao.cpp" />
+    <ClCompile Include="src\api\renders\vbo.cpp" />
+    <ClCompile Include="src\api\scenes\scene.cpp" />
+    <ClCompile Include="src\api\scenes\sceneManager.cpp" />
+    <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

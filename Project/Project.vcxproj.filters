@@ -13,64 +13,62 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\core">
-      <UniqueIdentifier>{c833861f-0a94-4165-8ab8-c92a79021651}</UniqueIdentifier>
+    <Filter Include="Header Files\api">
+      <UniqueIdentifier>{4b617dd0-b5b9-4581-be20-a77a8b03f01e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\core">
-      <UniqueIdentifier>{a0ebc997-f724-4d56-a0e0-028e93e59c36}</UniqueIdentifier>
+    <Filter Include="Source Files\api">
+      <UniqueIdentifier>{b7ab6995-af5f-4264-a812-faab030a317a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\api\cameras">
+      <UniqueIdentifier>{bad3287c-dc4e-4eac-a44a-c12454918d57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\api\inputs">
+      <UniqueIdentifier>{2533f5cc-d29d-4cc1-8936-22150ce7ba4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\api\lightings">
+      <UniqueIdentifier>{ab9213e1-9e43-4c17-8f04-73f423000aa6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\api\objects">
+      <UniqueIdentifier>{ad7c3c4f-6811-4fd1-b7c8-890f7f8dd4e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\api\scenes">
+      <UniqueIdentifier>{c00c8e5c-eaef-4d30-b1f3-63a982232af3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\api\debugs">
+      <UniqueIdentifier>{48090d86-4d02-4e37-a990-c636955f8d1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\api\cameras">
+      <UniqueIdentifier>{3834bff5-fe25-4898-a383-72962107e0fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\api\debugs">
+      <UniqueIdentifier>{1596fa6f-bda0-4bee-90e2-e6ab2f45f746}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\api\inputs">
+      <UniqueIdentifier>{03ec31d4-2824-40e8-b2ce-f42cda779555}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\api\lightings">
+      <UniqueIdentifier>{79326474-f178-4378-8329-c796a9b32ba0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\api\scenes">
+      <UniqueIdentifier>{ec919cc5-88e0-4d0d-9ffc-fdb2810f67ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\api\objects">
+      <UniqueIdentifier>{aaa8a17c-3a98-401d-b2e2-7f4131edf35f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\api\renders">
+      <UniqueIdentifier>{08f73704-916d-4e93-9f9d-e9dc647fd17c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\api\renders">
+      <UniqueIdentifier>{4a83f883-c80f-4c60-a66b-1eedd78b1d86}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="FragmentShaderCode.glsl">
+    <None Include="resources\shaders\FragmentShaderCode.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="VertexShaderCode.glsl">
+    <None Include="resources\shaders\VertexShaderCode.glsl">
       <Filter>Resource Files</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="shader.cpp">
-      <Filter>Source Files\core</Filter>
-    </ClCompile>
-    <ClCompile Include="texture.cpp">
-      <Filter>Source Files\core</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer.cpp">
-      <Filter>Source Files\core</Filter>
-    </ClCompile>
-    <ClCompile Include="debug.cpp">
-      <Filter>Source Files\core</Filter>
-    </ClCompile>
-    <ClCompile Include="transform.cpp">
-      <Filter>Source Files\core</Filter>
-    </ClCompile>
-    <ClCompile Include="camera.cpp">
-      <Filter>Source Files\core</Filter>
-    </ClCompile>
-    <ClCompile Include="objects.cpp">
-      <Filter>Source Files\core</Filter>
-    </ClCompile>
-    <ClCompile Include="material.cpp">
-      <Filter>Source Files\core</Filter>
-    </ClCompile>
-    <ClCompile Include="models.cpp">
-      <Filter>Source Files\core</Filter>
-    </ClCompile>
-    <ClCompile Include="scene.cpp">
-      <Filter>Source Files\core</Filter>
-    </ClCompile>
-    <ClCompile Include="input.cpp">
-      <Filter>Source Files\core</Filter>
-    </ClCompile>
-    <ClCompile Include="lights.cpp">
-      <Filter>Source Files\core</Filter>
-    </ClCompile>
-    <ClCompile Include="shadow.cpp">
-      <Filter>Source Files\core</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="README.txt">
@@ -78,44 +76,190 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="renderer.h">
-      <Filter>Header Files\core</Filter>
+    <ClInclude Include="src\api\cameras\camera.h">
+      <Filter>Header Files\api\cameras</Filter>
     </ClInclude>
-    <ClInclude Include="shader.h">
-      <Filter>Header Files\core</Filter>
+    <ClInclude Include="src\api\debugs\debug.h">
+      <Filter>Header Files\api\debugs</Filter>
     </ClInclude>
-    <ClInclude Include="texture.h">
-      <Filter>Header Files\core</Filter>
+    <ClInclude Include="src\api\inputs\callbacks.h">
+      <Filter>Header Files\api\inputs</Filter>
     </ClInclude>
-    <ClInclude Include="debug.h">
-      <Filter>Header Files\core</Filter>
+    <ClInclude Include="src\api\inputs\input.h">
+      <Filter>Header Files\api\inputs</Filter>
     </ClInclude>
-    <ClInclude Include="transform.h">
-      <Filter>Header Files\core</Filter>
+    <ClInclude Include="src\api\lightings\directionalLight.h">
+      <Filter>Header Files\api\lightings</Filter>
     </ClInclude>
-    <ClInclude Include="camera.h">
-      <Filter>Header Files\core</Filter>
+    <ClInclude Include="src\api\lightings\light.h">
+      <Filter>Header Files\api\lightings</Filter>
     </ClInclude>
-    <ClInclude Include="objects.h">
-      <Filter>Header Files\core</Filter>
+    <ClInclude Include="src\api\lightings\pointLight.h">
+      <Filter>Header Files\api\lightings</Filter>
     </ClInclude>
-    <ClInclude Include="material.h">
-      <Filter>Header Files\core</Filter>
+    <ClInclude Include="src\api\lightings\shadows.h">
+      <Filter>Header Files\api\lightings</Filter>
     </ClInclude>
-    <ClInclude Include="models.h">
-      <Filter>Header Files\core</Filter>
+    <ClInclude Include="src\api\lightings\spotLight.h">
+      <Filter>Header Files\api\lightings</Filter>
     </ClInclude>
-    <ClInclude Include="scene.h">
-      <Filter>Header Files\core</Filter>
+    <ClInclude Include="src\api\objects\models.h">
+      <Filter>Header Files\api\objects</Filter>
     </ClInclude>
-    <ClInclude Include="inputs.h">
-      <Filter>Header Files\core</Filter>
+    <ClInclude Include="src\api\objects\object.h">
+      <Filter>Header Files\api\objects</Filter>
     </ClInclude>
-    <ClInclude Include="lights.h">
-      <Filter>Header Files\core</Filter>
+    <ClInclude Include="src\api\objects\transform.h">
+      <Filter>Header Files\api\objects</Filter>
     </ClInclude>
-    <ClInclude Include="shadows.h">
-      <Filter>Header Files\core</Filter>
+    <ClInclude Include="src\api\scenes\scene.h">
+      <Filter>Header Files\api\scenes</Filter>
     </ClInclude>
+    <ClInclude Include="src\api\renders\renderer.h">
+      <Filter>Header Files\api\renders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\renders\shader.h">
+      <Filter>Header Files\api\renders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\renders\material.h">
+      <Filter>Header Files\api\renders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\renders\texture.h">
+      <Filter>Header Files\api\renders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\renders\ebo.h">
+      <Filter>Header Files\api\renders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\renders\vao.h">
+      <Filter>Header Files\api\renders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\renders\vbo.h">
+      <Filter>Header Files\api\renders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\cameraModule.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\debugModule.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\inputModule.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\lightingModule.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\objectModule.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\renderModule.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\sceneModule.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\objects\verticesObject.h">
+      <Filter>Header Files\api\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\objects\coloredVerticesObject.h">
+      <Filter>Header Files\api\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\objects\indexedColoredVerticesObject.h">
+      <Filter>Header Files\api\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\objects\modelObject.h">
+      <Filter>Header Files\api\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\scenes\sceneManager.h">
+      <Filter>Header Files\api\scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\cameras\perspectiveCamera.h">
+      <Filter>Header Files\api\cameras</Filter>
+    </ClInclude>
+    <ClInclude Include="src\myapi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\api\cameras\camera.cpp">
+      <Filter>Source Files\api\cameras</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\debugs\debug.cpp">
+      <Filter>Source Files\api\debugs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\inputs\callbacks.cpp">
+      <Filter>Source Files\api\inputs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\inputs\input.cpp">
+      <Filter>Source Files\api\inputs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\lightings\directionalLight.cpp">
+      <Filter>Source Files\api\lightings</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\lightings\light.cpp">
+      <Filter>Source Files\api\lightings</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\lightings\pointLight.cpp">
+      <Filter>Source Files\api\lightings</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\lightings\shadow.cpp">
+      <Filter>Source Files\api\lightings</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\lightings\spotLight.cpp">
+      <Filter>Source Files\api\lightings</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\scenes\scene.cpp">
+      <Filter>Source Files\api\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\renders\renderer.cpp">
+      <Filter>Source Files\api\renders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\renders\shader.cpp">
+      <Filter>Source Files\api\renders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\renders\material.cpp">
+      <Filter>Source Files\api\renders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\renders\texture.cpp">
+      <Filter>Source Files\api\renders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\renders\vao.cpp">
+      <Filter>Source Files\api\renders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\renders\vbo.cpp">
+      <Filter>Source Files\api\renders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\renders\ebo.cpp">
+      <Filter>Source Files\api\renders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\objects\indexedColoredVerticesObject.cpp">
+      <Filter>Source Files\api\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\objects\modelObject.cpp">
+      <Filter>Source Files\api\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\objects\models.cpp">
+      <Filter>Source Files\api\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\objects\object.cpp">
+      <Filter>Source Files\api\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\objects\transform.cpp">
+      <Filter>Source Files\api\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\objects\verticesObject.cpp">
+      <Filter>Source Files\api\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\objects\coloredVerticesObject.cpp">
+      <Filter>Source Files\api\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\scenes\sceneManager.cpp">
+      <Filter>Source Files\api\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\cameras\perspectiveCamera.cpp">
+      <Filter>Source Files\api\cameras</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
