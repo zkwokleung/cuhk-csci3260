@@ -144,21 +144,38 @@
     <None Include="VertexShaderCode.glsl" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Debug.cpp" />
+    <ClCompile Include="camera.cpp" />
+    <ClCompile Include="debug.cpp" />
+    <ClCompile Include="input.cpp" />
+    <ClCompile Include="lights.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Renderer.cpp" />
-    <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="material.cpp" />
+    <ClCompile Include="models.cpp" />
+    <ClCompile Include="objects.cpp" />
+    <ClCompile Include="renderer.cpp" />
+    <ClCompile Include="scene.cpp" />
+    <ClCompile Include="shader.cpp" />
+    <ClCompile Include="shadow.cpp" />
+    <ClCompile Include="texture.cpp" />
+    <ClCompile Include="transform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="README.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Debug.h" />
-    <ClInclude Include="Renderer.h" />
-    <ClInclude Include="Shader.h" />
-    <ClInclude Include="Texture.h" />
-    <ClInclude Include="Transform.h" />
+    <ClInclude Include="camera.h" />
+    <ClInclude Include="debug.h" />
+    <ClInclude Include="inputs.h" />
+    <ClInclude Include="lights.h" />
+    <ClInclude Include="material.h" />
+    <ClInclude Include="models.h" />
+    <ClInclude Include="objects.h" />
+    <ClInclude Include="renderer.h" />
+    <ClInclude Include="scene.h" />
+    <ClInclude Include="shader.h" />
+    <ClInclude Include="shadows.h" />
+    <ClInclude Include="texture.h" />
+    <ClInclude Include="transform.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -32,16 +32,43 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Shader.cpp">
+    <ClCompile Include="shader.cpp">
       <Filter>Source Files\core</Filter>
     </ClCompile>
-    <ClCompile Include="Texture.cpp">
+    <ClCompile Include="texture.cpp">
       <Filter>Source Files\core</Filter>
     </ClCompile>
-    <ClCompile Include="Renderer.cpp">
+    <ClCompile Include="renderer.cpp">
       <Filter>Source Files\core</Filter>
     </ClCompile>
-    <ClCompile Include="Debug.cpp">
+    <ClCompile Include="debug.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="transform.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="camera.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="objects.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="material.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="models.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="scene.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="input.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="lights.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="shadow.cpp">
       <Filter>Source Files\core</Filter>
     </ClCompile>
   </ItemGroup>
@@ -51,19 +78,43 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Renderer.h">
+    <ClInclude Include="renderer.h">
       <Filter>Header Files\core</Filter>
     </ClInclude>
-    <ClInclude Include="Shader.h">
+    <ClInclude Include="shader.h">
       <Filter>Header Files\core</Filter>
     </ClInclude>
-    <ClInclude Include="Texture.h">
+    <ClInclude Include="texture.h">
       <Filter>Header Files\core</Filter>
     </ClInclude>
-    <ClInclude Include="Debug.h">
+    <ClInclude Include="debug.h">
       <Filter>Header Files\core</Filter>
     </ClInclude>
-    <ClInclude Include="Transform.h">
+    <ClInclude Include="transform.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="camera.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="objects.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="material.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="models.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="scene.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="inputs.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="lights.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="shadows.h">
       <Filter>Header Files\core</Filter>
     </ClInclude>
   </ItemGroup>
