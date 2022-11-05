@@ -6,3 +6,4 @@
 #include "api/objectModule.h"
 #include "api/renderModule.h"
 #include "api/sceneModule.h"
+#include "api/physicsModule.h"
