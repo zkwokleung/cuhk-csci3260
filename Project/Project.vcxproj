@@ -141,6 +141,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="resources\shaders\FragmentShaderCode.glsl" />
+    <None Include="resources\shaders\SkyboxFrag.glsl" />
+    <None Include="resources\shaders\SkyboxVert.glsl" />
     <None Include="resources\shaders\VertexShaderCode.glsl" />
   </ItemGroup>
   <ItemGroup>
@@ -185,6 +187,7 @@
     <ClInclude Include="src\api\sceneModule.h" />
     <ClInclude Include="src\api\scenes\scene.h" />
     <ClInclude Include="src\api\scenes\sceneManager.h" />
+    <ClInclude Include="src\engine\Application.h" />
     <ClInclude Include="src\myapi.h" />
   </ItemGroup>
   <ItemGroup>
@@ -217,6 +220,7 @@
     <ClCompile Include="src\api\renders\vbo.cpp" />
     <ClCompile Include="src\api\scenes\scene.cpp" />
     <ClCompile Include="src\api\scenes\sceneManager.cpp" />
+    <ClCompile Include="src\engine\Application.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,5 +1,18 @@
 #include "shader.h"
 
+Shader::Shader()
+{
+}
+
+Shader::Shader(const char* vertexPath, const char* fragmentPath)
+{
+	setupShader(vertexPath, fragmentPath);
+}
+
+Shader::~Shader()
+{
+}
+
 void Shader::setupShader(const char* vertexPath, const char* fragmentPath)
 {
 	// similar to the installShaders() in the assignment 1

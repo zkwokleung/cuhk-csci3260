@@ -67,12 +67,24 @@
     <Filter Include="Source Files\api\physics">
       <UniqueIdentifier>{771eb490-255f-4f6e-bf36-da112df90d2f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\engine">
+      <UniqueIdentifier>{0524f3c2-f2f4-46e1-a9ba-6d36ecc9cf43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\engine">
+      <UniqueIdentifier>{bb850706-f8de-4fc3-9641-9c2826d8f72c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\FragmentShaderCode.glsl">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="resources\shaders\VertexShaderCode.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resources\shaders\SkyboxFrag.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resources\shaders\SkyboxVert.glsl">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
@@ -199,6 +211,9 @@
     <ClInclude Include="src\api\renders\skybox.h">
       <Filter>Header Files\api\renders</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\Application.h">
+      <Filter>Header Files\engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\api\cameras\camera.cpp">
@@ -290,6 +305,9 @@
     </ClCompile>
     <ClCompile Include="src\api\renders\skybox.cpp">
       <Filter>Source Files\api\renders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\Application.cpp">
+      <Filter>Source Files\engine</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

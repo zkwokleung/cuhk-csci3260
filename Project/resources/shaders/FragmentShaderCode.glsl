@@ -52,6 +52,9 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 // Camera
 uniform vec3 u_viewPos;
 
+// Skybox
+uniform samplerCube u_skybox;
+
 /***********
     Main
 ************/
@@ -69,11 +72,6 @@ void main()
         if (pointLights[i].isActive != 0)
             result += CalcPointLight(pointLights[i], norm, v_position, viewDir);
     }
-
-    // Spot Lights
-    // for(int i = 0; i < NR_SPOT_LIGHTS; i++)
-    //     result += CalcSpotLight(spotLights[i], norm, v_position, viewDir);
-    // result += CalcSpotLight(spotLight, norm, v_position, viewDir);
 
 	FragColor = material.ambient * texture(u_Texture, v_uv).rgb * result;
 }

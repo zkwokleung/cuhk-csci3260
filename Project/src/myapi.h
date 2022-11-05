@@ -1,5 +1,4 @@
 #pragma once
-#define STB_IMAGE_IMPLEMENTATION
 #include "api/cameraModule.h"
 #include "api/debugModule.h"
 #include "api/inputModule.h"
