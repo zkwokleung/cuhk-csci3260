@@ -83,7 +83,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)Dependencies\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glew\glew32.lib;GLFW\glfw3.lib;opengl32.lib;freeglut\freeglut_static.lib;assimp\assimp-vc143-mt.lib;User32.lib;Gdi32.lib;Shell32.lib</AdditionalDependencies>
+      <AdditionalDependencies>glew\glew32.lib;GLFW\glfw3.lib;opengl32.lib;freeglut\freeglutd.lib;freeglut\freeglut_static.lib;assimp\assimp-vc143-mt.lib;User32.lib;Gdi32.lib;Shell32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -102,7 +102,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)Dependencies\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glew\glew32.lib;GLFW\glfw3.lib;opengl32.lib;freeglut\freeglut_static.lib;assimp\assimp-vc143-mt.lib;User32.lib;Gdi32.lib;Shell32.lib</AdditionalDependencies>
+      <AdditionalDependencies>glew\glew32.lib;GLFW\glfw3.lib;opengl32.lib;freeglut\freeglutd.lib;freeglut\freeglut_static.lib;assimp\assimp-vc143-mt.lib;User32.lib;Gdi32.lib;Shell32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -117,7 +117,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)Dependencies\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glew\glew32.lib;GLFW\glfw3.lib;opengl32.lib;freeglut\freeglut_static.lib;assimp\assimp-vc143-mt.lib;User32.lib;Gdi32.lib;Shell32.lib</AdditionalDependencies>
+      <AdditionalDependencies>glew\glew32.lib;GLFW\glfw3.lib;opengl32.lib;freeglut\freeglutd.lib;freeglut\freeglut_static.lib;assimp\assimp-vc143-mt.lib;User32.lib;Gdi32.lib;Shell32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -136,7 +136,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)Dependencies\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glew\glew32.lib;GLFW\glfw3.lib;opengl32.lib;freeglut\freeglut_static.lib;assimp\assimp-vc143-mt.lib;User32.lib;Gdi32.lib;Shell32.lib</AdditionalDependencies>
+      <AdditionalDependencies>glew\glew32.lib;GLFW\glfw3.lib;opengl32.lib;freeglut\freeglutd.lib;freeglut\freeglut_static.lib;assimp\assimp-vc143-mt.lib;User32.lib;Gdi32.lib;Shell32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -163,17 +163,22 @@
     <ClInclude Include="src\api\lightings\spotLight.h" />
     <ClInclude Include="src\api\objectModule.h" />
     <ClInclude Include="src\api\objects\coloredVerticesObject.h" />
+    <ClInclude Include="src\api\objects\component.h" />
     <ClInclude Include="src\api\objects\indexedColoredVerticesObject.h" />
     <ClInclude Include="src\api\objects\modelObject.h" />
     <ClInclude Include="src\api\objects\models.h" />
     <ClInclude Include="src\api\objects\object.h" />
     <ClInclude Include="src\api\objects\transform.h" />
     <ClInclude Include="src\api\objects\verticesObject.h" />
+    <ClInclude Include="src\api\physicsModule.h" />
+    <ClInclude Include="src\api\physics\collider.h" />
+    <ClInclude Include="src\api\physics\physicsEngine.h" />
     <ClInclude Include="src\api\renderModule.h" />
     <ClInclude Include="src\api\renders\ebo.h" />
     <ClInclude Include="src\api\renders\material.h" />
     <ClInclude Include="src\api\renders\renderer.h" />
     <ClInclude Include="src\api\renders\shader.h" />
+    <ClInclude Include="src\api\renders\skybox.h" />
     <ClInclude Include="src\api\renders\texture.h" />
     <ClInclude Include="src\api\renders\vao.h" />
     <ClInclude Include="src\api\renders\vbo.h" />
@@ -200,10 +205,13 @@
     <ClCompile Include="src\api\objects\object.cpp" />
     <ClCompile Include="src\api\objects\transform.cpp" />
     <ClCompile Include="src\api\objects\verticesObject.cpp" />
+    <ClCompile Include="src\api\physics\collider.cpp" />
+    <ClCompile Include="src\api\physics\physicsEngine.cpp" />
     <ClCompile Include="src\api\renders\ebo.cpp" />
     <ClCompile Include="src\api\renders\material.cpp" />
     <ClCompile Include="src\api\renders\renderer.cpp" />
     <ClCompile Include="src\api\renders\shader.cpp" />
+    <ClCompile Include="src\api\renders\skybox.cpp" />
     <ClCompile Include="src\api\renders\texture.cpp" />
     <ClCompile Include="src\api\renders\vao.cpp" />
     <ClCompile Include="src\api\renders\vbo.cpp" />

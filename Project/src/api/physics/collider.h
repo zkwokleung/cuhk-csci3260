@@ -1,6 +1,8 @@
 #pragma once
 #include "../objects/object.h"
 
+class Collider;
+
 typedef void(*CollisionCallbackFunc)(Collider other);
 
 class Collider : public Object

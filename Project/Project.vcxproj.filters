@@ -61,6 +61,12 @@
     <Filter Include="Header Files\api\renders">
       <UniqueIdentifier>{4a83f883-c80f-4c60-a66b-1eedd78b1d86}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\api\physics">
+      <UniqueIdentifier>{ba8e12d7-c160-429a-b794-cee2a68eba2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\api\physics">
+      <UniqueIdentifier>{771eb490-255f-4f6e-bf36-da112df90d2f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\FragmentShaderCode.glsl">
@@ -178,6 +184,21 @@
     <ClInclude Include="src\myapi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\api\objects\component.h">
+      <Filter>Header Files\api\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\physics\collider.h">
+      <Filter>Header Files\api\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\physicsModule.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\physics\physicsEngine.h">
+      <Filter>Header Files\api\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\renders\skybox.h">
+      <Filter>Header Files\api\renders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\api\cameras\camera.cpp">
@@ -260,6 +281,15 @@
     </ClCompile>
     <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\physics\collider.cpp">
+      <Filter>Source Files\api\physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\physics\physicsEngine.cpp">
+      <Filter>Source Files\api\physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\renders\skybox.cpp">
+      <Filter>Source Files\api\renders</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

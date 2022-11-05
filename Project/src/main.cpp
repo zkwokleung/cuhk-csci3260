@@ -5,7 +5,7 @@ Student Name: SZE-TO Kwok Leung,
 */
 
 #include <glew/glew.h>
-#include <GLFW/glfw3.h>
+#include <freeglut/freeglut.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -56,14 +56,22 @@ void initializedGL(void) //run only once
 	glEnable(GL_CULL_FACE);
 }
 
-void paintGL(void)  //always run
+void paintGL(void)  // Main Loop
 {
+	glClearColor(1, 1, 1, 1);  // (In fact, this is the default.)
+	glClear(GL_COLOR_BUFFER_BIT);
 
-}
+	glBegin(GL_TRIANGLES);
+	glColor3f(1, 0, 0); // red
+	glVertex2f(-0.8, -0.8);
+	glColor3f(0, 1, 0); // green
+	glVertex2f(0.8, -0.8);
+	glColor3f(0, 0, 1); // blue
+	glVertex2f(0, 0.9);
+	glEnd();
 
-void onEnd(void)
-{
 
+	glutSwapBuffers(); // Required to copy color buffer onto the screen.
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -71,54 +79,25 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
+void onEnd(void)
+{
+
+}
+
 int main(int argc, char* argv[])
 {
-	GLFWwindow* window;
-
-	/* Initialize the glfw */
-	if (!glfwInit()) {
-		std::cout << "Failed to initialize GLFW" << std::endl;
-		return -1;
-	}
-	/* glfw: configure; necessary for MAC */
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-#ifdef __APPLE__
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
-	/* Create a windowed mode window and its OpenGL context */
-	window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Assignment 2", NULL, NULL);
-	if (!window) {
-		std::cout << "Failed to create GLFW window" << std::endl;
-		glfwTerminate();
-		return -1;
-	}
-
-	/* Make the window's context current */
-	glfwMakeContextCurrent(window);
-
-	/*register callback functions*/
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE | GLUT_DEPTH | GLUT_MULTISAMPLE);
+	glutInitWindowSize(SCR_WIDTH, SCR_HEIGHT);         // Size of display area, in pixels.
+	glutInitWindowPosition(100, 100);     // Location of window in screen coordinates.
+	glutCreateWindow("GL RGB Triangle"); // Parameter is window title.
+	glutDisplayFunc(paintGL);            // Called when the window needs to be redrawn.
 
 	initializedGL();
 
-	while (!glfwWindowShouldClose(window)) {
-		/* Render here */
-		paintGL();
+	glutMainLoop(); // Run the event loop!  This function does not return.
 
-		/* Swap front and back buffers */
-		glfwSwapBuffers(window);
-
-		/* Poll for and process events */
-		glfwPollEvents();
-	}
-
-	onEnd();
-
-	glfwTerminate();
+	onEnd(); // Clean up the program
 
 	return 0;
 }
