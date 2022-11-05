@@ -1,8 +1,8 @@
 #include "Texture.h"
 
-#include "Dependencies/glew/glew.h"
+#include <glew/glew.h>
 #define STB_IMAGE_IMPLEMENTATION
-#include "Dependencies/stb_image/stb_image.h"
+#include <stb_image/stb_image.h>
 
 #include <iostream>
 
@@ -12,11 +12,11 @@ void Texture::setupTexture(const char* texturePath)
 	stbi_set_flip_vertically_on_load(true);
 	// load the texture data into "data"
 	unsigned char* data = stbi_load(texturePath, &Width, &Height, &BPP, 0);
-	GLenum format=3;
+	GLenum format = 3;
 	switch (BPP) {
-		case 1: format = GL_RED; break;
-		case 3: format = GL_RGB; break;
-		case 4: format = GL_RGBA; break;
+	case 1: format = GL_RED; break;
+	case 3: format = GL_RGB; break;
+	case 4: format = GL_RGBA; break;
 	}
 
 	glGenTextures(1, &ID);
@@ -29,7 +29,7 @@ void Texture::setupTexture(const char* texturePath)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	
+
 	if (data) {
 		glTexImage2D(GL_TEXTURE_2D, 0, format, Width, Height, 0, format, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);

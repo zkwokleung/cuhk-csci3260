@@ -4,10 +4,10 @@ Student ID: 1155149068
 Student Name: SZE-TO Kwok Leung
 */
 
-#include "Dependencies/glew/glew.h"
-#include "Dependencies/GLFW/glfw3.h"
-#include "Dependencies/glm/glm.hpp"
-#include "Dependencies/glm/gtc/matrix_transform.hpp"
+#include <glew/glew.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "Shader.h"
 #include "Texture.h"
