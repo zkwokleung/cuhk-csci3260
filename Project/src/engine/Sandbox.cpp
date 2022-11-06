@@ -2,7 +2,7 @@
 
 // Design the game logic here, and the application will handle the rendering
 
-Sandbox::Sandbox()
+Sandbox::Sandbox() : m_scene(new SpaceScene())
 {
 }
 

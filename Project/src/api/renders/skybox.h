@@ -11,7 +11,7 @@ class Skybox
 {
 public:
 	Skybox();
-	Skybox(std::vector<std::string> faces, const char* vertexPath, const char* fragmentPath);
+	Skybox(std::vector<std::string> faces, Shader* shader);
 	~Skybox();
 
 	void Enable();

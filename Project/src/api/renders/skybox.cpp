@@ -5,7 +5,7 @@ Skybox::Skybox() : m_cubemap(0), m_shader(new Shader())
 {
 }
 
-Skybox::Skybox(std::vector<std::string> faces, const char* vertexPath, const char* fragmentPath) : m_shader(new Shader(vertexPath, fragmentPath))
+Skybox::Skybox(std::vector<std::string> faces, Shader* shader) : m_shader(shader)
 {
 	m_cubemap = loadCubemap(faces);
 }

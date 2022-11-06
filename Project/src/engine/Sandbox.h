@@ -1,6 +1,7 @@
 #pragma once
 #include "../myapi.h"
 #include "Resources.h"
+#include "../elements/spaceScene.h"
 
 // Design the game logic here, and the application will handle the rendering
 class Sandbox
@@ -19,5 +20,5 @@ public:
 	void OnEnd(void);
 
 private:
-	Skybox* m_defaultSkybox;
+	Scene* m_scene;
 };

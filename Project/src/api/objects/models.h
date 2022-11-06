@@ -15,6 +15,4 @@ struct Vertex {
 struct Model {
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
-
-	static Model loadOBJ(const char* objPath);
 };
