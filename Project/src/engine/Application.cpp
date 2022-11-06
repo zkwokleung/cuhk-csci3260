@@ -1,10 +1,12 @@
 #include "Application.h"
 #include "Resources.h"
+#include "Sandbox.h"
 
 // screen setting
 const int SCR_WIDTH = 800;
 const int SCR_HEIGHT = 600;
 
+Sandbox* Application::s_activeSandbox = nullptr;
 Shader* Application::s_defaultShader = nullptr;
 
 void Application::Initialize(int argc, char* argv[])
@@ -15,6 +17,15 @@ void Application::Initialize(int argc, char* argv[])
 	glutInitWindowPosition(100, 100);
 	glutCreateWindow("Project");
 	glutDisplayFunc(MainLoop);
+
+	// Initialize random seed
+	srand(time(NULL));
+
+	// Setup OpenGL
+	glewInit();
+	GetOpenGLInfo();
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
 }
 
 void Application::Run(void)
@@ -26,32 +37,21 @@ void Application::Run(void)
 
 void Application::Setup(void)
 {
-	// Initialize random seed
-	srand(time(NULL));
-
-	// Setup OpenGL
-	glewInit();
-	GetOpenGLInfo();
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
+	s_activeSandbox = new Sandbox();
 
 	// Initialize fields and API
 	Input::Init();
 	Skybox::Init();
 	InstallShader();
-	std::vector<std::string> faces = {
-		"skybox/right.bmp",
-		"skybox/left.bmp",
-		"skybox/top.bmp",
-		"skybox/bottom.bmp",
-		"skybox/front.bmp",
-		"skybox/back.bmp"
-	};
 
+	s_activeSandbox->Initialize();
 }
 
 void Application::MainLoop(void)
 {
+	// Call sandbox's OnUpdate
+	s_activeSandbox->OnUpdate();
+
 	// Draw skybox
 	Skybox::Draw();
 
@@ -64,6 +64,8 @@ void Application::MainLoop(void)
 
 void Application::End(void)
 {
+	s_activeSandbox->OnEnd();
+	delete s_activeSandbox;
 	delete s_defaultShader;
 }
 
