@@ -30,9 +30,9 @@ void Skybox::LoadCubemap(std::vector<std::string> faces)
 	m_cubemap = loadCubemap(faces);
 }
 
-void Skybox::LoadShader(const char* vertexPath, const char* fragmentPath)
+void Skybox::LoadShader(std::string vertexShader, std::string fragmentShader)
 {
-	m_shader->setupShader(vertexPath, fragmentPath);
+	m_shader->SetupShader(vertexShader, fragmentShader);
 }
 
 // Static
@@ -54,7 +54,7 @@ void Skybox::Draw()
 		return;
 
 	glDepthMask(GL_FALSE);
-	s_activeSkybox->m_shader->use();
+	s_activeSkybox->m_shader->Use();
 	// Set view and projection
 	Camera::OnPaint(s_activeSkybox->m_shader);
 

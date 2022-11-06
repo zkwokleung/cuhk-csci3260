@@ -1,4 +1,5 @@
 #include "Application.h"
+#include "Resources.h"
 
 // screen setting
 const int SCR_WIDTH = 800;
@@ -39,12 +40,12 @@ void Application::Setup(void)
 	Skybox::Init();
 	InstallShader();
 	std::vector<std::string> faces = {
-		"../../resources/right.bmp",
-		"../../resources/left.bmp",
-		"../../resources/top.bmp",
-		"../../resources/bottom.bmp",
-		"../../resources/front.bmp",
-		"../../resources/back.bmp"
+		"skybox/right.bmp",
+		"skybox/left.bmp",
+		"skybox/top.bmp",
+		"skybox/bottom.bmp",
+		"skybox/front.bmp",
+		"skybox/back.bmp"
 	};
 
 }
@@ -55,7 +56,7 @@ void Application::MainLoop(void)
 	Skybox::Draw();
 
 	// Draw objects
-	s_defaultShader->use();
+	s_defaultShader->Use();
 	Camera::OnPaint(s_defaultShader);
 	ObjectRenderPipeline::OnPaint(s_defaultShader);
 	SceneManager::OnPaint(s_defaultShader);
@@ -79,5 +80,6 @@ void Application::GetOpenGLInfo()
 
 void Application::InstallShader()
 {
-	s_defaultShader = new Shader("../../resources/shaders/VertexShaderCode.glsl", "../../resources/shaders/FragmentShaderCode.glsl");
+	s_defaultShader = new Shader(Resources::LoadTextFile("shaders/VertexShaderCode.glsl"),
+		Resources::LoadTextFile("shaders/FragmentShaderCode.glsl"));
 }

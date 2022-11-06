@@ -42,9 +42,9 @@ glm::mat4 Light::GetViewMat4()
 
 void Light::OnPaint(Shader* shader)
 {
-	shader->setVec3(GetUniformNamePrefix() + ".ambient", m_ambient);
-	shader->setVec3(GetUniformNamePrefix() + ".diffuse", m_diffuse);
-	shader->setVec3(GetUniformNamePrefix() + ".specular", m_specular);
+	shader->SetVec3(GetUniformNamePrefix() + ".ambient", m_ambient);
+	shader->SetVec3(GetUniformNamePrefix() + ".diffuse", m_diffuse);
+	shader->SetVec3(GetUniformNamePrefix() + ".specular", m_specular);
 }
 
 std::string Light::GetUniformNamePrefix() const

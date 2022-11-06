@@ -18,7 +18,7 @@ public:
 	void Disable();
 
 	void LoadCubemap(std::vector<std::string> faces);
-	void LoadShader(const char* vertexPath, const char* fragmentPath);
+	void LoadShader(std::string vertexShader, std::string fragmentShader);
 
 	static void Init(void);
 	static void Draw();

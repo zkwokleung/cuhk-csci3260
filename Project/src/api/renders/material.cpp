@@ -17,10 +17,10 @@ Material::~Material()
 
 void Material::OnPaint(Shader* shader)
 {
-	shader->setVec3("material.ambient", m_ambient);
-	shader->setVec3("material.diffuse", m_diffuse);
-	shader->setVec3("material.specular", m_specular);
-	shader->setFloat("material.shininess", m_shininess);
+	shader->SetVec3("material.ambient", m_ambient);
+	shader->SetVec3("material.diffuse", m_diffuse);
+	shader->SetVec3("material.specular", m_specular);
+	shader->SetFloat("material.shininess", m_shininess);
 }
 
 void Material::SetAmbient(glm::vec3 ambient)

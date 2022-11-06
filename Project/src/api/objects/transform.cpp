@@ -79,16 +79,16 @@ void Transform::SetScale(glm::vec3 value)
 void Transform::OnPaint(Shader* shader)
 {
 	glm::mat4 m = GetTransformMat4();
-	shader->setMat4("u_modelMatrix", m);
+	shader->SetMat4("u_modelMatrix", m);
 
 	glm::mat4 pos = GetPositionMat4();
-	shader->setMat4("u_positionMat4", pos);
+	shader->SetMat4("u_positionMat4", pos);
 
 	glm::mat4 rot = GetRotationMat4();
-	shader->setMat4("u_rotationMat4", rot);
+	shader->SetMat4("u_rotationMat4", rot);
 
 	glm::mat4 s = GetScaleMat4();
-	shader->setMat4("u_scaleMat4", s);
+	shader->SetMat4("u_scaleMat4", s);
 }
 
 glm::mat4 Transform::GetTransformMat4() const

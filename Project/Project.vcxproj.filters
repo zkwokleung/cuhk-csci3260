@@ -214,6 +214,9 @@
     <ClInclude Include="src\engine\Application.h">
       <Filter>Header Files\engine</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\Resources.h">
+      <Filter>Header Files\engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\api\cameras\camera.cpp">
@@ -308,6 +311,9 @@
     </ClCompile>
     <ClCompile Include="src\vendor\stb_image.cpp">
       <Filter>Source Files\vendor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\Resources.cpp">
+      <Filter>Source Files\engine</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

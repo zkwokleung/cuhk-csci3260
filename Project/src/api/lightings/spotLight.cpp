@@ -25,10 +25,10 @@ std::string SpotLight::GetUniformNamePrefix() const
 void SpotLight::OnPaint(Shader* shader)
 {
 	PointLight::OnPaint(shader);
-	shader->setVec3(GetUniformNamePrefix() + ".position", GetTransform().GetPosition());
-	shader->setVec3(GetUniformNamePrefix() + ".direction", m_direction);
-	shader->setFloat(GetUniformNamePrefix() + ".cutOff", m_cutOff);
-	shader->setFloat(GetUniformNamePrefix() + ".innerCutOff", m_innerCutOff);
+	shader->SetVec3(GetUniformNamePrefix() + ".position", GetTransform().GetPosition());
+	shader->SetVec3(GetUniformNamePrefix() + ".direction", m_direction);
+	shader->SetFloat(GetUniformNamePrefix() + ".cutOff", m_cutOff);
+	shader->SetFloat(GetUniformNamePrefix() + ".innerCutOff", m_innerCutOff);
 }
 
 void SpotLight::SetDirection(glm::vec3 direction)

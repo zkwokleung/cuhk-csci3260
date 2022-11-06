@@ -17,15 +17,15 @@ PointLight::~PointLight()
 void PointLight::OnPaint(Shader* shader)
 {
 	Light::OnPaint(shader);
-	shader->setFloat(GetUniformNamePrefix() + ".constant", m_constant);
-	shader->setFloat(GetUniformNamePrefix() + ".linear", m_linear);
-	shader->setFloat(GetUniformNamePrefix() + ".quadratic", m_quadratic);
+	shader->SetFloat(GetUniformNamePrefix() + ".constant", m_constant);
+	shader->SetFloat(GetUniformNamePrefix() + ".linear", m_linear);
+	shader->SetFloat(GetUniformNamePrefix() + ".quadratic", m_quadratic);
 
-	shader->setVec3(GetUniformNamePrefix() + ".position", GetTransform().GetPosition());
+	shader->SetVec3(GetUniformNamePrefix() + ".position", GetTransform().GetPosition());
 
-	shader->setFloat(GetUniformNamePrefix() + ".intensity", m_intensity);
+	shader->SetFloat(GetUniformNamePrefix() + ".intensity", m_intensity);
 
-	shader->setInt(GetUniformNamePrefix() + ".isActive", 1);
+	shader->SetInt(GetUniformNamePrefix() + ".isActive", 1);
 }
 
 std::string PointLight::GetUniformNamePrefix() const

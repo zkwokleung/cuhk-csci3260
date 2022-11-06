@@ -24,9 +24,9 @@ void Camera::OnPaint(Shader* shader)
 	// Set the shader's projection and view uniform
 	glm::mat4 v = s_main->GetViewMatrix();
 	glm::mat4 p = s_main->GetProjectionMatrix();
-	shader->setMat4("u_viewMatrix", v);
-	shader->setMat4("u_projectionMatrix", p);
-	shader->setVec3("u_viewPos", GetMain()->GetTransform().GetPosition());
+	shader->SetMat4("u_viewMatrix", v);
+	shader->SetMat4("u_projectionMatrix", p);
+	shader->SetVec3("u_viewPos", GetMain()->GetTransform().GetPosition());
 }
 
 Camera::Camera() : Object()

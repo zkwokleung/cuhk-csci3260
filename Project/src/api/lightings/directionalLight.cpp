@@ -36,8 +36,8 @@ float DirectionalLight::GetIntensity() const
 void DirectionalLight::OnPaint(Shader* shader)
 {
 	Light::OnPaint(shader);
-	shader->setVec3(GetUniformNamePrefix() + ".direction", m_direction);
-	shader->setFloat(GetUniformNamePrefix() + ".intensity", m_intensity);
+	shader->SetVec3(GetUniformNamePrefix() + ".direction", m_direction);
+	shader->SetFloat(GetUniformNamePrefix() + ".intensity", m_intensity);
 }
 
 glm::mat4 DirectionalLight::GetProjectionMat4()
