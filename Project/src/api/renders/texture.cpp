@@ -1,11 +1,20 @@
 #include "texture.h"
 
-void Texture::setupTexture(const char* texturePath)
+Texture::Texture(ImageData data)
 {
-	// tell stb_image.h to flip loaded texture's on the y-axis.
-	stbi_set_flip_vertically_on_load(true);
-	// load the texture data into "data"
-	unsigned char* data = stbi_load(texturePath, &Width, &Height, &BPP, 0);
+	SetData(data);
+}
+
+Texture::~Texture()
+{
+}
+
+void Texture::SetData(ImageData image)
+{
+	BPP = image.BPP;
+	Width = image.Width;
+	Height = image.Height;
+
 	GLenum format = 3;
 	switch (BPP) {
 	case 1: format = GL_RED; break;
@@ -24,27 +33,21 @@ void Texture::setupTexture(const char* texturePath)
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, format, Width, Height, 0, format, GL_UNSIGNED_BYTE, data);
+	if (image.data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, format, Width, Height, 0, format, GL_UNSIGNED_BYTE, image.data);
 		glGenerateMipmap(GL_TEXTURE_2D);
-		stbi_image_free(data);
-	}
-	else {
-		std::cout << "Failed to load texture: " << texturePath << std::endl;
-		exit(1);
 	}
 
-	std::cout << "Load " << texturePath << " successfully!" << std::endl;
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Texture::bind(unsigned int slot = 0) const
+void Texture::Bind(unsigned int slot = 0) const
 {
 	glActiveTexture(GL_TEXTURE0 + slot);
 	glBindTexture(GL_TEXTURE_2D, ID);
 }
 
-void Texture::unbind() const
+void Texture::Unbind() const
 {
 	glBindTexture(GL_TEXTURE_2D, 0);
 }

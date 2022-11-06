@@ -27,7 +27,7 @@ void Player::SetActive(bool active)
 
 	if (active)
 	{
-		if (s_activePlayer != this)
+		if (s_activePlayer && s_activePlayer != this)
 		{
 			// Disable the current active player
 			s_activePlayer->SetActive(false);

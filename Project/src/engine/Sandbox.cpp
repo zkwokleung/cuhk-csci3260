@@ -12,6 +12,7 @@ Sandbox::~Sandbox()
 
 void Sandbox::Initialize(void)
 {
+	SceneManager::SetActiveScene(m_scene);
 }
 
 void Sandbox::OnUpdate(void)

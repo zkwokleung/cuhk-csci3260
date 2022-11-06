@@ -126,7 +126,58 @@ Model Resources::LoadObject(std::string path)
 	return model;
 }
 
-unsigned char* Resources::LoadImage(std::string path)
+ImageData* Resources::LoadImage(std::string path)
 {
+	ImageData* image = new ImageData();
+	// tell stb_image.h to flip loaded texture's on the y-axis.
+	stbi_set_flip_vertically_on_load(true);
+	// load the texture data into "data"
+	std::string fullPath = RESOURCES_PATH + path;
+	image->data = stbi_load(fullPath.c_str(), &image->Width, &image->Height, &image->BPP, 0);
 
+	if (!image->data)
+	{
+		std::stringstream msg;
+		msg << "Failed to load texture: " << path;
+		Debug::Error(msg.str());
+		exit(1);
+	}
+
+	std::stringstream msg;
+	msg << "Load " << fullPath << " successfully!";
+	Debug::Log(msg.str());
+
+	return image;
 }
+
+std::vector<ImageData*> Resources::LoadCubemap(std::vector<std::string> paths)
+{
+	std::vector<ImageData*> results;
+	for (unsigned int i = 0; i < paths.size(); i++)
+	{
+		ImageData* image = new ImageData();
+
+		std::string fullPath = RESOURCES_PATH + paths[i];
+		image->data = stbi_load(fullPath.c_str(), &image->Width, &image->Height, &image->BPP, 0);
+		if (!image->data)
+		{
+			std::stringstream msg;
+			msg << "Cubemap tex failed to load at path: " << paths[i];
+			Debug::Error(msg.str());
+			FreeImage(image);
+		}
+
+		results.push_back(image);
+	}
+
+	return results;
+}
+
+void Resources::FreeImage(ImageData* image)
+{
+	if (image->data)
+	{
+		stbi_image_free(image->data);
+	}
+}
+

@@ -11,18 +11,17 @@ class Skybox
 {
 public:
 	Skybox();
-	Skybox(std::vector<std::string> faces, Shader* shader);
+	Skybox(std::vector<ImageData*> images, Shader* shader);
 	~Skybox();
 
 	void Enable();
 	void Disable();
 
-	void LoadCubemap(std::vector<std::string> faces);
-	void LoadShader(std::string vertexShader, std::string fragmentShader);
+	void SetCubemap(std::vector<ImageData*> images);
+	void SetShader(std::string vertexShader, std::string fragmentShader);
 
 	static void Init(void);
 	static void Draw();
-	static unsigned int loadCubemap(std::vector<std::string> faces);
 private:
 	unsigned int m_cubemap;
 	Shader* m_shader;

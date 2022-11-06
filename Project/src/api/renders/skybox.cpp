@@ -5,9 +5,9 @@ Skybox::Skybox() : m_cubemap(0), m_shader(new Shader())
 {
 }
 
-Skybox::Skybox(std::vector<std::string> faces, Shader* shader) : m_shader(shader)
+Skybox::Skybox(std::vector<ImageData*> images, Shader* shader) : m_shader(shader)
 {
-	m_cubemap = loadCubemap(faces);
+	SetCubemap(images);
 }
 
 Skybox::~Skybox()
@@ -25,12 +25,29 @@ void Skybox::Disable()
 	s_activeSkybox = nullptr;
 }
 
-void Skybox::LoadCubemap(std::vector<std::string> faces)
+void Skybox::SetCubemap(std::vector<ImageData*> images)
 {
-	m_cubemap = loadCubemap(faces);
+	unsigned int textureID;
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+	for (unsigned int i = 0; i < images.size(); i++)
+	{
+		if (images[i]->data)
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+				0, GL_RGB, images[i]->Width, images[i]->Height, 0, GL_RGB, GL_UNSIGNED_BYTE, images[i]->data
+			);
+		}
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 }
 
-void Skybox::LoadShader(std::string vertexShader, std::string fragmentShader)
+void Skybox::SetShader(std::string vertexShader, std::string fragmentShader)
 {
 	m_shader->SetupShader(vertexShader, fragmentShader);
 }
@@ -65,38 +82,6 @@ void Skybox::Draw()
 
 	// Enable depth mask again
 	glDepthMask(GL_TRUE);
-}
-
-unsigned int Skybox::loadCubemap(std::vector<std::string> faces)
-{
-	unsigned int textureID;
-	glGenTextures(1, &textureID);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-
-	int width, height, nrChannels;
-	for (unsigned int i = 0; i < faces.size(); i++)
-	{
-		unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
-		if (data)
-		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-				0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
-			);
-			stbi_image_free(data);
-		}
-		else
-		{
-			std::cout << "Cubemap tex failed to load at path: " << faces[i] << std::endl;
-			stbi_image_free(data);
-		}
-	}
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-	return textureID;
 }
 
 const float Skybox::s_skyboxVertices[] = {

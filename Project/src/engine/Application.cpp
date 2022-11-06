@@ -58,8 +58,11 @@ void Application::MainLoop(void)
 	// Draw objects
 	s_defaultShader->Use();
 	Camera::OnPaint(s_defaultShader);
-	ObjectRenderPipeline::OnPaint(s_defaultShader);
 	SceneManager::OnPaint(s_defaultShader);
+	ObjectRenderPipeline::OnPaint(s_defaultShader);
+
+	glFlush();
+	glutPostRedisplay();
 }
 
 void Application::End(void)
@@ -82,6 +85,7 @@ void Application::GetOpenGLInfo()
 
 void Application::InstallShader()
 {
-	s_defaultShader = new Shader(Resources::LoadTextFile("shaders/VertexShaderCode.glsl"),
+	s_defaultShader = new Shader(
+		Resources::LoadTextFile("shaders/VertexShaderCode.glsl"),
 		Resources::LoadTextFile("shaders/FragmentShaderCode.glsl"));
 }

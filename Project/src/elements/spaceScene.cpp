@@ -11,10 +11,19 @@ SpaceScene::SpaceScene() : m_player(new Player())
 		"skybox/front.bmp",
 		"skybox/back.bmp"
 	};
-	m_skybox = new Skybox(faces, new Shader(
+
+	std::vector<ImageData*> cubemap = Resources::LoadCubemap(faces);
+	m_skybox = new Skybox(cubemap, new Shader(
 		Resources::LoadTextFile("shaders/SkyboxVert.glsl"),
 		Resources::LoadTextFile("shaders/SkyboxFrag.glsl"))
 	);
+
+	// Free the cubemap data
+	for (unsigned int i = 0; i < cubemap.size(); i++)
+	{
+		Resources::FreeImage(cubemap[i]);
+		delete cubemap[i];
+	}
 }
 
 SpaceScene::~SpaceScene()

@@ -4,12 +4,21 @@
 
 #include <iostream>
 
+struct ImageData
+{
+	unsigned char* data;
+	int Width = 0, Height = 0, BPP = 0;
+};
+
 class Texture
 {
 public:
-	void setupTexture(const char* texturePath);
-	void bind(unsigned int slot) const;
-	void unbind() const;
+	Texture(ImageData data);
+	~Texture();
+
+	void SetData(ImageData image);
+	void Bind(unsigned int slot) const;
+	void Unbind() const;
 
 private:
 	unsigned int ID = 0;

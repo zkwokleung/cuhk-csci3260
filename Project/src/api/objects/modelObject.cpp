@@ -53,7 +53,7 @@ Material& ModelObject::GetMaterial()
 void ModelObject::OnPaint(Shader* shader)
 {
 	Object::OnPaint(shader);
-	m_texture->bind(0);
+	m_texture->Bind(0);
 	m_material.OnPaint(shader);
 	Renderer::Draw(m_vao, m_ebo);
 }
