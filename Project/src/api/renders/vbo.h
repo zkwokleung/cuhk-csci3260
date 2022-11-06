@@ -1,5 +1,8 @@
 #pragma once
 #include <glew/glew.h>
+#include <freeglut/glut.h>
+#include <freeglut/freeglut.h>
+#include <freeglut/freeglut_std.h>
 #include <glm/glm.hpp>
 
 class VBO

@@ -39,9 +39,9 @@ float PerspectiveCamera::GetAspect() const
 	return m_aspect;
 }
 
-void PerspectiveCamera::SetNear(float near)
+void PerspectiveCamera::SetNear(float zNear)
 {
-	m_near = near;
+	m_near = zNear;
 }
 
 float PerspectiveCamera::GetNear() const
@@ -49,9 +49,9 @@ float PerspectiveCamera::GetNear() const
 	return m_near;
 }
 
-void PerspectiveCamera::SetFar(float far)
+void PerspectiveCamera::SetFar(float zFar)
 {
-	m_far = far;
+	m_far = zFar;
 }
 
 float PerspectiveCamera::GetFar() const

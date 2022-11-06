@@ -73,6 +73,9 @@
     <Filter Include="Source Files\engine">
       <UniqueIdentifier>{bb850706-f8de-4fc3-9641-9c2826d8f72c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\vendor">
+      <UniqueIdentifier>{60a07c96-e8c0-4332-ac2b-4615d0728878}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\FragmentShaderCode.glsl">
@@ -99,9 +102,6 @@
     </ClInclude>
     <ClInclude Include="src\api\debugs\debug.h">
       <Filter>Header Files\api\debugs</Filter>
-    </ClInclude>
-    <ClInclude Include="src\api\inputs\callbacks.h">
-      <Filter>Header Files\api\inputs</Filter>
     </ClInclude>
     <ClInclude Include="src\api\inputs\input.h">
       <Filter>Header Files\api\inputs</Filter>
@@ -222,9 +222,6 @@
     <ClCompile Include="src\api\debugs\debug.cpp">
       <Filter>Source Files\api\debugs</Filter>
     </ClCompile>
-    <ClCompile Include="src\api\inputs\callbacks.cpp">
-      <Filter>Source Files\api\inputs</Filter>
-    </ClCompile>
     <ClCompile Include="src\api\inputs\input.cpp">
       <Filter>Source Files\api\inputs</Filter>
     </ClCompile>
@@ -308,6 +305,9 @@
     </ClCompile>
     <ClCompile Include="src\engine\Application.cpp">
       <Filter>Source Files\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vendor\stb_image.cpp">
+      <Filter>Source Files\vendor</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

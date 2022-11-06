@@ -4,6 +4,8 @@
 const int SCR_WIDTH = 800;
 const int SCR_HEIGHT = 600;
 
+Shader* Application::s_defaultShader = nullptr;
+
 void Application::Initialize(int argc, char* argv[])
 {
 	glutInit(&argc, argv);
@@ -23,23 +25,48 @@ void Application::Run(void)
 
 void Application::Setup(void)
 {
-	get_OpenGL_info();
-
+	// Initialize random seed
 	srand(time(NULL));
 
+	// Setup OpenGL
+	glewInit();
+	GetOpenGLInfo();
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
+
+	// Initialize fields and API
+	Input::Init();
+	Skybox::Init();
+	InstallShader();
+	std::vector<std::string> faces = {
+		"../../resources/right.bmp",
+		"../../resources/left.bmp",
+		"../../resources/top.bmp",
+		"../../resources/bottom.bmp",
+		"../../resources/front.bmp",
+		"../../resources/back.bmp"
+	};
+
 }
 
 void Application::MainLoop(void)
 {
+	// Draw skybox
+	Skybox::Draw();
+
+	// Draw objects
+	s_defaultShader->use();
+	Camera::OnPaint(s_defaultShader);
+	ObjectRenderPipeline::OnPaint(s_defaultShader);
+	SceneManager::OnPaint(s_defaultShader);
 }
 
 void Application::End(void)
 {
+	delete s_defaultShader;
 }
 
-void Application::get_OpenGL_info()
+void Application::GetOpenGLInfo()
 {
 	// OpenGL information
 	const GLubyte* name = glGetString(GL_VENDOR);
@@ -48,4 +75,9 @@ void Application::get_OpenGL_info()
 	std::cout << "OpenGL company: " << name << std::endl;
 	std::cout << "Renderer name: " << renderer << std::endl;
 	std::cout << "OpenGL version: " << glversion << std::endl;
+}
+
+void Application::InstallShader()
+{
+	s_defaultShader = new Shader("../../resources/shaders/VertexShaderCode.glsl", "../../resources/shaders/FragmentShaderCode.glsl");
 }

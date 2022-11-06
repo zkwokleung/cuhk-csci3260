@@ -6,6 +6,7 @@ std::unordered_map<int, CursorPosCallback> Input::s_cursorPosCallbacks;
 std::unordered_map<int, MouseButtonCallback> Input::s_mouseButtonCallbacks;
 std::unordered_map<int, ScrollCallback> Input::s_scrollCallbacks;
 
+#ifdef USE_GLFW
 // The key callback function which is binded to glfw
 void Input::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -60,6 +61,56 @@ void Input::Init(GLFWwindow* window)
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 }
+#endif // USE_GLFW
+
+#ifdef USE_GLUT
+void Input::Init()
+{
+	glutKeyboardFunc(glut_keyboard_callback);
+	glutMouseFunc(glut_mouse_callback);
+	glutMotionFunc(glut_cursor_callback);
+	glutMouseWheelFunc(glut_wheel_callback);
+}
+
+void Input::glut_keyboard_callback(unsigned char key, int x, int y)
+{
+	// Invoke all the callback listeners
+	for (unsigned int i = 0; i < s_keyCallbacks.size(); i++)
+	{
+		if (s_keyCallbacks[i].m_callback)
+			s_keyCallbacks[i].m_callback(key, x, y);
+	}
+}
+
+void Input::glut_mouse_callback(int button, int state, int x, int y)
+{
+	// Invoke all the callback listeners
+	for (unsigned int i = 0; i < s_mouseButtonCallbacks.size(); i++)
+	{
+		if (s_mouseButtonCallbacks[i].m_callback)
+			s_mouseButtonCallbacks[i].m_callback(button, state, x, y);
+	}
+}
+
+void Input::glut_cursor_callback(int x, int y)
+{
+	// Invoke all the callback listeners
+	for (unsigned int i = 0; i < s_cursorPosCallbacks.size(); i++)
+	{
+		if (s_cursorPosCallbacks[i].m_callback)
+			s_cursorPosCallbacks[i].m_callback(x, y);
+	}
+}
+void Input::glut_wheel_callback(int button, int dir, int x, int y)
+{
+	// Invoke all the callback listeners
+	for (unsigned int i = 0; i < s_scrollCallbacks.size(); i++)
+	{
+		if (s_scrollCallbacks[i].m_callback)
+			s_scrollCallbacks[i].m_callback(button, dir, x, y);
+	}
+}
+#endif // USE_GLUT
 
 void Input::AddKeyCallback(KeyCallback callback)
 {
@@ -170,4 +221,61 @@ void Input::RemoveAllScrollCallbacks()
 	{
 		RemoveScrollCallback(s_scrollCallbacks.at(0));
 	}
+}
+
+KeyCallback::KeyCallback(void) : m_id(-1), m_callback(nullptr)
+{
+}
+
+// Constructor of the Key Callback Listener
+KeyCallback::KeyCallback(KeyCallbackFunc func) : m_id(-1)
+{
+	SetCallback(func);
+}
+
+void KeyCallback::SetCallback(KeyCallbackFunc func)
+{
+	m_callback = func;
+}
+
+CursorPosCallback::CursorPosCallback(void) : m_id(-1), m_callback(nullptr)
+{
+}
+
+CursorPosCallback::CursorPosCallback(CursorPosCallbackFunc func) : m_id(-1)
+{
+	SetCallback(func);
+}
+
+void CursorPosCallback::SetCallback(CursorPosCallbackFunc func)
+{
+	m_callback = func;
+}
+
+MouseButtonCallback::MouseButtonCallback(void) : m_id(-1), m_callback(nullptr)
+{
+}
+
+MouseButtonCallback::MouseButtonCallback(MouseButtonCallbackFunc func) : m_id(-1)
+{
+	SetCallback(func);
+}
+
+void MouseButtonCallback::SetCallback(MouseButtonCallbackFunc func)
+{
+	m_callback = func;
+}
+
+ScrollCallback::ScrollCallback(void) : m_id(-1), m_callback(nullptr)
+{
+}
+
+ScrollCallback::ScrollCallback(ScrollCallbackFunc func) : m_id(-1)
+{
+	SetCallback(func);
+}
+
+void ScrollCallback::SetCallback(ScrollCallbackFunc func)
+{
+	m_callback = func;
 }

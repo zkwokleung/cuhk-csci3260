@@ -92,7 +92,7 @@ std::string Shader::readShaderCode(const char* fileName) const
 	std::ifstream myInput(fileName);
 	if (!myInput.good())
 	{
-		std::cout << "File failed to load..." << fileName << std::endl;
+		std::cout << "File failed to load " << fileName << std::endl;
 		exit(1);
 	}
 	return std::string(

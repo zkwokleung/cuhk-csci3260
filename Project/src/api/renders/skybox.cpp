@@ -36,6 +36,11 @@ void Skybox::LoadShader(const char* vertexPath, const char* fragmentPath)
 }
 
 // Static
+Skybox* Skybox::s_activeSkybox = nullptr;
+
+VAO* Skybox::s_vao = nullptr;
+VBO* Skybox::s_vbo = nullptr;
+
 void Skybox::Init(void)
 {
 	s_vao = new VAO();
@@ -94,8 +99,6 @@ unsigned int Skybox::loadCubemap(std::vector<std::string> faces)
 	return textureID;
 }
 
-Skybox* Skybox::s_activeSkybox = nullptr;
-
 const float Skybox::s_skyboxVertices[] = {
 	// positions          
 	-1.0f,  1.0f, -1.0f,
@@ -140,6 +143,3 @@ const float Skybox::s_skyboxVertices[] = {
 	-1.0f, -1.0f,  1.0f,
 	 1.0f, -1.0f,  1.0f
 };
-
-VAO* Skybox::s_vao = nullptr;
-VBO* Skybox::s_vbo = nullptr;

@@ -14,9 +14,9 @@ public:
 	float GetFovy() const;
 	void SetAspect(float aspect);
 	float GetAspect() const;
-	void SetNear(float near);
+	void SetNear(float zNear);
 	float GetNear() const;
-	void SetFar(float far);
+	void SetFar(float zFar);
 	float GetFar() const;
 
 private:

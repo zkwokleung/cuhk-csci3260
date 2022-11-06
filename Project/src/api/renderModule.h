@@ -6,3 +6,4 @@
 #include "renders/shader.h"
 #include "renders/texture.h"
 #include "renders/material.h"
+#include "renders/skybox.h"
