@@ -1,6 +1,7 @@
 #include "spaceScene.h"
 
-SpaceScene::SpaceScene() : m_player(new Player())
+SpaceScene::SpaceScene() : m_player(new Player()),
+m_rock(new ModelObject(Resources::LoadObject("object/rock.obj"), new Texture(Resources::LoadImageData("texture/rockTexture.bmp"))))
 {
 	std::vector<std::string> faces =
 	{
@@ -37,6 +38,9 @@ void SpaceScene::OnInitialize()
 	m_skybox->Enable();
 	AddObject(m_player);
 	m_player->SetActive(true);
+
+	m_rock->GetTransform().SetLocalPosition(glm::vec3(.0f, .0f, -1.f));
+	m_rock->SetActive(true);
 }
 
 void SpaceScene::OnPaint(Shader* shader)

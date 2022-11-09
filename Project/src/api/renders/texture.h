@@ -13,10 +13,10 @@ struct ImageData
 class Texture
 {
 public:
-	Texture(ImageData data);
+	Texture(ImageData* data);
 	~Texture();
 
-	void SetData(ImageData image);
+	void SetData(ImageData* image);
 	void Bind(unsigned int slot) const;
 	void Unbind() const;
 

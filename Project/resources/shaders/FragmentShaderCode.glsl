@@ -52,9 +52,6 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 // Camera
 uniform vec3 u_viewPos;
 
-// Skybox
-uniform samplerCube u_skybox;
-
 /***********
     Main
 ************/

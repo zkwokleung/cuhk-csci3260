@@ -16,4 +16,5 @@ public:
 private:
 	Skybox* m_skybox;
 	Player* m_player;
+	ModelObject* m_rock;
 };

@@ -15,7 +15,7 @@ class Resources
 public:
 	static std::string LoadTextFile(std::string path);
 	static Model LoadObject(std::string path);
-	static ImageData* LoadImage(std::string path);
+	static ImageData* LoadImageData(std::string path);
 	static std::vector<ImageData*> LoadCubemap(std::vector<std::string> paths);
 	static void FreeImage(ImageData* image);
 

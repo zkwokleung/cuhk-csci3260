@@ -61,7 +61,7 @@ VBO* Skybox::s_vbo = nullptr;
 void Skybox::Init(void)
 {
 	s_vao = new VAO();
-	s_vbo = new VBO(Skybox::s_skyboxVertices, 36);
+	s_vbo = new VBO(Skybox::s_skyboxVertices, 36 * sizeof(float));
 	s_vao->LinkAttrib(*s_vbo, 0, 3, GL_FLOAT, 3 * sizeof(float), 0);
 }
 

@@ -1,6 +1,6 @@
 #include "texture.h"
 
-Texture::Texture(ImageData data)
+Texture::Texture(ImageData* data)
 {
 	SetData(data);
 }
@@ -9,11 +9,11 @@ Texture::~Texture()
 {
 }
 
-void Texture::SetData(ImageData image)
+void Texture::SetData(ImageData* image)
 {
-	BPP = image.BPP;
-	Width = image.Width;
-	Height = image.Height;
+	BPP = image->BPP;
+	Width = image->Width;
+	Height = image->Height;
 
 	GLenum format = 3;
 	switch (BPP) {
@@ -33,8 +33,8 @@ void Texture::SetData(ImageData image)
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
-	if (image.data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, format, Width, Height, 0, format, GL_UNSIGNED_BYTE, image.data);
+	if (image->data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, format, Width, Height, 0, format, GL_UNSIGNED_BYTE, image->data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 

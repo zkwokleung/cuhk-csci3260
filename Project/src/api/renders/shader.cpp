@@ -54,36 +54,104 @@ void Shader::Use() const
 	glUseProgram(ID);
 }
 
-void Shader::SetMat4(const std::string& name, glm::mat4& value) const
+int Shader::SetMat4(const std::string& name, glm::mat4& value)
 {
-	unsigned int transformLoc = glGetUniformLocation(ID, name.c_str());
-	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(value));
+	int loc = GetUniformLocation(name);
+	if (loc == -1)
+		return -1;
+
+	glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value));
+
+	return 0;
 }
 
-void Shader::SetVec4(const std::string& name, glm::vec4 value) const
+int Shader::SetVec4(const std::string& name, glm::vec4 value)
 {
-	glUniform4fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
+	int loc = GetUniformLocation(name);
+	if (loc == -1)
+		return -1;
+
+	glUniform4fv(loc, 1, &value[0]);
+
+	return 0;
 }
 
-void Shader::SetVec3(const std::string& name, glm::vec3 value) const
+int Shader::SetVec3(const std::string& name, glm::vec3 value)
 {
-	glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
+	int loc = GetUniformLocation(name);
+	if (loc == -1)
+		return -1;
+
+	glUniform3fv(loc, 1, &value[0]);
+
+	return 0;
 }
 
-void Shader::SetVec3(const std::string& name, float v1, float v2, float v3) const
+int Shader::SetVec3(const std::string& name, float v1, float v2, float v3)
 {
-	glUniform3f(glGetUniformLocation(ID, name.c_str()), v1, v2, v3);
+	int loc = GetUniformLocation(name);
+	if (loc == -1)
+		return -1;
+
+	glUniform3f(loc, v1, v2, v3);
+
+	return 0;
 }
 
-void Shader::SetFloat(const std::string& name, float value) const
+int Shader::SetFloat(const std::string& name, float value)
 {
-	glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+	int loc = GetUniformLocation(name);
+	if (loc == -1)
+		return -1;
+
+	glUniform1f(loc, value);
+
+	return 0;
 }
 
-void Shader::SetInt(const std::string& name, int value) const
+int Shader::SetInt(const std::string& name, int value)
 {
-	glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
+	int loc = GetUniformLocation(name);
+	if (loc == -1)
+		return -1;
+
+	glUniform1i(loc, value);
+
+	return 0;
 }
+
+// Private 
+
+int Shader::GetUniformLocation(std::string name)
+{
+	// Try to find the location from cache
+	if (m_uniformLocationCache.find(name) != m_uniformLocationCache.end())
+		return m_uniformLocationCache[name];
+
+	// Try to get the uniform location
+	int loc = glGetUniformLocation(ID, name.c_str());
+
+	// Check if the location exist
+	if (loc == -1)
+	{
+		if (m_uniformWarnings.find(name) == m_uniformWarnings.end())
+		{
+			std::stringstream msg;
+			msg << "Cannot find uniform location of " << name << " in " << __FILE__ << ":" << __LINE__;
+			Debug::Warning(msg.str());
+			// Record that the warning has been displayed
+			m_uniformWarnings[name] = true;
+		}
+
+		return -1;
+	}
+
+	// Save to cache
+	m_uniformLocationCache[name] = loc;
+
+	return loc;
+}
+
 
 bool Shader::CheckShaderStatus(GLuint shaderID) const
 {

@@ -42,14 +42,15 @@ Model Resources::LoadObject(std::string path)
 	Model model;
 	unsigned int num_vertices = 0;
 
-	std::cout << "\nLoading OBJ file " << path << "..." << std::endl;
+	std::string fullpath = RESOURCES_PATH + path;
+	std::cout << "\nLoading OBJ file " << fullpath << "..." << std::endl;
 
 	std::ifstream file;
-	file.open(path);
+	file.open(fullpath);
 
 	// Check for Error
 	if (file.fail()) {
-		std::cerr << "Impossible to open the file! Do you use the right path? See Tutorial 6 for details" << std::endl;
+		std::cerr << "Impossible to open the file! Do you use the right path?" << std::endl;
 		exit(1);
 	}
 
@@ -126,7 +127,7 @@ Model Resources::LoadObject(std::string path)
 	return model;
 }
 
-ImageData* Resources::LoadImage(std::string path)
+ImageData* Resources::LoadImageData(std::string path)
 {
 	ImageData* image = new ImageData();
 	// tell stb_image.h to flip loaded texture's on the y-axis.
