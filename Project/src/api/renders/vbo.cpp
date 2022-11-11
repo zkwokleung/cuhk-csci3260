@@ -3,7 +3,7 @@
 VBO::VBO() : ID(0) {
 }
 
-VBO::VBO(const GLfloat* vertices, GLsizeiptr size)
+VBO::VBO(const void* vertices, GLsizeiptr size)
 {
 	glGenBuffers(1, &ID);
 	Bind();

@@ -43,12 +43,15 @@ void Application::Setup(void)
 	Input::Init();
 	Skybox::Init();
 	InstallShader();
+	Renderer::SetClearColor(glm::vec4(1.f));
 
 	s_activeSandbox->Initialize();
 }
 
 void Application::MainLoop(void)
 {
+	Renderer::Clear();
+
 	// Call sandbox's OnUpdate
 	s_activeSandbox->OnUpdate();
 

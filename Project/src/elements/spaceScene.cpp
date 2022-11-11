@@ -1,7 +1,6 @@
 #include "spaceScene.h"
 
-SpaceScene::SpaceScene() : m_player(new Player()),
-m_rock(new ModelObject(Resources::LoadObject("object/rock.obj"), new Texture(Resources::LoadImageData("texture/rockTexture.bmp"))))
+SpaceScene::SpaceScene() : m_player(new Player())
 {
 	std::vector<std::string> faces =
 	{
@@ -25,6 +24,10 @@ m_rock(new ModelObject(Resources::LoadObject("object/rock.obj"), new Texture(Res
 		Resources::FreeImage(cubemap[i]);
 		delete cubemap[i];
 	}
+
+	Mesh* m = Resources::LoadObject("object/rock.obj");
+	m->SetTexture(new Texture(Resources::LoadImageData("texture/rockTexture.bmp")));
+	m_rock = new ModelObject(m);
 }
 
 SpaceScene::~SpaceScene()

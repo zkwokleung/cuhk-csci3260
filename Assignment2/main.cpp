@@ -35,12 +35,12 @@ struct Vertex {
 	glm::vec3 normal;
 };
 
-struct Model {
+struct Mesh {
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
 };
 
-Model loadOBJ(const char* objPath)
+Mesh loadOBJ(const char* objPath)
 {
 	// function to load the obj file
 	// Note: this simple function cannot load all obj files.
@@ -64,7 +64,7 @@ Model loadOBJ(const char* objPath)
 
 	std::map<V, unsigned int> temp_vertices;
 
-	Model model;
+	Mesh model;
 	unsigned int num_vertices = 0;
 
 	std::cout << "\nLoading OBJ file " << objPath << "..." << std::endl;
@@ -1118,8 +1118,8 @@ class ModelObject : public Object
 public:
 	ModelObject();
 	ModelObject(const char* modelPath, const char* texturePath);
-	ModelObject(Model model);
-	ModelObject(Model model, Texture* texture);
+	ModelObject(Mesh model);
+	ModelObject(Mesh model, Texture* texture);
 	~ModelObject();
 
 	void LoadModel(const char* path);
@@ -1131,7 +1131,7 @@ public:
 	virtual void OnPaint(Shader* shader);
 
 private:
-	Model m_model;
+	Mesh m_mesh;
 	Texture* m_texture;
 	Material m_material;
 	VAO m_vao;
@@ -1139,15 +1139,15 @@ private:
 	EBO m_ebo;
 };
 
-ModelObject::ModelObject() : Object(), m_model(), m_vao(), m_vbo(), m_ebo(), m_texture()
+ModelObject::ModelObject() : Object(), m_mesh(), m_vao(), m_vbo(), m_ebo(), m_texture()
 {
 
 }
 
 ModelObject::ModelObject(const char* modelPath, const char* texturePath) : Object(),
-m_model(loadOBJ(modelPath)), m_texture(new Texture()), m_material(),
-m_vao(), m_vbo((GLfloat*)&(m_model.vertices[0]), m_model.vertices.size() * sizeof(Vertex)),
-m_ebo((GLuint*)&m_model.indices[0], m_model.indices.size())
+m_mesh(loadOBJ(modelPath)), m_texture(new Texture()), m_material(),
+m_vao(), m_vbo((GLfloat*)&(m_mesh.vertices[0]), m_mesh.vertices.size() * sizeof(Vertex)),
+m_ebo((GLuint*)&m_mesh.indices[0], m_mesh.indices.size())
 {
 	m_texture->setupTexture(texturePath);
 
@@ -1156,20 +1156,20 @@ m_ebo((GLuint*)&m_model.indices[0], m_model.indices.size())
 	m_vao.LinkAttrib(m_vbo, 2, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, normal));
 }
 
-ModelObject::ModelObject(Model model) : Object(),
-m_model(model), m_texture(nullptr), m_material(),
-m_vao(), m_vbo((GLfloat*)&(m_model.vertices[0]), m_model.vertices.size() * sizeof(Vertex)),
-m_ebo((GLuint*)&m_model.indices[0], m_model.indices.size())
+ModelObject::ModelObject(Mesh model) : Object(),
+m_mesh(model), m_texture(nullptr), m_material(),
+m_vao(), m_vbo((GLfloat*)&(m_mesh.vertices[0]), m_mesh.vertices.size() * sizeof(Vertex)),
+m_ebo((GLuint*)&m_mesh.indices[0], m_mesh.indices.size())
 {
 	m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, position));
 	m_vao.LinkAttrib(m_vbo, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, uv));
 	m_vao.LinkAttrib(m_vbo, 2, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, normal));
 }
 
-ModelObject::ModelObject(Model model, Texture* texture) : Object(),
-m_model(model), m_texture(texture), m_material(),
-m_vao(), m_vbo((GLfloat*)&(m_model.vertices[0]), m_model.vertices.size() * sizeof(Vertex)),
-m_ebo((GLuint*)&m_model.indices[0], m_model.indices.size())
+ModelObject::ModelObject(Mesh model, Texture* texture) : Object(),
+m_mesh(model), m_texture(texture), m_material(),
+m_vao(), m_vbo((GLfloat*)&(m_mesh.vertices[0]), m_mesh.vertices.size() * sizeof(Vertex)),
+m_ebo((GLuint*)&m_mesh.indices[0], m_mesh.indices.size())
 {
 	m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, position));
 	m_vao.LinkAttrib(m_vbo, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, uv));
@@ -1186,9 +1186,9 @@ ModelObject::~ModelObject()
 
 void ModelObject::LoadModel(const char* path)
 {
-	m_model = loadOBJ(path);
-	m_vbo = VBO((GLfloat*)&(m_model.vertices[0]), m_model.vertices.size() * sizeof(Vertex));
-	m_ebo = EBO((GLuint*)&m_model.indices[0], m_model.indices.size());
+	m_mesh = loadOBJ(path);
+	m_vbo = VBO((GLfloat*)&(m_mesh.vertices[0]), m_mesh.vertices.size() * sizeof(Vertex));
+	m_ebo = EBO((GLuint*)&m_mesh.indices[0], m_mesh.indices.size());
 }
 
 void ModelObject::LoadTexture(const char* path)

@@ -15,116 +15,77 @@ std::string Resources::LoadTextFile(std::string path)
 
 }
 
-Model Resources::LoadObject(std::string path)
+Mesh* Resources::LoadObject(std::string path)
 {
-	// function to load the obj file
-	// Note: this simple function cannot load all obj files.
+	// Create an instance of the Importer class
+	Assimp::Importer importer;
 
-	struct V {
-		// struct for identify if a vertex has showed up
-		unsigned int index_position, index_uv, index_normal;
-		bool operator == (const V& v) const {
-			return index_position == v.index_position && index_uv == v.index_uv && index_normal == v.index_normal;
-		}
-		bool operator < (const V& v) const {
-			return (index_position < v.index_position) ||
-				(index_position == v.index_position && index_uv < v.index_uv) ||
-				(index_position == v.index_position && index_uv == v.index_uv && index_normal < v.index_normal);
-		}
-	};
+	// And have it read the given file with some example postprocessing
+	// Usually - if speed is not the most important aspect for you - you'll
+	// probably to request more postprocessing than we do in this example.
+	const aiScene* scene = importer.ReadFile(RESOURCES_PATH + path,
+		aiProcess_CalcTangentSpace |
+		aiProcess_Triangulate |
+		aiProcess_JoinIdenticalVertices |
+		aiProcess_SortByPType);
 
-	std::vector<glm::vec3> temp_positions;
-	std::vector<glm::vec2> temp_uvs;
-	std::vector<glm::vec3> temp_normals;
-
-	std::map<V, unsigned int> temp_vertices;
-
-	Model model;
-	unsigned int num_vertices = 0;
-
-	std::string fullpath = RESOURCES_PATH + path;
-	std::cout << "\nLoading OBJ file " << fullpath << "..." << std::endl;
-
-	std::ifstream file;
-	file.open(fullpath);
-
-	// Check for Error
-	if (file.fail()) {
-		std::cerr << "Impossible to open the file! Do you use the right path?" << std::endl;
-		exit(1);
+	// If the import failed, report it
+	std::string errorString = importer.GetErrorString();
+	if (scene != nullptr && errorString != "") {
+		Debug::Error(errorString);
+		return nullptr;
 	}
+	
+	std::vector<Vertex> vertices;
+	std::vector<unsigned int> indices;
+	for (unsigned int i = 0; i < scene->mNumMeshes; i++)
+	{
+		// Get vertices
+		for (unsigned int j = 0; j < scene->mMeshes[i]->mNumVertices; j++)
+		{
+			Vertex vertex;
+			glm::vec3 vector;
 
-	while (!file.eof()) {
-		// process the object file
-		char lineHeader[128];
-		file >> lineHeader;
+			// Get position
+			vector.x = scene->mMeshes[i]->mVertices[j].x;
+			vector.y = scene->mMeshes[i]->mVertices[j].y;
+			vector.z = scene->mMeshes[i]->mVertices[j].z;
+			vertex.position = vector;
 
-		if (strcmp(lineHeader, "v") == 0) {
-			// geometric vertices
-			glm::vec3 position;
-			file >> position.x >> position.y >> position.z;
-			temp_positions.push_back(position);
-		}
-		else if (strcmp(lineHeader, "vt") == 0) {
-			// texture coordinates
-			glm::vec2 uv;
-			file >> uv.x >> uv.y;
-			temp_uvs.push_back(uv);
-		}
-		else if (strcmp(lineHeader, "vn") == 0) {
-			// vertex normals
-			glm::vec3 normal;
-			file >> normal.x >> normal.y >> normal.z;
-			temp_normals.push_back(normal);
-		}
-		else if (strcmp(lineHeader, "f") == 0) {
-			// Face elements
-			V vertices[3];
-			for (int i = 0; i < 3; i++) {
-				char ch;
-				file >> vertices[i].index_position >> ch >> vertices[i].index_uv >> ch >> vertices[i].index_normal;
+			// Get normal
+			vector.x = scene->mMeshes[i]->mNormals[j].x;
+			vector.y = scene->mMeshes[i]->mNormals[j].y;
+			vector.z = scene->mMeshes[i]->mNormals[j].z;
+			vertex.normal = vector;
+
+			// Get UV
+			if (scene->mMeshes[i]->mTextureCoords[0])
+			{
+				glm::vec2 uv;
+				uv.x = scene->mMeshes[i]->mTextureCoords[0][j].x;
+				uv.y = scene->mMeshes[i]->mTextureCoords[0][j].y;
+
+				vertex.uv = uv;
+			}
+			else 
+			{
+				vertex.uv = glm::vec2(0.f);
 			}
 
-			// Check if there are more than three vertices in one face.
-			std::string redundency;
-			std::getline(file, redundency);
-			if (redundency.length() >= 5) {
-				std::cerr << "There may exist some errors while load the obj file. Error content: [" << redundency << " ]" << std::endl;
-				std::cerr << "Please note that we only support the faces drawing with triangles. There are more than three vertices in one face." << std::endl;
-				std::cerr << "Your obj file can't be read properly by our simple parser :-( Try exporting with other options." << std::endl;
-				exit(1);
+			vertices.push_back(vertex);
+		}
+		
+		// Get indices
+		for (unsigned int j = 0; j < scene->mMeshes[i]->mNumFaces; j++)
+		{
+			for (unsigned int k = 0; k < scene->mMeshes[i]->mFaces[j].mNumIndices; k++)
+			{
+				indices.push_back(scene->mMeshes[i]->mFaces[j].mIndices[k]);
 			}
-
-			for (int i = 0; i < 3; i++) {
-				if (temp_vertices.find(vertices[i]) == temp_vertices.end()) {
-					// the vertex never shows before
-					Vertex vertex;
-					vertex.position = temp_positions[vertices[i].index_position - 1];
-					vertex.uv = temp_uvs[vertices[i].index_uv - 1];
-					vertex.normal = temp_normals[vertices[i].index_normal - 1];
-
-					model.vertices.push_back(vertex);
-					model.indices.push_back(num_vertices);
-					temp_vertices[vertices[i]] = num_vertices;
-					num_vertices += 1;
-				}
-				else {
-					// reuse the existing vertex
-					unsigned int index = temp_vertices[vertices[i]];
-					model.indices.push_back(index);
-				}
-			} // for
-		} // else if
-		else {
-			// it's not a vertex, texture coordinate, normal or face
-			char stupidBuffer[1024];
-			file.getline(stupidBuffer, 1024);
 		}
 	}
-	file.close();
 
-	std::cout << "There are " << num_vertices << " vertices in the obj file.\n" << std::endl;
-	return model;
+	return new Mesh(vertices, indices, nullptr);
 }
 
 ImageData* Resources::LoadImageData(std::string path)

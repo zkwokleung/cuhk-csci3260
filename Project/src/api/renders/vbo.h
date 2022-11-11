@@ -10,7 +10,7 @@ class VBO
 public:
 	GLuint ID;
 	VBO();
-	VBO(const GLfloat* vertices, GLsizeiptr size);
+	VBO(const void* vertices, GLsizeiptr size);
 	~VBO();
 
 	// Bind the VBO to allow OpenGL to use it
