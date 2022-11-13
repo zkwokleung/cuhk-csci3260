@@ -54,7 +54,7 @@ void Shader::Use() const
 	glUseProgram(ID);
 }
 
-int Shader::SetMat4(const std::string& name, glm::mat4& value)
+int Shader::SetMat4(const std::string& name, glm::mat4 value)
 {
 	int loc = GetUniformLocation(name);
 	if (loc == -1)

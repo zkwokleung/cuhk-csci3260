@@ -20,7 +20,7 @@ public:
 	void Use() const;
 
 	// a series utilities for setting shader parameters 
-	int SetMat4(const std::string& name, glm::mat4& value);
+	int SetMat4(const std::string& name, glm::mat4 value);
 	int SetVec4(const std::string& name, glm::vec4 value);
 	int SetVec3(const std::string& name, glm::vec3 value);
 	int SetVec3(const std::string& name, float v1, float v2, float v3);

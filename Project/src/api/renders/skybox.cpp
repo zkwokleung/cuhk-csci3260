@@ -49,13 +49,14 @@ void Skybox::Init(void)
 
 void Skybox::Draw()
 {
-	if (s_activeSkybox == nullptr)
+	if (s_activeSkybox == nullptr || Camera::GetMain() == nullptr)
 		return;
 
 	glDepthMask(GL_FALSE);
 	s_activeSkybox->m_shader->Use();
 	// Set view and projection
-	Camera::OnPaint(s_activeSkybox->m_shader);
+	s_activeSkybox->m_shader->SetMat4("u_projectionMatrix", Camera::GetMain()->GetProjectionMatrix());
+	s_activeSkybox->m_shader->SetMat4("u_viewRotateMatrix", Camera::GetMain()->GetTransform().GetRotationMat4());
 
 	// Render skybox
 	s_vao->Bind();
