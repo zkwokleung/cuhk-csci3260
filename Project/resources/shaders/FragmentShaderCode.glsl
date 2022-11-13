@@ -1,4 +1,5 @@
 #version 430
+#extension GL_ARB_bindless_texture : enable
 
 layout(location = 0) out vec3 FragColor;
 
@@ -8,7 +9,7 @@ in vec2 v_uv;
 in vec3 v_normal;
 
 // Texture
-uniform sampler2D u_Texture;
+layout(bindless_sampler) uniform sampler2D u_texture;
 
 // Material
 struct Material {
@@ -70,7 +71,8 @@ void main()
             result += CalcPointLight(pointLights[i], norm, v_position, viewDir);
     }
 
-	FragColor = material.ambient * texture(u_Texture, v_uv).rgb * result;
+	// FragColor = material.ambient * texture(u_texture, v_uv).rgb * result;
+	FragColor = material.ambient * texture(u_texture, v_uv).rgb;
 }
 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)

@@ -39,6 +39,25 @@ Camera::~Camera()
 
 }
 
+glm::mat4 Camera::GetViewRotationMatrix()
+{
+	glm::mat4 view = glm::mat4(1.0f);
+	// Rotate
+	view = glm::rotate(view, glm::radians(GetTransform().GetRotation().x * -1.f), glm::vec3(1.0f, 0.0f, 0.0f));
+	view = glm::rotate(view, glm::radians(GetTransform().GetRotation().y * -1.f), glm::vec3(0.0f, 1.0f, 0.0f));
+	view = glm::rotate(view, glm::radians(GetTransform().GetRotation().z * -1.f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+	return view;
+}
+
+glm::mat4 Camera::GetViewTranslationMatrix()
+{
+	glm::mat4 view = glm::mat4(1.0f);
+	// Translate
+	view = glm::translate(view, GetTransform().GetPosition() * -1.f);
+	return view;
+}
+
 glm::mat4 Camera::GetViewMatrix()
 {
 	glm::mat4 view = glm::mat4(1.0f);

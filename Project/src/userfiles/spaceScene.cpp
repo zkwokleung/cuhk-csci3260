@@ -27,6 +27,10 @@ SpaceScene::SpaceScene() : m_player(new Player()), m_fpp(new FirstPersonPlayer()
 		Resources::LoadTextFile("shaders/SkyboxVert.glsl"),
 		Resources::LoadTextFile("shaders/SkyboxFrag.glsl"))
 	);
+
+	Mesh* rockMesh = Resources::LoadObject("object/rock.obj");
+	rockMesh->SetTexture(new Texture(Resources::LoadImageData("texture/rockTexture.bmp")));
+	m_rock = new ModelObject(rockMesh);
 }
 
 SpaceScene::~SpaceScene()
@@ -46,8 +50,9 @@ void SpaceScene::OnInitialize()
 	AddObject(m_fpp);
 	m_fpp->SetActive(true);
 
-	//m_rock->GetTransform().SetLocalPosition(glm::vec3(.0f, .0f, 10.f));
-	//m_rock->SetActive(true);
+	AddObject(m_rock);
+	m_rock->GetTransform().SetLocalPosition(glm::vec3(.0f, .0f, 10.f));
+	m_rock->SetActive(true);
 }
 
 void SpaceScene::OnPaint(Shader* shader)

@@ -14,6 +14,8 @@ public:
 	Camera();
 	~Camera();
 
+	virtual glm::mat4 GetViewRotationMatrix();
+	virtual glm::mat4 GetViewTranslationMatrix();
 	virtual glm::mat4 GetViewMatrix();
 	virtual glm::mat4 GetProjectionMatrix();
 

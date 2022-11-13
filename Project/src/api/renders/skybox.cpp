@@ -56,7 +56,7 @@ void Skybox::Draw()
 	s_activeSkybox->m_shader->Use();
 	// Set view and projection
 	s_activeSkybox->m_shader->SetMat4("u_projectionMatrix", Camera::GetMain()->GetProjectionMatrix());
-	s_activeSkybox->m_shader->SetMat4("u_viewRotateMatrix", Camera::GetMain()->GetTransform().GetRotationMat4());
+	s_activeSkybox->m_shader->SetMat4("u_viewRotateMatrix", Camera::GetMain()->GetViewRotationMatrix());
 
 	// Render skybox
 	s_vao->Bind();
