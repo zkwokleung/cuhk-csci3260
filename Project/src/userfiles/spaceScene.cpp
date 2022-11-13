@@ -1,7 +1,6 @@
 #include "spaceScene.h"
 
-SpaceScene::SpaceScene() : m_player(new Player()),
-m_rock(new ModelObject(Resources::LoadObject("object/rock.obj"), new Texture(Resources::LoadImageData("texture/rockTexture.bmp"))))
+SpaceScene::SpaceScene() : m_player(new Player())
 {
 	//std::vector<std::string> faces =
 	//{
@@ -45,12 +44,14 @@ SpaceScene::~SpaceScene()
 
 void SpaceScene::OnInitialize()
 {
+	Input::AddCursorPosCallback(cursor_position_callback);
+
 	m_skybox->Enable();
 	AddObject(m_player);
 	m_player->SetActive(true);
 
-	m_rock->GetTransform().SetLocalPosition(glm::vec3(.0f, .0f, 10.f));
-	m_rock->SetActive(true);
+	//m_rock->GetTransform().SetLocalPosition(glm::vec3(.0f, .0f, 10.f));
+	//m_rock->SetActive(true);
 }
 
 void SpaceScene::OnPaint(Shader* shader)
@@ -60,4 +61,38 @@ void SpaceScene::OnPaint(Shader* shader)
 
 void SpaceScene::OnEnd()
 {
+}
+
+
+void SpaceScene::cursor_position_callback(int x, int y)
+{
+	static glm::vec2 lastPos = glm::vec2(.0f);
+
+	// Get Main Camera
+	Camera* cam = Camera::GetMain();
+
+	// The speed of the camera movement
+	static float speed = .1f;
+
+	// handle the mouse input
+	glm::vec2 newPos = glm::vec2(x, y);
+	glm::vec2 deltaPos = newPos - lastPos;
+
+	// Up down
+	glm::vec3 cameraRotation = cam->GetTransform().GetRotation();
+	cameraRotation += glm::vec3(deltaPos.y * speed * -1.f, .0f, .0f);
+
+	// Left right
+	cameraRotation += glm::vec3(.0f, deltaPos.x * speed * -1.f, .0f);
+
+	// Clamp the rotation value
+	if (cameraRotation.x >= 360.f || cameraRotation.x <= -360.f)
+		cameraRotation.x = .0f;
+	if (cameraRotation.y >= 360.f || cameraRotation.y <= -360.f)
+		cameraRotation.y = .0f;
+
+	// Set the rotation of the camera
+	cam->GetTransform().SetRotation(cameraRotation);
+
+	lastPos = glm::vec2(x, y);
 }

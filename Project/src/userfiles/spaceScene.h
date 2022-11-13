@@ -14,7 +14,9 @@ public:
 	virtual void OnEnd();
 
 private:
+	Camera* m_cam;
 	Skybox* m_skybox;
 	Player* m_player;
 	ModelObject* m_rock;
+	static void cursor_position_callback(int x, int y);
 };

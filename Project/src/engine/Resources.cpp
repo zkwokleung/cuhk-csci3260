@@ -35,7 +35,7 @@ Mesh* Resources::LoadObject(std::string path)
 		Debug::Error(errorString);
 		return nullptr;
 	}
-	
+
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
 	for (unsigned int i = 0; i < scene->mNumMeshes; i++)
@@ -67,14 +67,14 @@ Mesh* Resources::LoadObject(std::string path)
 
 				vertex.uv = uv;
 			}
-			else 
+			else
 			{
 				vertex.uv = glm::vec2(0.f);
 			}
 
 			vertices.push_back(vertex);
 		}
-		
+
 		// Get indices
 		for (unsigned int j = 0; j < scene->mMeshes[i]->mNumFaces; j++)
 		{
@@ -129,6 +129,9 @@ std::vector<ImageData*> Resources::LoadCubemap(std::vector<std::string> paths)
 			FreeImage(image);
 		}
 
+		std::stringstream msg;
+		msg << "Load " << fullPath << " successfully!";
+		Debug::Log(msg.str());
 		results.push_back(image);
 	}
 
