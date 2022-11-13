@@ -1,7 +1,7 @@
 #pragma once
 #include "../myapi.h"
 #include "Resources.h"
-#include "../elements/spaceScene.h"
+#include "../userfiles/spaceScene.h"
 
 // Design the game logic here, and the application will handle the rendering
 class Sandbox

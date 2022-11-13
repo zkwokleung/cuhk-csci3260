@@ -76,11 +76,17 @@
     <Filter Include="Source Files\vendor">
       <UniqueIdentifier>{60a07c96-e8c0-4332-ac2b-4615d0728878}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\elements">
+    <Filter Include="Source Files\userfiles">
       <UniqueIdentifier>{d28ad136-2504-4930-b59a-fc827f153218}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\elements">
+    <Filter Include="Header Files\userfiles">
       <UniqueIdentifier>{70b85658-b7de-48a0-95c5-b3c5dd6bcb0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\userfiles\players">
+      <UniqueIdentifier>{ea36d28f-ebd6-4791-ab58-60500179aa87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\userfiles\scenes">
+      <UniqueIdentifier>{8779bdf2-2490-4f83-bd6d-4566813262c7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -226,11 +232,11 @@
     <ClInclude Include="src\engine\Sandbox.h">
       <Filter>Header Files\engine</Filter>
     </ClInclude>
-    <ClInclude Include="src\elements\player.h">
-      <Filter>Header Files\elements</Filter>
+    <ClInclude Include="src\userfiles\player.h">
+      <Filter>Header Files\userfiles</Filter>
     </ClInclude>
-    <ClInclude Include="src\elements\spaceScene.h">
-      <Filter>Header Files\elements</Filter>
+    <ClInclude Include="src\userfiles\spaceScene.h">
+      <Filter>Header Files\userfiles</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -333,11 +339,11 @@
     <ClCompile Include="src\engine\Sandbox.cpp">
       <Filter>Source Files\engine</Filter>
     </ClCompile>
-    <ClCompile Include="src\elements\player.cpp">
-      <Filter>Source Files\elements</Filter>
+    <ClCompile Include="src\userfiles\player.cpp">
+      <Filter>Source Files\userfiles\players</Filter>
     </ClCompile>
-    <ClCompile Include="src\elements\spaceScene.cpp">
-      <Filter>Source Files\elements</Filter>
+    <ClCompile Include="src\userfiles\spaceScene.cpp">
+      <Filter>Source Files\userfiles\scenes</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

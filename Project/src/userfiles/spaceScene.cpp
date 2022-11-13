@@ -1,15 +1,26 @@
 #include "spaceScene.h"
 
-SpaceScene::SpaceScene() : m_player(new Player())
+SpaceScene::SpaceScene() : m_player(new Player()),
+m_rock(new ModelObject(Resources::LoadObject("object/rock.obj"), new Texture(Resources::LoadImageData("texture/rockTexture.bmp"))))
 {
+	//std::vector<std::string> faces =
+	//{
+	//	"skybox/right.bmp",
+	//	"skybox/left.bmp",
+	//	"skybox/top.bmp",
+	//	"skybox/bottom.bmp",
+	//	"skybox/front.bmp",
+	//	"skybox/back.bmp"
+	//};
+
 	std::vector<std::string> faces =
 	{
-		"skybox/right.bmp",
-		"skybox/left.bmp",
-		"skybox/top.bmp",
-		"skybox/bottom.bmp",
-		"skybox/front.bmp",
-		"skybox/back.bmp"
+		"skybox/uv_mapper.jpg",
+		"skybox/uv_mapper.jpg",
+		"skybox/uv_mapper.jpg",
+		"skybox/uv_mapper.jpg",
+		"skybox/uv_mapper.jpg",
+		"skybox/uv_mapper.jpg"
 	};
 
 	std::vector<ImageData*> cubemap = Resources::LoadCubemap(faces);
@@ -24,10 +35,6 @@ SpaceScene::SpaceScene() : m_player(new Player())
 		Resources::FreeImage(cubemap[i]);
 		delete cubemap[i];
 	}
-
-	Mesh* m = Resources::LoadObject("object/rock.obj");
-	m->SetTexture(new Texture(Resources::LoadImageData("texture/rockTexture.bmp")));
-	m_rock = new ModelObject(m);
 }
 
 SpaceScene::~SpaceScene()
@@ -42,12 +49,13 @@ void SpaceScene::OnInitialize()
 	AddObject(m_player);
 	m_player->SetActive(true);
 
-	m_rock->GetTransform().SetLocalPosition(glm::vec3(.0f, .0f, -1.f));
+	m_rock->GetTransform().SetLocalPosition(glm::vec3(.0f, .0f, 10.f));
 	m_rock->SetActive(true);
 }
 
 void SpaceScene::OnPaint(Shader* shader)
 {
+
 }
 
 void SpaceScene::OnEnd()
