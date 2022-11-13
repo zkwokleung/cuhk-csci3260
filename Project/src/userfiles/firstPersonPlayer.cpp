@@ -124,10 +124,10 @@ void PlayerController::cursor_pos_callback(int x, int y)
 	glm::vec2 deltaPos = newPos - glm::vec2((glutGet(GLUT_WINDOW_WIDTH) / 2), glutGet(GLUT_WINDOW_HEIGHT) / 2);
 
 	glm::vec3 cameraRotation = cam->GetTransform().GetRotation();
-	cameraRotation += glm::vec3(deltaPos.y * pc->m_controlSpeed * -1.f, .0f, .0f);
+	cameraRotation += glm::vec3(deltaPos.y * pc->m_controlSpeed, .0f, .0f);
 
 	glm::vec3 bodyRotation = body->GetRotation();
-	bodyRotation += glm::vec3(.0f, deltaPos.x * pc->m_controlSpeed * -1.f, .0f);
+	bodyRotation += glm::vec3(.0f, deltaPos.x * pc->m_controlSpeed, .0f);
 
 	// Clamp the rotation value
 	if (cameraRotation.x >= 360.f || cameraRotation.x <= -360.f)
