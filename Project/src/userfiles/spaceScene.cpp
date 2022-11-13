@@ -1,26 +1,26 @@
 #include "spaceScene.h"
 
-SpaceScene::SpaceScene() : m_player(new Player())
+SpaceScene::SpaceScene() : m_player(new Player()), m_fpp(new FirstPersonPlayer())
 {
-	//std::vector<std::string> faces =
-	//{
-	//	"skybox/right.bmp",
-	//	"skybox/left.bmp",
-	//	"skybox/top.bmp",
-	//	"skybox/bottom.bmp",
-	//	"skybox/front.bmp",
-	//	"skybox/back.bmp"
-	//};
-
 	std::vector<std::string> faces =
 	{
-		"skybox/uv_mapper.jpg",
-		"skybox/uv_mapper.jpg",
-		"skybox/uv_mapper.jpg",
-		"skybox/uv_mapper.jpg",
-		"skybox/uv_mapper.jpg",
-		"skybox/uv_mapper.jpg"
+		"skybox/right.bmp",
+		"skybox/left.bmp",
+		"skybox/top.bmp",
+		"skybox/bottom.bmp",
+		"skybox/front.bmp",
+		"skybox/back.bmp"
 	};
+
+	//std::vector<std::string> faces =
+	//{
+	//	"skybox/uv_mapper.jpg",
+	//	"skybox/uv_mapper.jpg",
+	//	"skybox/uv_mapper.jpg",
+	//	"skybox/uv_mapper.jpg",
+	//	"skybox/uv_mapper.jpg",
+	//	"skybox/uv_mapper.jpg"
+	//};
 
 	GLuint cubemap = Resources::LoadCubemap(faces);
 	m_skybox = new Skybox(cubemap, new Shader(
@@ -41,7 +41,10 @@ void SpaceScene::OnInitialize()
 
 	m_skybox->Enable();
 	AddObject(m_player);
-	m_player->SetActive(true);
+	//m_player->SetActive(true);
+
+	AddObject(m_fpp);
+	m_fpp->SetActive(true);
 
 	//m_rock->GetTransform().SetLocalPosition(glm::vec3(.0f, .0f, 10.f));
 	//m_rock->SetActive(true);
@@ -73,10 +76,10 @@ void SpaceScene::cursor_position_callback(int x, int y)
 
 	// Up down
 	glm::vec3 cameraRotation = cam->GetTransform().GetRotation();
-	cameraRotation += glm::vec3(deltaPos.y * speed * -1.f, .0f, .0f);
+	cameraRotation += glm::vec3(deltaPos.y * speed, .0f, .0f);
 
 	// Left right
-	cameraRotation += glm::vec3(.0f, deltaPos.x * speed * -1.f, .0f);
+	cameraRotation += glm::vec3(.0f, deltaPos.x * speed, .0f);
 
 	// Clamp the rotation value
 	if (cameraRotation.x >= 360.f || cameraRotation.x <= -360.f)

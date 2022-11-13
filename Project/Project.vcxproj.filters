@@ -85,6 +85,12 @@
     <Filter Include="Source Files\userfiles\scenes">
       <UniqueIdentifier>{8779bdf2-2490-4f83-bd6d-4566813262c7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\userfiles\players">
+      <UniqueIdentifier>{a56c8986-1707-4e8f-ad19-bab2ed83df81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\userfiles\scenes">
+      <UniqueIdentifier>{3562f7a2-da12-4a6d-b203-464ce04d155a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\FragmentShaderCode.glsl">
@@ -229,11 +235,14 @@
     <ClInclude Include="src\engine\Sandbox.h">
       <Filter>Header Files\engine</Filter>
     </ClInclude>
+    <ClInclude Include="src\userfiles\firstPersonPlayer.h">
+      <Filter>Header Files\userfiles\players</Filter>
+    </ClInclude>
     <ClInclude Include="src\userfiles\player.h">
-      <Filter>Header Files\userfiles</Filter>
+      <Filter>Header Files\userfiles\players</Filter>
     </ClInclude>
     <ClInclude Include="src\userfiles\spaceScene.h">
-      <Filter>Header Files\userfiles</Filter>
+      <Filter>Header Files\userfiles\scenes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -338,6 +347,9 @@
     </ClCompile>
     <ClCompile Include="src\userfiles\spaceScene.cpp">
       <Filter>Source Files\userfiles\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userfiles\firstPersonPlayer.cpp">
+      <Filter>Source Files\userfiles\players</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
