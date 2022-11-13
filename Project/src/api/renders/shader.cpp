@@ -120,6 +120,17 @@ int Shader::SetInt(const std::string& name, int value)
 	return 0;
 }
 
+int Shader::SetHandleui64ARB(const std::string& name, GLuint64 value)
+{
+	int loc = GetUniformLocation(name);
+	if (loc == -1)
+		return -1;
+
+	glUniformHandleui64ARB(loc, value);
+
+	return 0;
+}
+
 // Private 
 
 int Shader::GetUniformLocation(std::string name)

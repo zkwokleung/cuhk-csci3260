@@ -22,18 +22,11 @@ SpaceScene::SpaceScene() : m_player(new Player())
 		"skybox/uv_mapper.jpg"
 	};
 
-	std::vector<ImageData*> cubemap = Resources::LoadCubemap(faces);
+	GLuint cubemap = Resources::LoadCubemap(faces);
 	m_skybox = new Skybox(cubemap, new Shader(
 		Resources::LoadTextFile("shaders/SkyboxVert.glsl"),
 		Resources::LoadTextFile("shaders/SkyboxFrag.glsl"))
 	);
-
-	// Free the cubemap data
-	for (unsigned int i = 0; i < cubemap.size(); i++)
-	{
-		Resources::FreeImage(cubemap[i]);
-		delete cubemap[i];
-	}
 }
 
 SpaceScene::~SpaceScene()

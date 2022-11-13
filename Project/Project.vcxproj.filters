@@ -73,9 +73,6 @@
     <Filter Include="Source Files\engine">
       <UniqueIdentifier>{bb850706-f8de-4fc3-9641-9c2826d8f72c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\vendor">
-      <UniqueIdentifier>{60a07c96-e8c0-4332-ac2b-4615d0728878}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\userfiles">
       <UniqueIdentifier>{d28ad136-2504-4930-b59a-fc827f153218}</UniqueIdentifier>
     </Filter>
@@ -329,9 +326,6 @@
     </ClCompile>
     <ClCompile Include="src\engine\Application.cpp">
       <Filter>Source Files\engine</Filter>
-    </ClCompile>
-    <ClCompile Include="src\vendor\stb_image.cpp">
-      <Filter>Source Files\vendor</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\Resources.cpp">
       <Filter>Source Files\engine</Filter>

@@ -5,9 +5,8 @@ Skybox::Skybox() : m_cubemap(0), m_shader(new Shader())
 {
 }
 
-Skybox::Skybox(std::vector<ImageData*> images, Shader* shader) : m_shader(shader)
+Skybox::Skybox(GLuint64 handler, Shader* shader) : m_cubemap(handler), m_shader(shader)
 {
-	SetCubemap(images);
 }
 
 Skybox::~Skybox()
@@ -25,26 +24,9 @@ void Skybox::Disable()
 	s_activeSkybox = nullptr;
 }
 
-void Skybox::SetCubemap(std::vector<ImageData*> images)
+void Skybox::SetCubemap(GLuint64 handle)
 {
-	unsigned int textureID;
-	glGenTextures(1, &textureID);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-
-	for (unsigned int i = 0; i < images.size(); i++)
-	{
-		if (images[i]->data)
-		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-				0, GL_RGB, images[i]->Width, images[i]->Height, 0, GL_RGB, GL_UNSIGNED_BYTE, images[i]->data
-			);
-		}
-	}
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	m_cubemap = handle;
 }
 
 void Skybox::SetShader(std::string vertexShader, std::string fragmentShader)
@@ -77,15 +59,15 @@ void Skybox::Draw()
 
 	// Render skybox
 	s_vao->Bind();
-	glBindTexture(GL_TEXTURE_CUBE_MAP, s_activeSkybox->m_cubemap);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+	s_activeSkybox->m_shader->SetHandleui64ARB("cubemap", s_activeSkybox->m_cubemap);
+	glDrawArrays(GL_TRIANGLES, 0, 48);
 
 	// Enable depth mask again
 	glDepthMask(GL_TRUE);
 }
 
 const float Skybox::s_skyboxVertices[] = {
-	// positions          
+	// z negative (front)
 	-1.0f,  1.0f, -1.0f,
 	-1.0f, -1.0f, -1.0f,
 	 1.0f, -1.0f, -1.0f,
@@ -93,6 +75,7 @@ const float Skybox::s_skyboxVertices[] = {
 	 1.0f,  1.0f, -1.0f,
 	-1.0f,  1.0f, -1.0f,
 
+	// x negative (left)
 	-1.0f, -1.0f,  1.0f,
 	-1.0f, -1.0f, -1.0f,
 	-1.0f,  1.0f, -1.0f,
@@ -100,6 +83,7 @@ const float Skybox::s_skyboxVertices[] = {
 	-1.0f,  1.0f,  1.0f,
 	-1.0f, -1.0f,  1.0f,
 
+	// x positive (right)
 	 1.0f, -1.0f, -1.0f,
 	 1.0f, -1.0f,  1.0f,
 	 1.0f,  1.0f,  1.0f,
@@ -107,6 +91,7 @@ const float Skybox::s_skyboxVertices[] = {
 	 1.0f,  1.0f, -1.0f,
 	 1.0f, -1.0f, -1.0f,
 
+	 // z positive (back)
 	-1.0f, -1.0f,  1.0f,
 	-1.0f,  1.0f,  1.0f,
 	 1.0f,  1.0f,  1.0f,
@@ -114,6 +99,7 @@ const float Skybox::s_skyboxVertices[] = {
 	 1.0f, -1.0f,  1.0f,
 	-1.0f, -1.0f,  1.0f,
 
+	// y positive (top)
 	-1.0f,  1.0f, -1.0f,
 	 1.0f,  1.0f, -1.0f,
 	 1.0f,  1.0f,  1.0f,
@@ -121,6 +107,7 @@ const float Skybox::s_skyboxVertices[] = {
 	-1.0f,  1.0f,  1.0f,
 	-1.0f,  1.0f, -1.0f,
 
+	// y negative (bottom)
 	-1.0f, -1.0f, -1.0f,
 	-1.0f, -1.0f,  1.0f,
 	 1.0f, -1.0f, -1.0f,

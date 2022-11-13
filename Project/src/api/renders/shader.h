@@ -26,6 +26,7 @@ public:
 	int SetVec3(const std::string& name, float v1, float v2, float v3);
 	int SetFloat(const std::string& name, float value);
 	int SetInt(const std::string& name, int value);
+	int SetHandleui64ARB(const std::string& name, GLuint64 value);
 
 private:
 	unsigned int ID = 0;

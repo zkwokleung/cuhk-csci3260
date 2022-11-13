@@ -9,6 +9,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <soil2/SOIL2.h>
 
 #define RESOURCES_PATH "resources/"
 
@@ -19,7 +20,7 @@ public:
 	static std::string LoadTextFile(std::string path);
 	static Mesh* LoadObject(std::string path);
 	static ImageData* LoadImageData(std::string path);
-	static std::vector<ImageData*> LoadCubemap(std::vector<std::string> paths);
+	static GLuint64 LoadCubemap(std::vector<std::string> paths);
 	static void FreeImage(ImageData* image);
 
 private:

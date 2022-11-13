@@ -91,11 +91,13 @@ Mesh* Resources::LoadObject(std::string path)
 ImageData* Resources::LoadImageData(std::string path)
 {
 	ImageData* image = new ImageData();
-	// tell stb_image.h to flip loaded texture's on the y-axis.
-	stbi_set_flip_vertically_on_load(true);
+
 	// load the texture data into "data"
 	std::string fullPath = RESOURCES_PATH + path;
-	image->data = stbi_load(fullPath.c_str(), &image->Width, &image->Height, &image->BPP, 0);
+	image->data = SOIL_load_OGL_texture(fullPath.c_str(),
+		SOIL_LOAD_AUTO,
+		image->data,
+		SOIL_FLAG_DDS_LOAD_DIRECT);
 
 	if (!image->data)
 	{
@@ -112,37 +114,41 @@ ImageData* Resources::LoadImageData(std::string path)
 	return image;
 }
 
-std::vector<ImageData*> Resources::LoadCubemap(std::vector<std::string> paths)
+GLuint64 Resources::LoadCubemap(std::vector<std::string> paths)
 {
-	std::vector<ImageData*> results;
-	for (unsigned int i = 0; i < paths.size(); i++)
+	// Load image with SOIL
+	GLuint tex_cube = SOIL_load_OGL_cubemap
+	(
+		(RESOURCES_PATH + paths[0]).c_str(),
+		(RESOURCES_PATH + paths[1]).c_str(),
+		(RESOURCES_PATH + paths[2]).c_str(),
+		(RESOURCES_PATH + paths[3]).c_str(),
+		(RESOURCES_PATH + paths[4]).c_str(),
+		(RESOURCES_PATH + paths[5]).c_str(),
+		SOIL_LOAD_RGB,
+		SOIL_CREATE_NEW_ID,
+		SOIL_FLAG_MIPMAPS
+	);
+
+	if (tex_cube == 0)
 	{
-		ImageData* image = new ImageData();
-
-		std::string fullPath = RESOURCES_PATH + paths[i];
-		image->data = stbi_load(fullPath.c_str(), &image->Width, &image->Height, &image->BPP, 0);
-		if (!image->data)
-		{
-			std::stringstream msg;
-			msg << "Cubemap tex failed to load at path: " << paths[i];
-			Debug::Error(msg.str());
-			FreeImage(image);
-		}
-
 		std::stringstream msg;
-		msg << "Load " << fullPath << " successfully!";
-		Debug::Log(msg.str());
-		results.push_back(image);
+		msg << "Cubemap tex failed to load at paths: ";
+		for (unsigned int i = 0; i < 6; i++)
+		{
+			msg << RESOURCES_PATH + paths[i] << ", ";
+		}
+		Debug::Error(msg.str());
 	}
 
-	return results;
+	return tex_cube;
 }
 
 void Resources::FreeImage(ImageData* image)
 {
 	if (image->data)
 	{
-		stbi_image_free(image->data);
+
 	}
 }
 

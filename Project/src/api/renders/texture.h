@@ -1,12 +1,12 @@
 #pragma once
 #include <glew/glew.h>
-#include <stb_image/stb_image.h>
-
 #include <iostream>
+
+#include "../renders/shader.h"
 
 struct ImageData
 {
-	unsigned char* data;
+	GLuint data;
 	int Width = 0, Height = 0, BPP = 0;
 };
 
@@ -17,10 +17,10 @@ public:
 	~Texture();
 
 	void SetData(ImageData* image);
+	void OnPaint(Shader* shader);
 	void Bind(unsigned int slot) const;
 	void Unbind() const;
 
 private:
-	unsigned int ID = 0;
-	int Width = 0, Height = 0, BPP = 0;
+	GLuint data;
 };
