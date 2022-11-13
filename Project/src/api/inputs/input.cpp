@@ -1,6 +1,8 @@
 #include "input.h"
 
 unsigned int Input::s_nextKey = 0;
+glm::vec2 Input::s_cursorPos = glm::vec2(.0f);
+bool Input::s_cursorLocked = false;
 std::unordered_map<int, KeyCallback> Input::s_keyCallbacks;
 std::unordered_map<int, CursorPosCallback> Input::s_cursorPosCallbacks;
 std::unordered_map<int, MouseButtonCallback> Input::s_mouseButtonCallbacks;
@@ -66,9 +68,14 @@ void Input::Init(GLFWwindow* window)
 #ifdef USE_GLUT
 void Input::Init()
 {
+	// Keyboard
 	glutKeyboardFunc(glut_keyboard_callback);
+	glutKeyboardUpFunc(glut_keyboard_up_callback);
+
+	// Mouse
 	glutMouseFunc(glut_mouse_callback);
 	glutMotionFunc(glut_cursor_callback);
+	glutPassiveMotionFunc(glut_cursor_callback);
 	glutMouseWheelFunc(glut_wheel_callback);
 }
 
@@ -78,7 +85,17 @@ void Input::glut_keyboard_callback(unsigned char key, int x, int y)
 	for (unsigned int i = 0; i < s_keyCallbacks.size(); i++)
 	{
 		if (s_keyCallbacks[i].m_callback)
-			s_keyCallbacks[i].m_callback(key, x, y);
+			s_keyCallbacks[i].m_callback(key, KEYBOARD_ACTION_PRESS, x, y);
+	}
+}
+
+void Input::glut_keyboard_up_callback(unsigned char key, int x, int y)
+{
+	// Invoke all the callback listeners
+	for (unsigned int i = 0; i < s_keyCallbacks.size(); i++)
+	{
+		if (s_keyCallbacks[i].m_callback)
+			s_keyCallbacks[i].m_callback(key, KEYBOARD_ACTION_RELEASE, x, y);
 	}
 }
 
@@ -94,11 +111,18 @@ void Input::glut_mouse_callback(int button, int state, int x, int y)
 
 void Input::glut_cursor_callback(int x, int y)
 {
+	s_cursorPos = glm::vec2(x, y);
 	// Invoke all the callback listeners
 	for (unsigned int i = 0; i < s_cursorPosCallbacks.size(); i++)
 	{
 		if (s_cursorPosCallbacks[i].m_callback)
 			s_cursorPosCallbacks[i].m_callback(x, y);
+	}
+
+	// Move the cursor back to the center of screen
+	if (s_cursorLocked)
+	{
+		glutWarpPointer(glutGet(GLUT_WINDOW_WIDTH) / 2, glutGet(GLUT_WINDOW_HEIGHT) / 2);
 	}
 }
 void Input::glut_wheel_callback(int button, int dir, int x, int y)
@@ -221,6 +245,28 @@ void Input::RemoveAllScrollCallbacks()
 	{
 		RemoveScrollCallback(s_scrollCallbacks.at(0));
 	}
+}
+
+void Input::SetCursorLock(bool lock)
+{
+	s_cursorLocked = lock;
+}
+
+void Input::SetCursorDisplay(bool display)
+{
+	if (display)
+	{
+		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+	}
+	else
+	{
+		glutSetCursor(GLUT_CURSOR_NONE);
+	}
+}
+
+glm::vec2 Input::GetCursorPos()
+{
+	return s_cursorPos;
 }
 
 KeyCallback::KeyCallback(void) : m_id(-1), m_callback(nullptr)

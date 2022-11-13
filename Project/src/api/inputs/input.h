@@ -13,6 +13,12 @@
 #endif // USE_GLFW
 
 #include <unordered_map>
+#include <glm/glm.hpp>
+
+// Macros for different keyboard actions
+#define KEYBOARD_ACTION_DOWN 0x1
+#define KEYBOARD_ACTION_PRESS 0x2
+#define KEYBOARD_ACTION_RELEASE 0x3
 
 #ifdef USE_GLFW
 typedef void(*KeyCallbackFunc)(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -22,7 +28,7 @@ typedef void(*ScrollCallbackFunc)(GLFWwindow* window, double xoffset, double yof
 #endif // USE_GLFW
 
 #ifdef USE_GLUT
-typedef void(*KeyCallbackFunc)(unsigned char key, int x, int y);
+typedef void(*KeyCallbackFunc)(unsigned char key, unsigned int action, int x, int y);
 typedef void(*CursorPosCallbackFunc)(int x, int y);
 typedef void(*MouseButtonCallbackFunc)(int button, int state, int x, int y);
 typedef void(*ScrollCallbackFunc)(int button, int dir, int x, int y);
@@ -118,6 +124,13 @@ public:
 	static void RemoveScrollCallback(ScrollCallback callback);
 	static void RemoveAllScrollCallbacks();
 
+	// Lock the cursor at the center of the window
+	static void SetCursorLock(bool lock);
+	// Display or hide the cursor
+	static void SetCursorDisplay(bool display);
+	// Get the Position of the pointer
+	static glm::vec2 GetCursorPos();
+
 private:
 	static unsigned int s_nextKey;
 	static std::unordered_map<int, KeyCallback> s_keyCallbacks;
@@ -125,6 +138,8 @@ private:
 	static std::unordered_map<int, MouseButtonCallback> s_mouseButtonCallbacks;
 	static std::unordered_map<int, ScrollCallback> s_scrollCallbacks;
 
+	static glm::vec2 s_cursorPos;
+	static bool s_cursorLocked;
 
 #ifdef USE_GLFW
 	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -135,6 +150,7 @@ private:
 
 #ifdef USE_GLUT
 	static void glut_keyboard_callback(unsigned char key, int x, int y);
+	static void glut_keyboard_up_callback(unsigned char key, int x, int y);
 	static void glut_mouse_callback(int button, int state, int x, int y);
 	static void glut_cursor_callback(int x, int y);
 	static void glut_wheel_callback(int button, int dir, int x, int y);
