@@ -20,6 +20,9 @@
 #define KEYBOARD_ACTION_PRESS 0x2
 #define KEYBOARD_ACTION_RELEASE 0x3
 
+#define KEYBOARD_KEYSTATE_NONE 0x0
+#define KEYBOARD_KEYSTATE_PRESSED 0x1
+
 #ifdef USE_GLFW
 typedef void(*KeyCallbackFunc)(GLFWwindow* window, int key, int scancode, int action, int mods);
 typedef void(*CursorPosCallbackFunc)(GLFWwindow* window, double xpos, double ypos);
@@ -131,14 +134,25 @@ public:
 	// Get the Position of the pointer
 	static glm::vec2 GetCursorPos();
 
+	// Called on each frame
+	static void OnUpdate();
+
 private:
 	static unsigned int s_nextKey;
+
+	// Callbacks
 	static std::unordered_map<int, KeyCallback> s_keyCallbacks;
 	static std::unordered_map<int, CursorPosCallback> s_cursorPosCallbacks;
 	static std::unordered_map<int, MouseButtonCallback> s_mouseButtonCallbacks;
 	static std::unordered_map<int, ScrollCallback> s_scrollCallbacks;
 
+	// The state of each key, 0 is not pressed, 1 is currently pressed
+	static std::unordered_map<unsigned char, int> s_keyStates;
+
+	// The position of the cursor
 	static glm::vec2 s_cursorPos;
+
+	// Is the cursor locked at the center?
 	static bool s_cursorLocked;
 
 #ifdef USE_GLFW

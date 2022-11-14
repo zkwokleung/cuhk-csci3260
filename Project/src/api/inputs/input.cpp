@@ -272,6 +272,10 @@ glm::vec2 Input::GetCursorPos()
 	return s_cursorPos;
 }
 
+void Input::OnUpdate()
+{
+}
+
 KeyCallback::KeyCallback(void) : m_id(-1), m_callback(nullptr)
 {
 }
