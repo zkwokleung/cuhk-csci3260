@@ -14,7 +14,7 @@ void Texture::SetData(ImageData* image)
 	data = image->data;
 }
 
-void Texture::OnPaint(Shader* shader)
+void Texture::Draw(Shader* shader)
 {
 	shader->SetHandleui64ARB("u_texture", data);
 }

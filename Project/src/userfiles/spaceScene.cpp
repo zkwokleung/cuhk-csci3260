@@ -12,15 +12,15 @@ SpaceScene::SpaceScene() : m_player(new Player()), m_planetLight(new PointLight(
 		"skybox/back.bmp"
 	};
 
-	faces =
-	{
-		"skybox/uv_mapper.jpg",
-		"skybox/uv_mapper.jpg",
-		"skybox/uv_mapper.jpg",
-		"skybox/uv_mapper.jpg",
-		"skybox/uv_mapper.jpg",
-		"skybox/uv_mapper.jpg"
-	};
+	//faces =
+	//{
+	//	"skybox/uv_mapper.jpg",
+	//	"skybox/uv_mapper.jpg",
+	//	"skybox/uv_mapper.jpg",
+	//	"skybox/uv_mapper.jpg",
+	//	"skybox/uv_mapper.jpg",
+	//	"skybox/uv_mapper.jpg"
+	//};
 
 	GLuint cubemap = Resources::LoadCubemap(faces);
 	m_skybox = new Skybox(cubemap, new Shader(

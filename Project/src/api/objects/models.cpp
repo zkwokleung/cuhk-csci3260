@@ -36,7 +36,7 @@ void Mesh::Draw(Shader* shader)
 {
 	if (m_texture)
 	{
-		m_texture->Bind(0);
+		m_texture->Draw(shader);
 	}
 	Renderer::Draw(m_vao, m_ebo);
 }

@@ -96,7 +96,7 @@ ImageData* Resources::LoadImageData(std::string path)
 	std::string fullPath = RESOURCES_PATH + path;
 	image->data = SOIL_load_OGL_texture(fullPath.c_str(),
 		SOIL_LOAD_AUTO,
-		image->data,
+		0,
 		SOIL_FLAG_DDS_LOAD_DIRECT);
 
 	if (!image->data)
