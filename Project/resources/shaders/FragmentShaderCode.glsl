@@ -71,8 +71,16 @@ void main()
             result += CalcPointLight(pointLights[i], norm, v_position, viewDir);
     }
 
-	FragColor = material.ambient * texture(u_texture, v_uv).rgb * result;
-	// FragColor = material.ambient * texture(u_texture, v_uv).rgb;
+    result = material.ambient * texture(u_texture, v_uv).rgb * result;
+
+    if(result == vec3(0.f))
+    {
+	    FragColor = material.ambient * texture(u_texture, v_uv).rgb * vec3(.3f);
+    }
+    else
+    {
+        FragColor = result;
+    }
 }
 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)

@@ -16,12 +16,13 @@ void Texture::SetData(ImageData* image)
 
 void Texture::Draw(Shader* shader)
 {
-	shader->SetHandleui64ARB("u_texture", data);
+	Bind(0);
+	//shader->SetHandleui64ARB("u_texture", data);
 }
 
 void Texture::Bind(unsigned int slot = 0) const
 {
-
+	glBindTexture(GL_TEXTURE_2D, data);
 }
 
 void Texture::Unbind() const
