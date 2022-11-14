@@ -62,7 +62,7 @@ void main()
     vec3 viewDir = normalize(u_viewPos - v_position);
 
     // Dir light
-    vec3 result = vec3(0.f);
+    vec3 result = vec3(0.3f);
 
     // Point Lights
     for(int i = 0; i < NR_POINT_LIGHTS; i++)
@@ -71,8 +71,8 @@ void main()
             result += CalcPointLight(pointLights[i], norm, v_position, viewDir);
     }
 
-	// FragColor = material.ambient * texture(u_texture, v_uv).rgb * result;
-	FragColor = material.ambient * texture(u_texture, v_uv).rgb;
+	FragColor = material.ambient * texture(u_texture, v_uv).rgb * result;
+	// FragColor = material.ambient * texture(u_texture, v_uv).rgb;
 }
 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)

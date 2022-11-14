@@ -1,6 +1,6 @@
 #include "spaceScene.h"
 
-SpaceScene::SpaceScene() : m_player(new Player()), m_fpp(new FirstPersonPlayer())
+SpaceScene::SpaceScene() : m_player(new Player()), m_planetLight(new PointLight())
 {
 	std::vector<std::string> faces =
 	{
@@ -12,15 +12,15 @@ SpaceScene::SpaceScene() : m_player(new Player()), m_fpp(new FirstPersonPlayer()
 		"skybox/back.bmp"
 	};
 
-	//std::vector<std::string> faces =
-	//{
-	//	"skybox/uv_mapper.jpg",
-	//	"skybox/uv_mapper.jpg",
-	//	"skybox/uv_mapper.jpg",
-	//	"skybox/uv_mapper.jpg",
-	//	"skybox/uv_mapper.jpg",
-	//	"skybox/uv_mapper.jpg"
-	//};
+	faces =
+	{
+		"skybox/uv_mapper.jpg",
+		"skybox/uv_mapper.jpg",
+		"skybox/uv_mapper.jpg",
+		"skybox/uv_mapper.jpg",
+		"skybox/uv_mapper.jpg",
+		"skybox/uv_mapper.jpg"
+	};
 
 	GLuint cubemap = Resources::LoadCubemap(faces);
 	m_skybox = new Skybox(cubemap, new Shader(
@@ -28,9 +28,9 @@ SpaceScene::SpaceScene() : m_player(new Player()), m_fpp(new FirstPersonPlayer()
 		Resources::LoadTextFile("shaders/SkyboxFrag.glsl"))
 	);
 
-	Mesh* rockMesh = Resources::LoadObject("object/rock.obj");
-	rockMesh->SetTexture(new Texture(Resources::LoadImageData("texture/rockTexture.bmp")));
-	m_rock = new ModelObject(rockMesh);
+	Mesh* planetMesh = Resources::LoadObject("object/planet.obj");
+	planetMesh->SetTexture(new Texture(Resources::LoadImageData("texture/earthTexture.bmp")));
+	m_planet = new ModelObject(planetMesh);
 }
 
 SpaceScene::~SpaceScene()
@@ -41,18 +41,24 @@ SpaceScene::~SpaceScene()
 
 void SpaceScene::OnInitialize()
 {
-	Input::AddCursorPosCallback(cursor_position_callback);
-
+	// Enable skybox
 	m_skybox->Enable();
+
+	// InitializePlayer
 	AddObject(m_player);
-	//m_player->SetActive(true);
+	m_player->SetActive(true);
 
-	AddObject(m_fpp);
-	m_fpp->SetActive(true);
+	// Initialize planet
+	AddObject(m_planet);
+	m_planet->GetTransform().SetLocalPosition(glm::vec3(.0f, .0f, -1000.f));
+	m_planet->GetTransform().SetLocalScale(glm::vec3(50.f));
+	m_planet->GetTransform().SetLocalRotation(glm::vec3(90.f, .0f, .0f));
+	m_planet->SetActive(true);
 
-	AddObject(m_rock);
-	m_rock->GetTransform().SetLocalPosition(glm::vec3(.0f, .0f, 10.f));
-	m_rock->SetActive(true);
+	AddObject(m_planetLight);
+	m_planetLight->GetTransform().SetPosition(glm::vec3(.0f, .0f, -950.f));
+	m_planetLight->SetPointLightParams(1.f, 0.045f, 0.0075f);
+	m_planetLight->SetActive(true);
 }
 
 void SpaceScene::OnPaint(Shader* shader)
@@ -62,38 +68,4 @@ void SpaceScene::OnPaint(Shader* shader)
 
 void SpaceScene::OnEnd()
 {
-}
-
-
-void SpaceScene::cursor_position_callback(int x, int y)
-{
-	static glm::vec2 lastPos = glm::vec2(.0f);
-
-	// Get Main Camera
-	Camera* cam = Camera::GetMain();
-
-	// The speed of the camera movement
-	static float speed = .1f;
-
-	// handle the mouse input
-	glm::vec2 newPos = glm::vec2(x, y);
-	glm::vec2 deltaPos = newPos - lastPos;
-
-	// Up down
-	glm::vec3 cameraRotation = cam->GetTransform().GetRotation();
-	cameraRotation += glm::vec3(deltaPos.y * speed, .0f, .0f);
-
-	// Left right
-	cameraRotation += glm::vec3(.0f, deltaPos.x * speed, .0f);
-
-	// Clamp the rotation value
-	if (cameraRotation.x >= 360.f || cameraRotation.x <= -360.f)
-		cameraRotation.x = .0f;
-	if (cameraRotation.y >= 360.f || cameraRotation.y <= -360.f)
-		cameraRotation.y = .0f;
-
-	// Set the rotation of the camera
-	cam->GetTransform().SetRotation(cameraRotation);
-
-	lastPos = glm::vec2(x, y);
 }

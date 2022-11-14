@@ -105,6 +105,7 @@
     <None Include="resources\shaders\SkyboxVert.glsl">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="README.txt">

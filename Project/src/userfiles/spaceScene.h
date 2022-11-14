@@ -18,7 +18,6 @@ private:
 	Camera* m_cam;
 	Skybox* m_skybox;
 	Player* m_player;
-	FirstPersonPlayer* m_fpp;
-	ModelObject* m_rock;
-	static void cursor_position_callback(int x, int y);
+	ModelObject* m_planet;
+	PointLight* m_planetLight;
 };

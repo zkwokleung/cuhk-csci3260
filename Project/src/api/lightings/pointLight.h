@@ -16,6 +16,10 @@ public:
 	virtual void SetActive(bool active);
 
 	void SetIntensity(float intensity);
+	void SetPointLightParams(float constant, float linear, float quaratic);
+	void SetConstant(float constant);
+	void SetLinear(float linear);
+	void SetQuaratic(float quaratic);
 	float GetIntensity() const;
 
 private:

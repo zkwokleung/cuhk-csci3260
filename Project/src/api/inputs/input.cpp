@@ -111,6 +111,9 @@ void Input::glut_mouse_callback(int button, int state, int x, int y)
 
 void Input::glut_cursor_callback(int x, int y)
 {
+	if (s_cursorLocked && x == glutGet(GLUT_WINDOW_WIDTH) / 2 && y == glutGet(GLUT_WINDOW_HEIGHT) / 2)
+		return;
+
 	s_cursorPos = glm::vec2(x, y);
 	// Invoke all the callback listeners
 	for (unsigned int i = 0; i < s_cursorPosCallbacks.size(); i++)

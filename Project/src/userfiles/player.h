@@ -16,5 +16,8 @@ private:
 	ModelObject* m_model;
 	PointLight* m_light;
 
+	float m_rotationAcceleration, m_translationAcceleration;
+
 	static Player* s_activePlayer;
+	static void cursor_position_callback(int x, int y);
 };

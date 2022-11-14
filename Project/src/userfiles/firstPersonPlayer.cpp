@@ -68,6 +68,7 @@ PlayerController* PlayerController::s_activeController = nullptr;
 
 void PlayerController::key_callback(unsigned char key, unsigned int action, int x, int y)
 {
+	return;
 	if (s_activeController == nullptr)
 	{
 		return;

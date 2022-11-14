@@ -62,6 +62,28 @@ void PointLight::SetIntensity(float intensity)
 	m_intensity = intensity;
 }
 
+void PointLight::SetPointLightParams(float constant, float linear, float quaratic)
+{
+	m_constant = constant;
+	m_linear = linear;
+	m_quadratic = quaratic;
+}
+
+void PointLight::SetConstant(float constant)
+{
+	m_constant = constant;
+}
+
+void PointLight::SetLinear(float linear)
+{
+	m_linear = linear;
+}
+
+void PointLight::SetQuaratic(float quaratic)
+{
+	m_quadratic = quaratic;
+}
+
 float PointLight::GetIntensity() const
 {
 	return m_intensity;
