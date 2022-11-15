@@ -2,7 +2,8 @@
 
 Player::Player(void) : m_camera(new PerspectiveCamera()),
 m_light(new PointLight(glm::vec3(1.f), glm::vec3(1.f), glm::vec3(1.f), 1, .007f, .008f)),
-m_travelSpeed(0.f), m_velocity(glm::vec3(.0f))
+m_travelSpeed(0.f), m_velocity(glm::vec3(.0f)), m_translationState(PLAYER_STATE_IDLE),
+m_rollingSpeed(0.f), m_rollingState(PLAYER_STATE_IDLE)
 {
 	// Set camera
 	m_camera->GetTransform().SetLocalPosition(glm::vec3(0.f));
@@ -27,19 +28,70 @@ Player::~Player()
 
 void Player::OnPaint(Shader* shader)
 {
-	// Move the spacecraft
-	GetTransform().SetLocalPosition(GetTransform().GetLocalPosition() += m_velocity);
+	// Behaviour base on state
+	switch (m_translationState)
+	{
+	case PLAYER_STATE_IDLE:
+		// Decelerate the spacecraft if it is moving
+		if (m_travelSpeed > 0)
+		{
+			m_travelSpeed -= PLAYER_TRANSLATION_DECELERATION;
+		}
+		else if (m_travelSpeed < 0)
+		{
+			m_travelSpeed += PLAYER_TRANSLATION_DECELERATION;
+		}
+		break;
 
-	// Decelerate the spacecraft if it is moving
-	if (m_travelSpeed > 0)
-	{
-		m_travelSpeed -= PLAYER_TRANSLATION_DECELERATION;
+	case PLAYER_STATE_FORWARD:
+		m_velocity = GetTransform().GetForward();
+		break;
+
+	case PLAYER_STATE_BACKWARD:
+		m_velocity = GetTransform().GetBackward();
+		break;
+
+	default:
+
+		break;
 	}
-	else if (m_travelSpeed < 0)
+
+	switch (m_rollingState)
 	{
-		m_travelSpeed += PLAYER_TRANSLATION_DECELERATION;
+	case PLAYER_STATE_IDLE:
+		// Decelerate the spacecraft if it is rolling
+		if (m_travelSpeed > 0)
+		{
+			m_travelSpeed -= PLAYER_TRANSLATION_DECELERATION;
+		}
+		else if (m_travelSpeed < 0)
+		{
+			m_travelSpeed += PLAYER_TRANSLATION_DECELERATION;
+		}
+		break;
+
+	case PLAYER_STATE_ROLLLEFT:
+
+		break;
+
+	case PLAYER_STATE_ROLLRIGHT:
+
+		break;
+
+	default:
+
+		break;
 	}
 	m_velocity *= m_travelSpeed;
+
+	// Accelerate the space craft
+	if (m_travelSpeed < PLAYER_MAX_TRAVEL_SPEED)
+	{
+		m_travelSpeed += PLAYER_TRANSLATION_ACCELERATION;
+	}
+
+	// Move the spacecraft
+	GetTransform().SetLocalPosition(GetTransform().GetLocalPosition() += m_velocity);
 }
 
 void Player::cursor_position_callback(int x, int y)
@@ -76,34 +128,57 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 
 	if (action == KEYBOARD_ACTION_PRESS || action == KEYBOARD_ACTION_DOWN)
 	{
-		// Accelerate the space craft
-		if (s_activePlayer->m_travelSpeed < PLAYER_MAX_TRAVEL_SPEED)
-		{
-			s_activePlayer->m_travelSpeed += PLAYER_TRANSLATION_ACCELERATION;
-		}
-
 		switch (key)
 		{
 		case 'w':
-			s_activePlayer->m_velocity += s_activePlayer->GetTransform().GetForward();
+			s_activePlayer->m_translationState = PLAYER_STATE_FORWARD;
 			break;
 
 		case 'a':
-			s_activePlayer->GetTransform().SetLocalRotation(s_activePlayer->GetTransform().GetLocalRotation() + glm::vec3(.0f, .0f, 10.f) * PLAYER_ROTATION_SPEED);
+			s_activePlayer->m_rollingState = PLAYER_STATE_ROLLLEFT;
 			break;
 
 		case 's':
-			s_activePlayer->m_velocity += s_activePlayer->GetTransform().GetBackward();
+			s_activePlayer->m_translationState = PLAYER_STATE_BACKWARD;
 			break;
 
 		case 'd':
-			s_activePlayer->GetTransform().SetLocalRotation(s_activePlayer->GetTransform().GetLocalRotation() + glm::vec3(.0f, .0f, -10.f) * PLAYER_ROTATION_SPEED);
+			s_activePlayer->m_rollingState = PLAYER_STATE_ROLLRIGHT;
 			break;
 		}
 	}
 	else if (action == KEYBOARD_ACTION_RELEASE)
 	{
+		switch (key)
+		{
+		case 'w':
+			if (s_activePlayer->m_translationState == PLAYER_STATE_FORWARD)
+			{
+				s_activePlayer->m_translationState = PLAYER_STATE_IDLE;
+			}
+			break;
 
+		case 'a':
+			if (s_activePlayer->m_rollingState == PLAYER_STATE_ROLLLEFT)
+			{
+				s_activePlayer->m_rollingState = PLAYER_STATE_IDLE;
+			}
+			break;
+
+		case 's':
+			if (s_activePlayer->m_translationState == PLAYER_STATE_BACKWARD)
+			{
+				s_activePlayer->m_translationState = PLAYER_STATE_IDLE;
+			}
+			break;
+
+		case 'd':
+			if (s_activePlayer->m_rollingState == PLAYER_STATE_ROLLRIGHT)
+			{
+				s_activePlayer->m_rollingState = PLAYER_STATE_IDLE;
+			}
+			break;
+		}
 	}
 }
 
