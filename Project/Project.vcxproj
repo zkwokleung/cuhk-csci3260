@@ -190,6 +190,7 @@
     <ClInclude Include="src\engine\Application.h" />
     <ClInclude Include="src\engine\Resources.h" />
     <ClInclude Include="src\engine\Sandbox.h" />
+    <ClInclude Include="src\engine\Time.h" />
     <ClInclude Include="src\myapi.h" />
     <ClInclude Include="src\userfiles\firstPersonPlayer.h" />
     <ClInclude Include="src\userfiles\player.h" />
@@ -227,6 +228,7 @@
     <ClCompile Include="src\engine\Application.cpp" />
     <ClCompile Include="src\engine\Resources.cpp" />
     <ClCompile Include="src\engine\Sandbox.cpp" />
+    <ClCompile Include="src\engine\Time.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\userfiles\firstPersonPlayer.cpp" />
     <ClCompile Include="src\userfiles\player.cpp" />

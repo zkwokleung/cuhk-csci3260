@@ -5,7 +5,7 @@ std::string Resources::LoadTextFile(std::string path)
 	std::ifstream myInput(RESOURCES_PATH + path);
 	if (!myInput.good())
 	{
-		Debug::Error("File failed to load " + path);
+		Debug::LogError("File failed to load " + path);
 		exit(1);
 	}
 	return std::string(
@@ -20,9 +20,6 @@ Mesh* Resources::LoadObject(std::string path)
 	// Create an instance of the Importer class
 	Assimp::Importer importer;
 
-	// And have it read the given file with some example postprocessing
-	// Usually - if speed is not the most important aspect for you - you'll
-	// probably to request more postprocessing than we do in this example.
 	const aiScene* scene = importer.ReadFile(RESOURCES_PATH + path,
 		aiProcess_CalcTangentSpace |
 		aiProcess_Triangulate |
@@ -32,7 +29,7 @@ Mesh* Resources::LoadObject(std::string path)
 	// If the import failed, report it
 	std::string errorString = importer.GetErrorString();
 	if (scene != nullptr && errorString != "") {
-		Debug::Error(errorString);
+		Debug::LogError(errorString);
 		return nullptr;
 	}
 
@@ -103,7 +100,7 @@ ImageData* Resources::LoadImageData(std::string path)
 	{
 		std::stringstream msg;
 		msg << "Failed to load texture: " << path;
-		Debug::Error(msg.str());
+		Debug::LogError(msg.str());
 		exit(1);
 	}
 
@@ -138,7 +135,7 @@ GLuint64 Resources::LoadCubemap(std::vector<std::string> paths)
 		{
 			msg << RESOURCES_PATH + paths[i] << ", ";
 		}
-		Debug::Error(msg.str());
+		Debug::LogError(msg.str());
 	}
 
 	return tex_cube;

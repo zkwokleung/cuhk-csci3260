@@ -50,7 +50,7 @@ void SpaceScene::OnInitialize()
 
 	// Initialize planet
 	AddObject(m_planet);
-	m_planet->GetTransform().SetLocalPosition(glm::vec3(.0f, .0f, -1000.f));
+	m_planet->GetTransform().SetLocalPosition(glm::vec3(1000.0f, .0f, -5000.f));
 	m_planet->GetTransform().SetLocalScale(glm::vec3(50.f));
 	m_planet->GetTransform().SetLocalRotation(glm::vec3(90.f, .0f, .0f));
 	m_planet->SetActive(true);
@@ -63,7 +63,6 @@ void SpaceScene::OnInitialize()
 
 void SpaceScene::OnPaint(Shader* shader)
 {
-
 }
 
 void SpaceScene::OnEnd()

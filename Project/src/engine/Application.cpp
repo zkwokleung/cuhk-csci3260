@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "Resources.h"
 #include "Sandbox.h"
+#include "Time.h"
 
 // screen setting
 const int SCR_WIDTH = 800;
@@ -26,6 +27,8 @@ void Application::Initialize(int argc, char* argv[])
 	GetOpenGLInfo();
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
+
+	Debug::Init();
 }
 
 void Application::Run(void)
@@ -50,6 +53,7 @@ void Application::Setup(void)
 
 void Application::MainLoop(void)
 {
+	Time::OnFrameStart();
 	Renderer::Clear();
 
 	// Call sandbox's OnUpdate

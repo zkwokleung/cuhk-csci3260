@@ -149,7 +149,7 @@ int Shader::GetUniformLocation(std::string name)
 		{
 			std::stringstream msg;
 			msg << "Cannot find uniform location of " << name << " in " << __FILE__ << ":" << __LINE__;
-			Debug::Warning(msg.str());
+			Debug::LogWarning(msg.str());
 			// Record that the warning has been displayed
 			m_uniformWarnings[name] = true;
 		}

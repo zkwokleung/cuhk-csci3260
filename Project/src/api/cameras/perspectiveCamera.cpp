@@ -1,7 +1,7 @@
 #include "perspectiveCamera.h"
 
 PerspectiveCamera::PerspectiveCamera() : Camera(),
-m_fovy(glm::radians(45.0f)), m_aspect(1.f), m_near(.1f), m_far(1000.f)
+m_fovy(glm::radians(45.0f)), m_aspect(1.f), m_near(.1f), m_far(100000.f)
 {
 }
 

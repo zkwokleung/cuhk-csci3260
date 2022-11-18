@@ -17,7 +17,7 @@ void Camera::OnPaint(Shader* shader)
 {
 	if (s_main == nullptr)
 	{
-		Debug::Error("No Main Camera Set");
+		Debug::LogError("No Main Camera Set");
 		return;
 	}
 
@@ -80,5 +80,5 @@ glm::mat4 Camera::GetViewMatrix()
 
 glm::mat4 Camera::GetProjectionMatrix()
 {
-	return glm::perspective(glm::radians(45.0f), 1.f, 0.1f, 1000.0f);
+	return glm::perspective(glm::radians(45.0f), 1.f, 0.1f, 100000.0f);
 }
