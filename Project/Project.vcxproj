@@ -188,6 +188,7 @@
     <ClInclude Include="src\api\scenes\scene.h" />
     <ClInclude Include="src\api\scenes\sceneManager.h" />
     <ClInclude Include="src\engine\Application.h" />
+    <ClInclude Include="src\engine\Random.h" />
     <ClInclude Include="src\engine\Resources.h" />
     <ClInclude Include="src\engine\Sandbox.h" />
     <ClInclude Include="src\engine\Time.h" />
@@ -226,6 +227,7 @@
     <ClCompile Include="src\api\scenes\scene.cpp" />
     <ClCompile Include="src\api\scenes\sceneManager.cpp" />
     <ClCompile Include="src\engine\Application.cpp" />
+    <ClCompile Include="src\engine\Random.cpp" />
     <ClCompile Include="src\engine\Resources.cpp" />
     <ClCompile Include="src\engine\Sandbox.cpp" />
     <ClCompile Include="src\engine\Time.cpp" />

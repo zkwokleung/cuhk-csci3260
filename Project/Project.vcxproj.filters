@@ -248,6 +248,9 @@
     <ClInclude Include="src\engine\Time.h">
       <Filter>Header Files\engine</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\Random.h">
+      <Filter>Header Files\engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\api\cameras\camera.cpp">
@@ -356,6 +359,9 @@
       <Filter>Source Files\userfiles\players</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\Time.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\Random.cpp">
       <Filter>Source Files\engine</Filter>
     </ClCompile>
   </ItemGroup>

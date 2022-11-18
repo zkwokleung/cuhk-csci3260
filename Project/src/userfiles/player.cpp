@@ -6,12 +6,13 @@ m_travelSpeed(0.f), m_velocity(glm::vec3(.0f)), m_translationState(PLAYER_STATE_
 m_rollingSpeed(0.f), m_rollingState(PLAYER_STATE_IDLE)
 {
 	// Set camera
-	m_camera->GetTransform().SetLocalPosition(glm::vec3(0.f, 5.0f, 10.f));
+	m_camera->GetTransform().SetLocalPosition(glm::vec3(0.f, 5.0f, 20.f));
 	m_camera->GetTransform().SetLocalRotation(glm::vec3(.0f));
 	m_camera->GetTransform().SetParent(&GetTransform());
 
 	// Set Lighting
 	m_light->GetTransform().SetParent(&GetTransform());
+	m_light->SetAmbient(glm::vec3(1.f, 1.f, .0f));
 
 	// Set model
 	Mesh* spaceCraft = Resources::LoadObject("object/spacecraft.obj");

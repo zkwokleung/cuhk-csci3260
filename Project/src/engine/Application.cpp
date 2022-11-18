@@ -27,8 +27,6 @@ void Application::Initialize(int argc, char* argv[])
 	GetOpenGLInfo();
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
-
-	Debug::Init();
 }
 
 void Application::Run(void)
@@ -43,6 +41,8 @@ void Application::Setup(void)
 	s_activeSandbox = new Sandbox();
 
 	// Initialize fields and API
+	Debug::Init();
+	Random::Init();
 	Input::Init();
 	Skybox::Init();
 	InstallShader();

@@ -1,8 +1,11 @@
 #include "../myapi.h"
 #include "../engine/Resources.h"
+#include "../engine/Random.h"
 #include "player.h"
 #include "firstPersonPlayer.h"
 #include <string>
+
+#define SPACE_ROCK_NUM 200
 
 class SpaceScene : public Scene
 {
@@ -18,5 +21,7 @@ private:
 	Skybox* m_skybox;
 	Player* m_player;
 	ModelObject* m_planet;
+	Object* m_rocksContainer;
+	ModelObject* m_rocks[SPACE_ROCK_NUM];
 	PointLight* m_planetLight;
 };
