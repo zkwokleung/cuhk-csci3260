@@ -31,8 +31,7 @@ void PointLight::OnPaint(Shader* shader)
 std::string PointLight::GetUniformNamePrefix() const
 {
 	std::stringstream ss;
-	char id = m_id + '0';
-	ss << "pointLights[" << id << "]";
+	ss << "pointLights[" << std::to_string(m_id) << "]";
 	return ss.str();
 }
 

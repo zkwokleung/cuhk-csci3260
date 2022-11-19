@@ -111,11 +111,6 @@ void Player::OnPaint(Shader* shader)
 
 	// Move the spacecraft
 	GetTransform().SetLocalPosition(GetTransform().GetLocalPosition() + m_velocity);
-
-	std::stringstream msg;
-	msg << "velocity: " << m_velocity.x << ", " << m_velocity.y
-		<< ", " << m_velocity.z << "; Speed: " << m_travelSpeed;
-	Debug::Log(msg.str());
 }
 
 void Player::cursor_position_callback(int x, int y)

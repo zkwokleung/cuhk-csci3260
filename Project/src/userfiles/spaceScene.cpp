@@ -5,6 +5,7 @@ SpaceScene::SpaceScene()
 	m_planetLight(new PointLight(glm::vec3(1.f), glm::vec3(1.f), glm::vec3(1.f), 1, .007f, .008f)),
 	m_rocksContainer(new Object("rocks container"))
 {
+	// Initialize Skybox
 	std::vector<std::string> faces = { "skybox/right.bmp",  "skybox/left.bmp",  "skybox/top.bmp",
 									  "skybox/bottom.bmp", "skybox/front.bmp", "skybox/back.bmp" };
 
@@ -12,10 +13,12 @@ SpaceScene::SpaceScene()
 	m_skybox = new Skybox(cubemap, new Shader(Resources::LoadTextFile("shaders/SkyboxVert.glsl"),
 		Resources::LoadTextFile("shaders/SkyboxFrag.glsl")));
 
+	// Initialize Planet
 	Mesh* planetMesh = Resources::LoadObject("object/planet.obj");
 	planetMesh->SetTexture(new Texture(Resources::LoadImageData("texture/earthTexture.bmp")));
 	m_planet = new ModelObject(planetMesh);
 
+	// Initialize Rocks
 	Mesh* rockMesh = Resources::LoadObject("object/rock.obj");
 	rockMesh->SetTexture(new Texture(Resources::LoadImageData("texture/rockTexture.bmp")));
 	for (unsigned int i = 0; i < SPACE_ROCK_NUM; i++)
@@ -23,11 +26,15 @@ SpaceScene::SpaceScene()
 		m_rocks[i] = new ModelObject(rockMesh);
 	}
 
+	// Initialize crafts
 	Mesh* craftMesh = Resources::LoadObject("object/craft.obj");
 	craftMesh->SetTexture(new Texture(Resources::LoadImageData("texture/vehicleTexture.bmp")));
 	for (unsigned int i = 0; i < SPACE_CRAFT_NUM; i++)
 	{
 		m_spaceCrafts[i] = new ModelObject(craftMesh);
+
+		// Initialize Lights
+		m_craftLights[i] = new PointLight();
 	}
 }
 
@@ -104,6 +111,12 @@ void SpaceScene::OnInitialize()
 		);
 
 		m_spaceCrafts[i]->SetActive(true);
+
+		// Initialize Point Light for each Crafts
+		m_craftLights[i]->GetTransform().SetParent(&m_spaceCrafts[i]->GetTransform());
+		m_craftLights[i]->GetTransform().SetLocalPosition(glm::vec3(.0f, 1.f, .0f));
+		m_craftLights[i]->SetPointLightParams(1.f, 0.00000045f, 0.000000075f);;
+		m_craftLights[i]->SetActive(true);
 	}
 
 	// Initialize Light
