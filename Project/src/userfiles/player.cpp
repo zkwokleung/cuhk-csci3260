@@ -10,7 +10,7 @@ Player::Player(void)
 	// Set camera
 	m_camera->GetTransform().SetLocalPosition(glm::vec3(0.f, 5.0f, 20.f));
 	m_camera->GetTransform().SetLocalRotation(glm::vec3(.0f));
-	m_camera->GetTransform().SetParent(&GetTransform());
+	//m_camera->GetTransform().SetParent(&GetTransform());
 
 	// Set Lighting
 	m_light->GetTransform().SetParent(&GetTransform());
@@ -205,10 +205,10 @@ void Player::cursor_position_callback(int x, int y)
 	glm::vec2 newPos = glm::vec2(x, y);
 	glm::vec2 deltaPos = newPos - glm::vec2((glutGet(GLUT_WINDOW_WIDTH) / 2), glutGet(GLUT_WINDOW_HEIGHT) / 2);
 
-	glm::vec3 rotate = s_activePlayer->GetTransform().GetRotation();
+	glm::vec3 rotate = s_activePlayer->GetTransform().GetLocalRotation();
 	//rotate += glm::vec3(deltaPos.y * PLAYER_ROTATION_SPEED * -1.f, .0f, .0f);
 	//rotate += glm::vec3(.0f, deltaPos.x * PLAYER_ROTATION_SPEED * -1.f, .0f);
-	rotate += deltaPos.y * PLAYER_ROTATION_SPEED * -1.f * s_activePlayer->GetTransform().GetRight();
+	//rotate += deltaPos.y * PLAYER_ROTATION_SPEED * -1.f * s_activePlayer->GetTransform().GetRight();
 	rotate += deltaPos.x * PLAYER_ROTATION_SPEED * -1.f * s_activePlayer->GetTransform().GetUp();
 
 	// Clamp the rotation value
@@ -216,9 +216,17 @@ void Player::cursor_position_callback(int x, int y)
 		rotate.x = .0f;
 	if (rotate.y >= 360.f || rotate.y <= -360.f)
 		rotate.y = .0f;
+	if (rotate.z >= 360.f || rotate.z <= -360.f)
+		rotate.z = .0f;
 
 	// Set the rotation of the camera
 	s_activePlayer->GetTransform().SetLocalRotation(rotate);
+
+	std::stringstream msg;
+	msg << "Rotation: " << s_activePlayer->GetTransform().GetUp().x << ", "
+		<< s_activePlayer->GetTransform().GetUp().y << ", "
+		<< s_activePlayer->GetTransform().GetUp().z;
+	Debug::Log(msg.str());
 }
 
 void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
