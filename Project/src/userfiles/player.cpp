@@ -112,6 +112,86 @@ void Player::OnPaint(Shader* shader)
 
 	// Move the spacecraft
 	GetTransform().SetLocalPosition(GetTransform().GetLocalPosition() + m_velocity);
+
+	// Handle Rolling
+	static glm::vec3 tranDir = glm::vec3();
+
+	// Handle the translation state
+	switch (m_translationState)
+	{
+	case PLAYER_STATE_IDLE:
+		// Decelerate the spacecraft if it is moving
+		if (m_travelSpeed > 0.1)
+		{
+			m_travelSpeed -= PLAYER_TRANSLATION_DECELERATION;
+		}
+		else if (m_travelSpeed < 0.1)
+		{
+			m_travelSpeed += PLAYER_TRANSLATION_DECELERATION;
+		}
+		else
+		{
+			m_travelSpeed = 0;
+		}
+		break;
+
+	case PLAYER_STATE_FORWARD:
+		// Accelerate the space craft
+		if (m_travelSpeed < PLAYER_MAX_TRAVEL_SPEED)
+		{
+			m_travelSpeed += PLAYER_TRANSLATION_ACCELERATION;
+			tranDir = GetTransform().GetForward();
+		}
+		break;
+
+	case PLAYER_STATE_BACKWARD:
+		m_travelSpeed = PLAYER_BACKWARD_SPEED;
+		tranDir = GetTransform().GetBackward();
+		break;
+
+	default:
+
+		break;
+	}
+	m_velocity = Time::GetDeltaTime() * m_travelSpeed * tranDir;
+
+	// Handle the rotation state
+	switch (m_rollingState)
+	{
+	case PLAYER_STATE_IDLE:
+		// Decelerate the spacecraft if it is rolling
+		if (m_rollingSpeed > 1)
+		{
+			m_rollingSpeed -= PLAYER_ROLLING_DECELERATION;
+		}
+		else if (m_rollingSpeed < 1)
+		{
+			m_rollingSpeed -= -PLAYER_ROLLING_DECELERATION;
+		}
+		else
+		{
+			m_rollingSpeed = 0;
+		}
+		break;
+
+	case PLAYER_STATE_ROLLLEFT:
+		if (m_rollingSpeed > -PLAYER_MAX_ROLLING_SPEED)
+		{
+			m_rollingSpeed += -PLAYER_ROLLING_ACCELERATION;
+		}
+		break;
+
+	case PLAYER_STATE_ROLLRIGHT:
+		if (m_rollingSpeed < PLAYER_MAX_ROLLING_SPEED)
+		{
+			m_rollingSpeed += PLAYER_ROLLING_ACCELERATION;
+		}
+		break;
+	}
+
+	// Roll the spacecraft
+	glm::vec3 rollingVel = m_rollingSpeed * Time::GetDeltaTime() * GetTransform().GetForward();
+	GetTransform().SetLocalRotation(GetTransform().GetLocalRotation() + rollingVel);
 }
 
 void Player::cursor_position_callback(int x, int y)
@@ -126,8 +206,10 @@ void Player::cursor_position_callback(int x, int y)
 	glm::vec2 deltaPos = newPos - glm::vec2((glutGet(GLUT_WINDOW_WIDTH) / 2), glutGet(GLUT_WINDOW_HEIGHT) / 2);
 
 	glm::vec3 rotate = s_activePlayer->GetTransform().GetRotation();
-	rotate += glm::vec3(deltaPos.y * PLAYER_ROTATION_SPEED * -1.f, .0f, .0f);
-	rotate += glm::vec3(.0f, deltaPos.x * PLAYER_ROTATION_SPEED * -1.f, .0f);
+	//rotate += glm::vec3(deltaPos.y * PLAYER_ROTATION_SPEED * -1.f, .0f, .0f);
+	//rotate += glm::vec3(.0f, deltaPos.x * PLAYER_ROTATION_SPEED * -1.f, .0f);
+	rotate += deltaPos.y * PLAYER_ROTATION_SPEED * -1.f * s_activePlayer->GetTransform().GetRight();
+	rotate += deltaPos.x * PLAYER_ROTATION_SPEED * -1.f * s_activePlayer->GetTransform().GetUp();
 
 	// Clamp the rotation value
 	if (rotate.x >= 360.f || rotate.x <= -360.f)
@@ -146,6 +228,7 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 		return;
 	}
 
+	// Control Translation
 	if (action == KEYBOARD_ACTION_PRESS || action == KEYBOARD_ACTION_DOWN)
 	{
 		switch (key)
@@ -165,6 +248,14 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 
 		case 'd':
 			s_activePlayer->m_horizontalState = PLAYER_STATE_MOVERIGHT;
+			break;
+
+		case 'q':
+			s_activePlayer->m_rollingState = PLAYER_STATE_ROLLLEFT;
+			break;
+
+		case 'e':
+			s_activePlayer->m_rollingState = PLAYER_STATE_ROLLRIGHT;
 			break;
 		}
 	}
@@ -199,6 +290,19 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 				s_activePlayer->m_horizontalState = PLAYER_STATE_IDLE;
 			}
 			break;
+
+		case 'q':
+			if (s_activePlayer->m_rollingState == PLAYER_STATE_ROLLLEFT)
+			{
+				s_activePlayer->m_rollingState = PLAYER_STATE_IDLE;
+			}
+			break;
+
+		case 'e':
+			if (s_activePlayer->m_rollingState == PLAYER_STATE_ROLLRIGHT)
+			{
+				s_activePlayer->m_rollingState = PLAYER_STATE_IDLE;
+			}
 		}
 	}
 }

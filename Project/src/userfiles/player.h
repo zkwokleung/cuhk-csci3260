@@ -3,9 +3,13 @@
 #include "../engine/Time.h"
 #include "../myapi.h"
 
-#define PLAYER_MAX_TRAVEL_SPEED 500.f
+#define PLAYER_MAX_TRAVEL_SPEED 1000.f
 #define PLAYER_TRANSLATION_ACCELERATION 20.f
 #define PLAYER_TRANSLATION_DECELERATION 10.f
+
+#define PLAYER_MAX_ROLLING_SPEED 50.f
+#define PLAYER_ROLLING_ACCELERATION 2.f
+#define PLAYER_ROLLING_DECELERATION 1.f
 
 #define PLAYER_ROTATION_SPEED .05f
 #define PLAYER_BACKWARD_SPEED .1f
@@ -36,7 +40,7 @@ private:
 
 	float m_travelSpeed, m_horizontalSpeed, m_rollingSpeed;
 	glm::vec3 m_velocity;
-	int m_translationState, m_horizontalState;
+	int m_translationState, m_horizontalState, m_rollingState;
 
 	static Player* s_activePlayer;
 	static void cursor_position_callback(int x, int y);
