@@ -17,7 +17,6 @@ public:
 	~Texture();
 
 	void SetData(ImageData* image);
-	void Draw(Shader* shader);
 	void Bind(unsigned int slot) const;
 	void Unbind() const;
 

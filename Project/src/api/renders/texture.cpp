@@ -14,14 +14,9 @@ void Texture::SetData(ImageData* image)
 	data = image->data;
 }
 
-void Texture::Draw(Shader* shader)
-{
-	Bind(0);
-	//shader->SetHandleui64ARB("u_texture", data);
-}
-
 void Texture::Bind(unsigned int slot = 0) const
 {
+	glActiveTexture(GL_TEXTURE0 + slot);
 	glBindTexture(GL_TEXTURE_2D, data);
 }
 

@@ -16,6 +16,7 @@ SpaceScene::SpaceScene()
 	// Initialize Planet
 	Mesh* planetMesh = Resources::LoadObject("object/planet.obj");
 	planetMesh->SetTexture(new Texture(Resources::LoadImageData("texture/earthTexture.bmp")));
+	planetMesh->SetNormalMap(new Texture(Resources::LoadImageData("texture/earthNormal.bmp")));
 	m_planet = new ModelObject(planetMesh);
 
 	// Initialize Rocks

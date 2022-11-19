@@ -21,10 +21,7 @@ Mesh* Resources::LoadObject(std::string path)
 	Assimp::Importer importer;
 
 	const aiScene* scene = importer.ReadFile(RESOURCES_PATH + path,
-		aiProcess_CalcTangentSpace |
-		aiProcess_Triangulate |
-		aiProcess_JoinIdenticalVertices |
-		aiProcess_SortByPType);
+		aiProcessPreset_TargetRealtime_Fast);
 
 	// If the import failed, report it
 	std::string errorString = importer.GetErrorString();

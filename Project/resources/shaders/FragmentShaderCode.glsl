@@ -9,7 +9,9 @@ in vec2 v_uv;
 in vec3 v_normal;
 
 // Texture
-layout(bindless_sampler) uniform sampler2D u_texture;
+uniform sampler2D u_texture;
+uniform sampler2D u_normalMap;
+uniform int u_useNormalMap;
 
 // Material
 struct Material {
@@ -58,11 +60,16 @@ uniform vec3 u_viewPos;
 ************/
 void main()
 {
-    vec3 norm = normalize(v_normal);
+    vec3 result = vec3(0.3f);
     vec3 viewDir = normalize(u_viewPos - v_position);
 
-    // Dir light
-    vec3 result = vec3(0.3f);
+    vec3 norm = normalize(v_normal);
+    // normal map
+    if(u_useNormalMap == 1)
+    {
+        norm = texture(u_normalMap, v_uv).rgb;
+        norm = normalize(norm * 2.0 - 1.0);
+    }
 
     // Point Lights
     for(int i = 0; i < NR_POINT_LIGHTS; i++)

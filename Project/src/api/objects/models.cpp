@@ -1,6 +1,6 @@
 #include "models.h"
 
-Mesh::Mesh(): m_vertices(),m_indices(),m_texture(nullptr), m_vao(), m_vbo(), m_ebo()
+Mesh::Mesh() : m_vertices(), m_indices(), m_texture(nullptr), m_vao(), m_vbo(), m_ebo()
 {
 }
 
@@ -25,6 +25,11 @@ void Mesh::SetData(std::vector<Vertex> vertices, std::vector<unsigned int> indic
 {
 	m_vertices = vertices;
 	m_indices = indices;
+	m_vbo = VBO(&m_vertices[0], vertices.size() * sizeof(Vertex));
+	m_ebo = EBO(&m_indices[0], indices.size());
+	m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)0);
+	m_vao.LinkAttrib(m_vbo, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, uv));
+	m_vao.LinkAttrib(m_vbo, 2, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, normal));
 }
 
 void Mesh::SetTexture(Texture* texture)
@@ -32,11 +37,24 @@ void Mesh::SetTexture(Texture* texture)
 	m_texture = texture;
 }
 
+void Mesh::SetNormalMap(Texture* texture)
+{
+	m_normalMap = texture;
+}
+
 void Mesh::Draw(Shader* shader)
 {
+	// Draw Texture
 	if (m_texture)
 	{
-		m_texture->Draw(shader);
+		m_texture->Bind(0);
 	}
+	// Normal Map
+	shader->SetInt("u_useNormalMap", m_normalMap != nullptr);
+	if (m_normalMap != nullptr)
+	{
+		m_normalMap->Bind(1);
+	}
+
 	Renderer::Draw(m_vao, m_ebo);
 }
