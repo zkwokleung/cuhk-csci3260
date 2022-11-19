@@ -15,6 +15,7 @@ Player::Player(void)
 	// Set Lighting
 	m_light->GetTransform().SetParent(&GetTransform());
 	m_light->SetAmbient(glm::vec3(1.f, 1.f, .0f));
+	m_light->SetPointLightParams(1.f, 0.07f, 0.08f);
 
 	// Set model
 	Mesh* spaceCraft = Resources::LoadObject("object/spacecraft.obj");

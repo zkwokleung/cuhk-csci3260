@@ -115,15 +115,20 @@ void SpaceScene::OnInitialize()
 
 		// Initialize Point Light for each Crafts
 		m_craftLights[i]->GetTransform().SetParent(&m_spaceCrafts[i]->GetTransform());
-		m_craftLights[i]->GetTransform().SetLocalPosition(glm::vec3(.0f, 1.f, .0f));
-		m_craftLights[i]->SetPointLightParams(1.f, 0.00000045f, 0.000000075f);;
+		m_craftLights[i]->GetTransform().SetLocalPosition(glm::vec3(.0f, 2.f, .0f));
+		m_craftLights[i]->SetAmbient(glm::vec3(
+			Random::Range(0.f, 1.f),
+			Random::Range(0.f, 1.f),
+			Random::Range(0.f, 1.f)
+		));
+		m_craftLights[i]->SetPointLightParams(1.f, 0.0045f, 0.0001f);;
 		m_craftLights[i]->SetActive(true);
 	}
 
 	// Initialize Light
 	AddObject(m_planetLight);
-	m_planetLight->GetTransform().SetLocalPosition(PLANET_INITIAL_POSITION);
-	m_planetLight->SetPointLightParams(1.f, 0.00000045f, 0.000000075f);
+	m_planetLight->GetTransform().SetLocalPosition(PLANET_INITIAL_POSITION + glm::vec3(.0f, 0.f, 1.f));
+	m_planetLight->SetPointLightParams(1.f, 0.0000045f, 0.00000025f);
 	m_planetLight->SetActive(true);
 }
 
