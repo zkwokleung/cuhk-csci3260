@@ -13,26 +13,34 @@
 #define SPACE_ROCK_MIN_SCALE 0.1f
 #define SPACE_ROCK_MAX_SCALE .2f
 
-#define SPACE_CRAFT_NUM 10
-#define SPACE_CRAFT_MIN_SCALE 0.1f
-#define SPACE_CRAFT_MAX_SCALE 20.f
+#define SPACE_CRAFT_NUM 20
+#define SPACE_CRAFT_MIN_SCALE 10.f
+#define SPACE_CRAFT_MAX_SCALE 30.f
+#define SPACE_CRAFT_MIN_POSITION_X -2000.f
+#define SPACE_CRAFT_MAX_POSITION_X 2000.f
+#define SPACE_CRAFT_MIN_POSITION_Y -1000.f
+#define SPACE_CRAFT_MAX_POSITION_Y 1000.f
+#define SPACE_CRAFT_MIN_POSITION_Z -10000.f
+#define SPACE_CRAFT_MAX_POSITION_Z 100.f
+#define SPACE_CRAFT_TELEPORT_INTERVAL 5.f
+#define SPACE_CRAFT_SELF_ROTATE_SPEED 10.f
 
 class SpaceScene : public Scene
 {
-  public:
-    SpaceScene();
-    ~SpaceScene();
+public:
+	SpaceScene();
+	~SpaceScene();
 
-    virtual void OnInitialize();
-    virtual void OnPaint(Shader *shader);
-    virtual void OnEnd();
+	virtual void OnInitialize();
+	virtual void OnPaint(Shader* shader);
+	virtual void OnEnd();
 
-  private:
-    Skybox *m_skybox;
-    Player *m_player;
-    ModelObject *m_planet;
-    Object *m_rocksContainer;
-    ModelObject *m_rocks[SPACE_ROCK_NUM];
-    ModelObject *m_spaceCrafts[SPACE_CRAFT_NUM];
-    PointLight *m_planetLight;
+private:
+	Skybox* m_skybox;
+	Player* m_player;
+	ModelObject* m_planet;
+	Object* m_rocksContainer;
+	ModelObject* m_rocks[SPACE_ROCK_NUM];
+	ModelObject* m_spaceCrafts[SPACE_CRAFT_NUM];
+	PointLight* m_planetLight;
 };

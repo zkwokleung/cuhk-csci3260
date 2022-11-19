@@ -21,24 +21,24 @@
 
 class Player : public Object
 {
-  public:
-    Player(void);
-    ~Player();
+public:
+	Player(void);
+	~Player();
 
-    virtual bool IsActive() const;
-    virtual void SetActive(bool active);
-    virtual void OnPaint(Shader *shader);
+	virtual bool IsActive() const;
+	virtual void SetActive(bool active);
+	virtual void OnPaint(Shader* shader);
 
-  private:
-    Camera *m_camera;
-    ModelObject *m_model;
-    PointLight *m_light;
+private:
+	PerspectiveCamera* m_camera;
+	ModelObject* m_model;
+	PointLight* m_light;
 
-    float m_travelSpeed, m_horizontalSpeed, m_rollingSpeed;
-    glm::vec3 m_velocity;
-    int m_translationState, m_horizontalState;
+	float m_travelSpeed, m_horizontalSpeed, m_rollingSpeed;
+	glm::vec3 m_velocity;
+	int m_translationState, m_horizontalState;
 
-    static Player *s_activePlayer;
-    static void cursor_position_callback(int x, int y);
-    static void key_callback(unsigned char key, unsigned int action, int x, int y);
+	static Player* s_activePlayer;
+	static void cursor_position_callback(int x, int y);
+	static void key_callback(unsigned char key, unsigned int action, int x, int y);
 };
