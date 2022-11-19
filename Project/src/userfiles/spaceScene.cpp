@@ -101,7 +101,7 @@ void SpaceScene::OnInitialize()
     // Initialize Light
     AddObject(m_planetLight);
     m_planetLight->GetTransform().SetPosition(PLANET_INITIAL_POSITION);
-    // m_planetLight->SetPointLightParams(1.f, 0.00045f, 0.000075f);
+    m_planetLight->SetPointLightParams(1.f, 0.00000045f, 0.000000075f);
     m_planetLight->SetActive(true);
 }
 
