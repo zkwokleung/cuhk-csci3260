@@ -173,8 +173,10 @@
     <ClInclude Include="src\api\objects\transform.h" />
     <ClInclude Include="src\api\objects\verticesObject.h" />
     <ClInclude Include="src\api\physicsModule.h" />
+    <ClInclude Include="src\api\physics\boxCollider.h" />
     <ClInclude Include="src\api\physics\collider.h" />
     <ClInclude Include="src\api\physics\physicsEngine.h" />
+    <ClInclude Include="src\api\physics\sphereCollider.h" />
     <ClInclude Include="src\api\renderModule.h" />
     <ClInclude Include="src\api\renders\ebo.h" />
     <ClInclude Include="src\api\renders\material.h" />
@@ -214,8 +216,10 @@
     <ClCompile Include="src\api\objects\object.cpp" />
     <ClCompile Include="src\api\objects\transform.cpp" />
     <ClCompile Include="src\api\objects\verticesObject.cpp" />
+    <ClCompile Include="src\api\physics\boxCollider.cpp" />
     <ClCompile Include="src\api\physics\collider.cpp" />
     <ClCompile Include="src\api\physics\physicsEngine.cpp" />
+    <ClCompile Include="src\api\physics\sphereCollider.cpp" />
     <ClCompile Include="src\api\renders\ebo.cpp" />
     <ClCompile Include="src\api\renders\material.cpp" />
     <ClCompile Include="src\api\renders\renderer.cpp" />

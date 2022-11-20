@@ -251,6 +251,12 @@
     <ClInclude Include="src\engine\Random.h">
       <Filter>Header Files\engine</Filter>
     </ClInclude>
+    <ClInclude Include="src\api\physics\boxCollider.h">
+      <Filter>Header Files\api\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\api\physics\sphereCollider.h">
+      <Filter>Header Files\api\physics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\api\cameras\camera.cpp">
@@ -363,6 +369,12 @@
     </ClCompile>
     <ClCompile Include="src\engine\Random.cpp">
       <Filter>Source Files\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\physics\boxCollider.cpp">
+      <Filter>Source Files\api\physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api\physics\sphereCollider.cpp">
+      <Filter>Source Files\api\physics</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
