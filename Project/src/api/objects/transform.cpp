@@ -229,3 +229,13 @@ std::list<Transform*> Transform::GetChilds() const
 {
 	return m_childs;
 }
+
+void Transform::Translate(glm::vec3 translation)
+{
+	SetLocalPosition(GetLocalPosition() + translation);
+}
+
+void Transform::Rotate(glm::vec3 rotation)
+{
+	SetLocalRotation(GetLocalRotation() + rotation);
+}
