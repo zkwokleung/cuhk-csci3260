@@ -22,6 +22,8 @@
 
 #define KEYBOARD_KEYSTATE_NONE 0x0
 #define KEYBOARD_KEYSTATE_PRESSED 0x1
+#define KEYBOARD_KEYSTATE_PRESSINGS 0x2
+#define KEYBOARD_KEYSTATE_RELEASE 0x3
 
 #ifdef USE_GLFW
 typedef void(*KeyCallbackFunc)(GLFWwindow* window, int key, int scancode, int action, int mods);

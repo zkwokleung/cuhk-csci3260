@@ -5,12 +5,12 @@ Player::Player(void)
 	m_camera(new PerspectiveCamera()),
 	m_light(new PointLight(glm::vec3(1.f), glm::vec3(1.f), glm::vec3(1.f), 1, .007f, .008f)), m_travelSpeed(0.f),
 	m_velocity(glm::vec3(.0f)), m_translationState(PLAYER_STATE_IDLE), m_rollingSpeed(0.f), m_horizontalSpeed(0.f),
-	m_horizontalState(PLAYER_STATE_IDLE)
+	m_horizontalState(PLAYER_STATE_IDLE), m_rollingState(PLAYER_STATE_IDLE)
 {
 	// Set camera
 	m_camera->GetTransform().SetLocalPosition(glm::vec3(0.f, 5.0f, 20.f));
 	m_camera->GetTransform().SetLocalRotation(glm::vec3(.0f));
-	//m_camera->GetTransform().SetParent(&GetTransform());
+	m_camera->GetTransform().SetParent(&GetTransform());
 
 	// Set Lighting
 	m_light->GetTransform().SetParent(&GetTransform());
@@ -53,6 +53,7 @@ void Player::OnPaint(Shader* shader)
 		{
 			m_travelSpeed = 0;
 		}
+		m_travelSpeed = 0;
 		break;
 
 	case PLAYER_STATE_FORWARD:
@@ -205,27 +206,35 @@ void Player::cursor_position_callback(int x, int y)
 	glm::vec2 newPos = glm::vec2(x, y);
 	glm::vec2 deltaPos = newPos - glm::vec2((glutGet(GLUT_WINDOW_WIDTH) / 2), glutGet(GLUT_WINDOW_HEIGHT) / 2);
 
-	glm::vec3 rotate = s_activePlayer->GetTransform().GetLocalRotation();
-	//rotate += glm::vec3(deltaPos.y * PLAYER_ROTATION_SPEED * -1.f, .0f, .0f);
-	//rotate += glm::vec3(.0f, deltaPos.x * PLAYER_ROTATION_SPEED * -1.f, .0f);
-	//rotate += deltaPos.y * PLAYER_ROTATION_SPEED * -1.f * s_activePlayer->GetTransform().GetRight();
-	rotate += deltaPos.x * PLAYER_ROTATION_SPEED * -1.f * s_activePlayer->GetTransform().GetUp();
+	// Yaw (Rotate about up direction)
+	glm::vec3 deltaRot = deltaPos.x * PLAYER_ROTATION_SPEED * -1.f * s_activePlayer->GetTransform().GetUp();
+	// Pitch (Rotate about right direction)
+	deltaRot += deltaPos.y * PLAYER_ROTATION_SPEED * -1.f * s_activePlayer->GetTransform().GetRight();
+
+	// if the value is too small, set it to zero
+	if (deltaRot.x < 1.f && deltaRot.x > -1.f)
+		deltaRot.x = 0.f;
+	if (deltaRot.y < 1.f && deltaRot.y > -1.f)
+		deltaRot.y = 0.f;
+	if (deltaRot.z < 1.f && deltaRot.z > -1.f)
+		deltaRot.z = 0.f;
 
 	// Clamp the rotation value
-	if (rotate.x >= 360.f || rotate.x <= -360.f)
-		rotate.x = .0f;
-	if (rotate.y >= 360.f || rotate.y <= -360.f)
-		rotate.y = .0f;
-	if (rotate.z >= 360.f || rotate.z <= -360.f)
-		rotate.z = .0f;
+	if (deltaRot.x >= 360.f || deltaRot.x <= -360.f)
+		deltaRot.x = .0f;
+	if (deltaRot.y >= 360.f || deltaRot.y <= -360.f)
+		deltaRot.y = .0f;
+	if (deltaRot.z >= 360.f || deltaRot.z <= -360.f)
+		deltaRot.z = .0f;
 
-	// Set the rotation of the camera
-	s_activePlayer->GetTransform().SetLocalRotation(rotate);
+
+	// Set the rotation of the player
+	s_activePlayer->GetTransform().Rotate(deltaRot);
 
 	std::stringstream msg;
-	msg << "Rotation: " << s_activePlayer->GetTransform().GetUp().x << ", "
-		<< s_activePlayer->GetTransform().GetUp().y << ", "
-		<< s_activePlayer->GetTransform().GetUp().z;
+	msg << "Rotation: " << s_activePlayer->m_model->GetTransform().GetRotation().x << ", "
+		<< s_activePlayer->m_model->GetTransform().GetRotation().y << ", "
+		<< s_activePlayer->m_model->GetTransform().GetRotation().z;
 	Debug::Log(msg.str());
 }
 
@@ -243,7 +252,6 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 		{
 		case 'w':
 			s_activePlayer->m_translationState = PLAYER_STATE_FORWARD;
-
 			break;
 
 		case 'a':
