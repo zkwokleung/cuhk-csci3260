@@ -16,6 +16,9 @@ public:
 	virtual bool IsCollidingWith(Collider other);
 	void SetCollisionCallback(CollisionCallbackFunc func);
 
+protected:
+	friend class PhysicsEngine;
+
 private:
 	void OnCollide(Collider other);
 	CollisionCallbackFunc m_callback;
