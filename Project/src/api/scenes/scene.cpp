@@ -22,6 +22,10 @@ void Scene::OnInitialize()
 	m_initialized = true;
 }
 
+void Scene::OnUpdate(void)
+{
+}
+
 void Scene::OnPaint(Shader* shader)
 {
 }

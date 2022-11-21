@@ -16,6 +16,7 @@ public:
 	virtual void SetActive(bool active);
 	virtual bool IsActive() const;
 
+	virtual void OnUpdate(void);
 	virtual void OnPaint(Shader* shader);
 
 	void SetName(std::string name);
@@ -32,6 +33,7 @@ class ObjectRenderPipeline
 public:
 	static void AddObject(Object* object);
 	static void RemoveObject(Object* object);
+	static void OnUpdate(void);
 	static void OnPaint(Shader* shader);
 private:
 	static std::list<Object*> s_objects;

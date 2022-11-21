@@ -2,6 +2,7 @@
 #include "../engine/Resources.h"
 #include "../engine/Time.h"
 #include "../myapi.h"
+#include <glm/gtx/compatibility.hpp>
 
 #define PLAYER_MAX_TRAVEL_SPEED 1000.f
 #define PLAYER_TRANSLATION_ACCELERATION 20.f
@@ -31,6 +32,7 @@ public:
 
 	virtual bool IsActive() const;
 	virtual void SetActive(bool active);
+	virtual void OnUpdate(void);
 	virtual void OnPaint(Shader* shader);
 
 private:

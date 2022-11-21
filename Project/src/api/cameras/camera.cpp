@@ -12,7 +12,17 @@ void Camera::SetMain(Camera* camera)
 	s_main = camera;
 }
 
-void Camera::OnPaint(Shader* shader)
+void Camera::Update(void)
+{
+	if (s_main == nullptr)
+	{
+		return;
+	}
+
+	s_main->OnUpdate();
+}
+
+void Camera::Paint(Shader* shader)
 {
 	if (s_main == nullptr)
 	{

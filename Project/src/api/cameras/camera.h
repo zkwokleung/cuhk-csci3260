@@ -9,7 +9,8 @@ class Camera : public Object
 public:
 	static Camera* GetMain();
 	static void SetMain(Camera* camera);
-	static void OnPaint(Shader* shader);
+	static void Update(void);
+	static void Paint(Shader* shader);
 
 	Camera();
 	~Camera();

@@ -11,6 +11,19 @@ void SceneManager::OnInitialize()
 	}
 }
 
+void SceneManager::OnUpdate(void)
+{
+	if (s_busying)
+	{
+		return;
+	}
+
+	if (s_activeScene != nullptr)
+	{
+		s_activeScene->OnUpdate();
+	}
+}
+
 void SceneManager::OnPaint(Shader* shader)
 {
 	if (s_busying)

@@ -32,6 +32,7 @@ public:
 	~SpaceScene();
 
 	virtual void OnInitialize();
+	virtual void OnUpdate(void);
 	virtual void OnPaint(Shader* shader);
 	virtual void OnEnd();
 

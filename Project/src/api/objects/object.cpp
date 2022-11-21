@@ -37,6 +37,10 @@ bool Object::IsActive() const
 	return m_isActive;
 }
 
+void Object::OnUpdate(void)
+{
+}
+
 void Object::OnPaint(Shader* shader)
 {
 	m_transform.OnPaint(shader);
@@ -66,6 +70,18 @@ void ObjectRenderPipeline::RemoveObject(Object* object)
 	if (!object->IsActive())
 		return;
 	s_objects.remove(object);
+}
+
+void ObjectRenderPipeline::OnUpdate(void)
+{
+	if (s_objects.size() < 1)
+		return;
+
+	std::list<Object*>::iterator it;
+	for (it = s_objects.begin(); it != s_objects.end(); it++)
+	{
+		(*it)->OnUpdate();
+	}
 }
 
 void ObjectRenderPipeline::OnPaint(Shader* shader)

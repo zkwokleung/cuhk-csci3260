@@ -133,7 +133,7 @@ void SpaceScene::OnInitialize()
 	m_planetLight->SetActive(true);
 }
 
-void SpaceScene::OnPaint(Shader* shader)
+void SpaceScene::OnUpdate(void)
 {
 	// Planet self-rotate
 	m_planet->GetTransform().SetLocalRotation(m_planet->GetTransform().GetLocalRotation() +
@@ -167,6 +167,10 @@ void SpaceScene::OnPaint(Shader* shader)
 		// self-rotate
 		m_spaceCrafts[i]->GetTransform().SetLocalRotation(m_spaceCrafts[i]->GetTransform().GetRotation() + SPACE_CRAFT_SELF_ROTATE_SPEED * Time::GetDeltaTime() * glm::vec3(0.f, 1.f, 0.f));
 	}
+}
+
+void SpaceScene::OnPaint(Shader* shader)
+{
 }
 
 void SpaceScene::OnEnd()

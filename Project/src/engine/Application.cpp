@@ -62,10 +62,15 @@ void Application::MainLoop(void)
 	// Draw skybox
 	Skybox::Draw();
 
+	// Update the game
+	SceneManager::OnUpdate();
+	Camera::Update();
+	ObjectRenderPipeline::OnUpdate();
+
 	// Draw objects
 	s_defaultShader->Use();
-	Camera::OnPaint(s_defaultShader);
 	SceneManager::OnPaint(s_defaultShader);
+	Camera::Paint(s_defaultShader);
 	ObjectRenderPipeline::OnPaint(s_defaultShader);
 
 	glFlush();
