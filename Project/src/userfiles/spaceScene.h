@@ -24,7 +24,7 @@
 #define SPACE_CRAFT_TELEPORT_INTERVAL 5.f
 #define SPACE_CRAFT_SELF_ROTATE_SPEED 100.f
 
-class SpaceScene : public Scene
+class SpaceScene : public Scene, private IKeyCallback
 {
 public:
 	SpaceScene();
@@ -42,5 +42,5 @@ private:
 	ModelObject* m_planet, * m_rocks[SPACE_ROCK_NUM], * m_spaceCrafts[SPACE_CRAFT_NUM];
 	PointLight* m_planetLight, * m_craftLights[SPACE_CRAFT_NUM];
 
-	static void key_callback(unsigned char key, unsigned int action, int x, int y);
+	void key_callback(unsigned char key, unsigned int action, int x, int y);
 };

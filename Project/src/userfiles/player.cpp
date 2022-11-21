@@ -158,19 +158,19 @@ void Player::OnUpdate(void)
 	glm::vec3 rollingVel = m_rollingSpeed * Time::GetDeltaTime() * GetTransform().GetForward();
 	GetTransform().Rotate(rollingVel);
 
-	std::stringstream msg;
-	msg << "Forward vector: " << GetTransform().GetForward().x << ", "
-		<< GetTransform().GetForward().y << ", "
-		<< GetTransform().GetForward().z << std::endl;
-	Debug::Log(msg.str());
-	msg << "Up vector: " << GetTransform().GetUp().x << ", "
-		<< GetTransform().GetUp().y << ", "
-		<< GetTransform().GetUp().z << std::endl;
-	Debug::Log(msg.str());
-	msg << "Right vector: " << GetTransform().GetRight().x << ", "
-		<< GetTransform().GetRight().y << ", "
-		<< GetTransform().GetRight().z << std::endl;
-	Debug::Log(msg.str());
+	//std::stringstream msg;
+	//msg << "Forward vector: " << GetTransform().GetForward().x << ", "
+	//	<< GetTransform().GetForward().y << ", "
+	//	<< GetTransform().GetForward().z << std::endl;
+	//Debug::Log(msg.str());
+	//msg << "Up vector: " << GetTransform().GetUp().x << ", "
+	//	<< GetTransform().GetUp().y << ", "
+	//	<< GetTransform().GetUp().z << std::endl;
+	//Debug::Log(msg.str());
+	//msg << "Right vector: " << GetTransform().GetRight().x << ", "
+	//	<< GetTransform().GetRight().y << ", "
+	//	<< GetTransform().GetRight().z << std::endl;
+	//Debug::Log(msg.str());
 }
 
 void Player::OnPaint(Shader* shader)

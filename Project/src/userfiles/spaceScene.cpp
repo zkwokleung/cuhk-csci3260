@@ -59,10 +59,14 @@ SpaceScene::~SpaceScene()
 
 void SpaceScene::OnInitialize()
 {
+	Input::AddKeyCallback(this);
+
 	// Enable skybox
 	m_skybox->Enable();
 
 	// InitializePlayer
+	m_player->GetTransform().SetLocalPosition(glm::vec3());
+	m_player->GetTransform().SetLocalRotation(glm::vec3());
 	m_player->SetActive(true);
 
 	// Initialize planet
@@ -181,4 +185,13 @@ void SpaceScene::OnPaint(Shader* shader)
 void SpaceScene::OnEnd()
 {
 	Scene::OnEnd();
+}
+
+void SpaceScene::key_callback(unsigned char key, unsigned int action, int x, int y)
+{
+	if (key == 'r' && action == KEYBOARD_ACTION_PRESS)
+	{
+		// Reset the scene
+		OnInitialize();
+	}
 }
