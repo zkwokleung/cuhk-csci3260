@@ -47,35 +47,15 @@ void Player::cursor_position_callback(int x, int y)
 	glm::vec2 deltaPos = newPos - glm::vec2((glutGet(GLUT_WINDOW_WIDTH) / 2), glutGet(GLUT_WINDOW_HEIGHT) / 2);
 
 	// Yaw (Rotate about up direction)
-	glm::vec3 deltaRot = deltaPos.x * PLAYER_ROTATION_SPEED * -1.f * s_activePlayer->GetTransform().GetUp();
+	glm::vec3 deltaRot = glm::vec3();
+	deltaRot += deltaPos.x * PLAYER_ROTATION_SPEED * -1.f * glm::vec3(0.f, 1.f, 0.f);
 	// Pitch (Rotate about right direction)
-	deltaRot += deltaPos.y * PLAYER_ROTATION_SPEED * -1.f * s_activePlayer->GetTransform().GetRight();
+	deltaRot += deltaPos.y * PLAYER_ROTATION_SPEED * -1.f * glm::vec3(1.f, 0.f, 0.f);
 
-	// if the value is too small, set it to zero
-	if (deltaRot.x < 1.f && deltaRot.x > -1.f)
-		deltaRot.x = 0.f;
-	if (deltaRot.y < 1.f && deltaRot.y > -1.f)
-		deltaRot.y = 0.f;
-	if (deltaRot.z < 1.f && deltaRot.z > -1.f)
-		deltaRot.z = 0.f;
-
-	// Clamp the rotation value
-	if (deltaRot.x >= 360.f || deltaRot.x <= -360.f)
-		deltaRot.x = .0f;
-	if (deltaRot.y >= 360.f || deltaRot.y <= -360.f)
-		deltaRot.y = .0f;
-	if (deltaRot.z >= 360.f || deltaRot.z <= -360.f)
-		deltaRot.z = .0f;
-
+	deltaRot = s_activePlayer->GetTransform().GetTransformMat4() * glm::vec4(deltaRot, 1.f);
 
 	// Set the rotation of the player
 	s_activePlayer->GetTransform().Rotate(deltaRot);
-
-	std::stringstream msg;
-	msg << "Rotation: " << s_activePlayer->m_model->GetTransform().GetRotation().x << ", "
-		<< s_activePlayer->m_model->GetTransform().GetRotation().y << ", "
-		<< s_activePlayer->m_model->GetTransform().GetRotation().z;
-	Debug::Log(msg.str());
 }
 
 void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
@@ -235,8 +215,6 @@ void Player::OnUpdate(void)
 		{
 			m_travelSpeed += PLAYER_TRANSLATION_ACCELERATION;
 		}
-		m_travelSpeed = glm::lerp(m_travelSpeed, PLAYER_MAX_TRAVEL_SPEED, tT);
-		tT += 0.1 * Time::GetDeltaTime();
 		zDir = GetTransform().GetForward();
 		break;
 
@@ -303,7 +281,7 @@ void Player::OnUpdate(void)
 		{
 			m_rollingSpeed -= PLAYER_ROLLING_DECELERATION;
 		}
-		else if (m_rollingSpeed < 1)
+		else if (m_rollingSpeed < -1)
 		{
 			m_rollingSpeed -= -PLAYER_ROLLING_DECELERATION;
 		}
@@ -330,7 +308,13 @@ void Player::OnUpdate(void)
 
 	// Roll the spacecraft
 	glm::vec3 rollingVel = m_rollingSpeed * Time::GetDeltaTime() * GetTransform().GetForward();
-	GetTransform().SetLocalRotation(GetTransform().GetLocalRotation() + rollingVel);
+	GetTransform().Rotate(rollingVel);
+
+	std::stringstream msg;
+	msg << "Up vector: " << s_activePlayer->m_model->GetTransform().GetForward().x << ", "
+		<< s_activePlayer->m_model->GetTransform().GetForward().y << ", "
+		<< s_activePlayer->m_model->GetTransform().GetForward().z;
+	Debug::Log(msg.str());
 }
 
 Player* Player::s_activePlayer = nullptr;
