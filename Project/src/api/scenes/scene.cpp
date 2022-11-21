@@ -32,6 +32,15 @@ void Scene::OnPaint(Shader* shader)
 
 void Scene::OnEnd()
 {
+	// Disable all the objects
+	if (m_objects.size() < 1)
+		return;
+
+	std::list<Object*>::iterator it;
+	for (it = m_objects.begin(); it != m_objects.end(); it++)
+	{
+		(*it)->SetActive(false);
+	}
 }
 
 void Scene::AddObject(Object* object)
