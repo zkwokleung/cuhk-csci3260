@@ -231,13 +231,12 @@ void Player::OnUpdate(void)
 
 	case PLAYER_STATE_FORWARD:
 		// Accelerate the space craft
-		//if (m_travelSpeed < PLAYER_MAX_TRAVEL_SPEED)
-		//{
-		//	m_travelSpeed += PLAYER_TRANSLATION_ACCELERATION;
-		//}
+		if (m_travelSpeed < PLAYER_MAX_TRAVEL_SPEED)
+		{
+			m_travelSpeed += PLAYER_TRANSLATION_ACCELERATION;
+		}
 		m_travelSpeed = glm::lerp(m_travelSpeed, PLAYER_MAX_TRAVEL_SPEED, tT);
-		if (tT < 1.f)
-			tT += 0.1f * Time::GetDeltaTime();
+		tT += 0.1 * Time::GetDeltaTime();
 		zDir = GetTransform().GetForward();
 		break;
 
@@ -293,44 +292,6 @@ void Player::OnUpdate(void)
 
 	// Handle Rolling
 	static glm::vec3 tranDir = glm::vec3();
-
-	// Handle the translation state
-	switch (m_translationState)
-	{
-	case PLAYER_STATE_IDLE:
-		// Decelerate the spacecraft if it is moving
-		if (m_travelSpeed > 0.1)
-		{
-			m_travelSpeed -= PLAYER_TRANSLATION_DECELERATION;
-		}
-		else if (m_travelSpeed < 0.1)
-		{
-			m_travelSpeed += PLAYER_TRANSLATION_DECELERATION;
-		}
-		else
-		{
-			m_travelSpeed = 0;
-		}
-		break;
-
-	case PLAYER_STATE_FORWARD:
-		// Accelerate the space craft
-		if (m_travelSpeed < PLAYER_MAX_TRAVEL_SPEED)
-		{
-			m_travelSpeed += PLAYER_TRANSLATION_ACCELERATION;
-			tranDir = GetTransform().GetForward();
-		}
-		break;
-
-	case PLAYER_STATE_BACKWARD:
-		m_travelSpeed = PLAYER_BACKWARD_SPEED;
-		tranDir = GetTransform().GetBackward();
-		break;
-
-	default:
-
-		break;
-	}
 	m_velocity = Time::GetDeltaTime() * m_travelSpeed * tranDir;
 
 	// Handle the rotation state
