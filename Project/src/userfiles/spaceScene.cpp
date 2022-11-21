@@ -37,6 +37,18 @@ SpaceScene::SpaceScene()
 		// Initialize Lights
 		m_craftLights[i] = new PointLight();
 	}
+
+	AddObject(m_player);
+	AddObject(m_planet);
+	for (unsigned int i = 0; i < SPACE_ROCK_NUM; i++)
+	{
+		AddObject(m_rocks[i]);
+	}
+	for (unsigned int i = 0; i < SPACE_CRAFT_NUM; i++)
+	{
+		AddObject(m_spaceCrafts[i]);
+	}
+	AddObject(m_planetLight);
 }
 
 SpaceScene::~SpaceScene()
@@ -51,11 +63,9 @@ void SpaceScene::OnInitialize()
 	m_skybox->Enable();
 
 	// InitializePlayer
-	AddObject(m_player);
 	m_player->SetActive(true);
 
 	// Initialize planet
-	AddObject(m_planet);
 	m_planet->GetTransform().SetLocalPosition(PLANET_INITIAL_POSITION);
 	m_planet->GetTransform().SetLocalScale(glm::vec3(500.f));
 	m_planet->GetTransform().SetLocalRotation(glm::vec3(90.f, .0f, .0f));
@@ -67,8 +77,6 @@ void SpaceScene::OnInitialize()
 	m_rocksContainer->SetActive(true);
 	for (unsigned int i = 0; i < SPACE_ROCK_NUM; i++)
 	{
-		AddObject(m_rocks[i]);
-
 		// Randomize transform
 		// Random radius distance to planet
 		float distance = Random::Range(SPACE_ROCK_MIN_DISTANCE, SPACE_ROCK_MAX_DISTANCE);
@@ -97,8 +105,6 @@ void SpaceScene::OnInitialize()
 	// Initialize space crafts
 	for (unsigned int i = 0; i < SPACE_CRAFT_NUM; i++)
 	{
-		AddObject(m_spaceCrafts[i]);
-
 		// Random scale
 		glm::vec3 scl = glm::vec3(Random::Range(SPACE_CRAFT_MIN_SCALE, SPACE_CRAFT_MAX_SCALE));
 		m_spaceCrafts[i]->GetTransform().SetLocalScale(scl);
@@ -126,7 +132,6 @@ void SpaceScene::OnInitialize()
 	}
 
 	// Initialize Light
-	AddObject(m_planetLight);
 	m_planetLight->GetTransform().SetLocalPosition(PLANET_INITIAL_POSITION + glm::vec3(1000.0f, 1000.f, 1000.f));
 	m_planetLight->SetAmbient(glm::vec3(1.f, 1.f, .5f));
 	m_planetLight->SetPointLightParams(1.f, 0.0000045f, 0.00000025f);
@@ -175,4 +180,5 @@ void SpaceScene::OnPaint(Shader* shader)
 
 void SpaceScene::OnEnd()
 {
+	Scene::OnEnd();
 }

@@ -12,6 +12,7 @@
 #include <glfw/glfw3.h>
 #endif // USE_GLFW
 
+#include <list>
 #include <unordered_map>
 #include <glm/glm.hpp>
 
@@ -33,70 +34,50 @@ typedef void(*ScrollCallbackFunc)(GLFWwindow* window, double xoffset, double yof
 #endif // USE_GLFW
 
 #ifdef USE_GLUT
-typedef void(*KeyCallbackFunc)(unsigned char key, unsigned int action, int x, int y);
-typedef void(*CursorPosCallbackFunc)(int x, int y);
-typedef void(*MouseButtonCallbackFunc)(int button, int state, int x, int y);
-typedef void(*ScrollCallbackFunc)(int button, int dir, int x, int y);
-#endif // USE_GLUT
-
-
 // A event listener that listen to the input event
-class KeyCallback
+class IKeyCallback
 {
 public:
-	KeyCallback(void);
-	KeyCallback(KeyCallbackFunc func);
-	void SetCallback(KeyCallbackFunc func);
+	virtual void key_callback(unsigned char key, unsigned int action, int x, int y) = 0;
+
 private:
 	// Allow the Input Manager to access the callback function
 	friend class Input;
-
-	// The key to this callback listener in the input manager
-	int m_id;
-	KeyCallbackFunc m_callback;
 };
 
-class CursorPosCallback
+// A event listener that listen to the input event
+class ICursorPosCallback
 {
 public:
-	CursorPosCallback(void);
-	CursorPosCallback(CursorPosCallbackFunc func);
-	void SetCallback(CursorPosCallbackFunc func);
+	virtual void cursor_position_callback(int x, int y) = 0;
 
 private:
+	// Allow the Input Manager to access the callback function
 	friend class Input;
-
-	int m_id;
-	CursorPosCallbackFunc m_callback;
 };
 
-class MouseButtonCallback
+// A event listener that listen to the input event
+class IMouseButtonCallback
 {
 public:
-	MouseButtonCallback(void);
-	MouseButtonCallback(MouseButtonCallbackFunc func);
-	void SetCallback(MouseButtonCallbackFunc func);
+	virtual void mouse_button_callbak(int button, int state, int x, int y) = 0;
 
 private:
+	// Allow the Input Manager to access the callback function
 	friend class Input;
-
-	int m_id;
-	MouseButtonCallbackFunc m_callback;
 };
 
-class ScrollCallback
+// A event listener that listen to the input event
+class IScrollCallback
 {
 public:
-	ScrollCallback(void);
-	ScrollCallback(ScrollCallbackFunc func);
-	void SetCallback(ScrollCallbackFunc func);
+	virtual void scroll_callback(int button, int dir, int x, int y) = 0;
 
 private:
+	// Allow the Input Manager to access the callback function
 	friend class Input;
-
-	int m_id;
-	ScrollCallbackFunc m_callback;
 };
+#endif // USE_GLUT
 
 // The Input Manager to handle all the input events
 class Input
@@ -110,23 +91,23 @@ public:
 #endif // USE_GLUT
 
 	// Keyboard keys callback
-	static void AddKeyCallback(KeyCallback callback);
-	static void RemoveKeyCallback(KeyCallback callback);
+	static void AddKeyCallback(IKeyCallback* callback);
+	static void RemoveKeyCallback(IKeyCallback* callback);
 	static void RemoveAllKeyCallbacks();
 
 	// Mouse button callback
-	static void AddMouseButtonCallback(MouseButtonCallback callback);
-	static void RemoveMouseButtonCallback(MouseButtonCallback callback);
+	static void AddMouseButtonCallback(IMouseButtonCallback* callback);
+	static void RemoveMouseButtonCallback(IMouseButtonCallback* callback);
 	static void RemoveAllMouseButtonCallbacks();
 
 	// Mouse move callback
-	static void AddCursorPosCallback(CursorPosCallback callback);
-	static void RemoveCursorPosCallback(CursorPosCallback callback);
+	static void AddCursorPosCallback(ICursorPosCallback* callback);
+	static void RemoveCursorPosCallback(ICursorPosCallback* callback);
 	static void RemoveAllCursorPosCallbacks();
 
 	// Scroll callback
-	static void AddScrollCallback(ScrollCallback callback);
-	static void RemoveScrollCallback(ScrollCallback callback);
+	static void AddScrollCallback(IScrollCallback* callback);
+	static void RemoveScrollCallback(IScrollCallback* callback);
 	static void RemoveAllScrollCallbacks();
 
 	// Lock the cursor at the center of the window
@@ -140,13 +121,11 @@ public:
 	static void OnUpdate();
 
 private:
-	static unsigned int s_nextKey;
-
 	// Callbacks
-	static std::unordered_map<int, KeyCallback> s_keyCallbacks;
-	static std::unordered_map<int, CursorPosCallback> s_cursorPosCallbacks;
-	static std::unordered_map<int, MouseButtonCallback> s_mouseButtonCallbacks;
-	static std::unordered_map<int, ScrollCallback> s_scrollCallbacks;
+	static std::list<IKeyCallback*> s_keyCallbacks;
+	static std::list<ICursorPosCallback*> s_cursorPosCallbacks;
+	static std::list<IMouseButtonCallback*> s_mouseButtonCallbacks;
+	static std::list<IScrollCallback*> s_scrollCallbacks;
 
 	// The state of each key, 0 is not pressed, 1 is currently pressed
 	static std::unordered_map<unsigned char, int> s_keyStates;

@@ -236,9 +236,6 @@
     <ClInclude Include="src\engine\Sandbox.h">
       <Filter>Header Files\engine</Filter>
     </ClInclude>
-    <ClInclude Include="src\userfiles\firstPersonPlayer.h">
-      <Filter>Header Files\userfiles\players</Filter>
-    </ClInclude>
     <ClInclude Include="src\userfiles\player.h">
       <Filter>Header Files\userfiles\players</Filter>
     </ClInclude>
@@ -360,9 +357,6 @@
     </ClCompile>
     <ClCompile Include="src\userfiles\spaceScene.cpp">
       <Filter>Source Files\userfiles\scenes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\userfiles\firstPersonPlayer.cpp">
-      <Filter>Source Files\userfiles\players</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\Time.cpp">
       <Filter>Source Files\engine</Filter>

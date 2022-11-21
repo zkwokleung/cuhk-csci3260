@@ -1,7 +1,6 @@
 #include "../engine/Random.h"
 #include "../engine/Resources.h"
 #include "../myapi.h"
-#include "firstPersonPlayer.h"
 #include "player.h"
 #include <string>
 
@@ -40,6 +39,8 @@ private:
 	Skybox* m_skybox;
 	Player* m_player;
 	Object* m_rocksContainer;
-	ModelObject* m_planet, *m_rocks[SPACE_ROCK_NUM], *m_spaceCrafts[SPACE_CRAFT_NUM];
-	PointLight* m_planetLight, *m_craftLights[SPACE_CRAFT_NUM];
+	ModelObject* m_planet, * m_rocks[SPACE_ROCK_NUM], * m_spaceCrafts[SPACE_CRAFT_NUM];
+	PointLight* m_planetLight, * m_craftLights[SPACE_CRAFT_NUM];
+
+	static void key_callback(unsigned char key, unsigned int action, int x, int y);
 };

@@ -24,13 +24,12 @@
 #define PLAYER_STATE_ROLLLEFT 0x3
 #define PLAYER_STATE_ROLLRIGHT 0x4
 
-class Player : public Object
+class Player : public Object, private IKeyCallback, private ICursorPosCallback
 {
 public:
 	Player(void);
 	~Player();
 
-	virtual bool IsActive() const;
 	virtual void SetActive(bool active);
 	virtual void OnUpdate(void);
 	virtual void OnPaint(Shader* shader);
@@ -40,11 +39,10 @@ private:
 	ModelObject* m_model;
 	PointLight* m_light;
 
+	void cursor_position_callback(int x, int y);
+	void key_callback(unsigned char key, unsigned int action, int x, int y);
+
 	float m_travelSpeed, m_horizontalSpeed, m_rollingSpeed;
 	glm::vec3 m_velocity;
 	int m_translationState, m_horizontalState, m_rollingState;
-
-	static Player* s_activePlayer;
-	static void cursor_position_callback(int x, int y);
-	static void key_callback(unsigned char key, unsigned int action, int x, int y);
 };

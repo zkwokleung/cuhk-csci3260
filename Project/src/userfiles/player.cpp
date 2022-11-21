@@ -179,59 +179,49 @@ void Player::OnPaint(Shader* shader)
 
 void Player::cursor_position_callback(int x, int y)
 {
-	if (s_activePlayer == nullptr)
-	{
-		return;
-	}
-
 	// handle the mouse input
 	glm::vec2 newPos = glm::vec2(x, y);
 	glm::vec2 deltaPos = newPos - glm::vec2((glutGet(GLUT_WINDOW_WIDTH) / 2), glutGet(GLUT_WINDOW_HEIGHT) / 2);
 
 	// Yaw (Rotate about up direction)
 	glm::vec3 deltaRot = glm::vec3();
-	deltaRot += Time::GetDeltaTime() * deltaPos.x * PLAYER_SENSITIVITY * -1.f * s_activePlayer->GetTransform().GetUp();
+	deltaRot += Time::GetDeltaTime() * deltaPos.x * PLAYER_SENSITIVITY * -1.f * GetTransform().GetUp();
 	// Pitch (Rotate about right direction)
-	deltaRot += Time::GetDeltaTime() * deltaPos.y * PLAYER_SENSITIVITY * -1.f * s_activePlayer->GetTransform().GetRight();
+	deltaRot += Time::GetDeltaTime() * deltaPos.y * PLAYER_SENSITIVITY * -1.f * GetTransform().GetRight();
 
 	// Set the rotation of the player
-	s_activePlayer->GetTransform().Rotate(deltaRot);
+	GetTransform().Rotate(deltaRot);
 }
 
 void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 {
-	if (s_activePlayer == nullptr)
-	{
-		return;
-	}
-
 	// Control Translation
 	if (action == KEYBOARD_ACTION_PRESS || action == KEYBOARD_ACTION_DOWN)
 	{
 		switch (key)
 		{
 		case 'w':
-			s_activePlayer->m_translationState = PLAYER_STATE_FORWARD;
+			m_translationState = PLAYER_STATE_FORWARD;
 			break;
 
 		case 'a':
-			s_activePlayer->m_horizontalState = PLAYER_STATE_MOVELEFT;
+			m_horizontalState = PLAYER_STATE_MOVELEFT;
 			break;
 
 		case 's':
-			s_activePlayer->m_translationState = PLAYER_STATE_BACKWARD;
+			m_translationState = PLAYER_STATE_BACKWARD;
 			break;
 
 		case 'd':
-			s_activePlayer->m_horizontalState = PLAYER_STATE_MOVERIGHT;
+			m_horizontalState = PLAYER_STATE_MOVERIGHT;
 			break;
 
 		case 'q':
-			s_activePlayer->m_rollingState = PLAYER_STATE_ROLLLEFT;
+			m_rollingState = PLAYER_STATE_ROLLLEFT;
 			break;
 
 		case 'e':
-			s_activePlayer->m_rollingState = PLAYER_STATE_ROLLRIGHT;
+			m_rollingState = PLAYER_STATE_ROLLRIGHT;
 			break;
 		}
 	}
@@ -240,54 +230,48 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 		switch (key)
 		{
 		case 'w':
-			if (s_activePlayer->m_translationState == PLAYER_STATE_FORWARD)
+			if (m_translationState == PLAYER_STATE_FORWARD)
 			{
-				s_activePlayer->m_translationState = PLAYER_STATE_IDLE;
+				m_translationState = PLAYER_STATE_IDLE;
 			}
 			break;
 
 		case 'a':
-			if (s_activePlayer->m_horizontalState == PLAYER_STATE_MOVELEFT)
+			if (m_horizontalState == PLAYER_STATE_MOVELEFT)
 			{
-				s_activePlayer->m_horizontalState = PLAYER_STATE_IDLE;
+				m_horizontalState = PLAYER_STATE_IDLE;
 			}
 			break;
 
 		case 's':
-			if (s_activePlayer->m_translationState == PLAYER_STATE_BACKWARD)
+			if (m_translationState == PLAYER_STATE_BACKWARD)
 			{
-				s_activePlayer->m_translationState = PLAYER_STATE_IDLE;
+				m_translationState = PLAYER_STATE_IDLE;
 			}
 			break;
 
 		case 'd':
-			if (s_activePlayer->m_horizontalState == PLAYER_STATE_MOVERIGHT)
+			if (m_horizontalState == PLAYER_STATE_MOVERIGHT)
 			{
-				s_activePlayer->m_horizontalState = PLAYER_STATE_IDLE;
+				m_horizontalState = PLAYER_STATE_IDLE;
 			}
 			break;
 
 		case 'q':
-			if (s_activePlayer->m_rollingState == PLAYER_STATE_ROLLLEFT)
+			if (m_rollingState == PLAYER_STATE_ROLLLEFT)
 			{
-				s_activePlayer->m_rollingState = PLAYER_STATE_IDLE;
+				m_rollingState = PLAYER_STATE_IDLE;
 			}
 			break;
 
 		case 'e':
-			if (s_activePlayer->m_rollingState == PLAYER_STATE_ROLLRIGHT)
+			if (m_rollingState == PLAYER_STATE_ROLLRIGHT)
 			{
-				s_activePlayer->m_rollingState = PLAYER_STATE_IDLE;
+				m_rollingState = PLAYER_STATE_IDLE;
 			}
 		}
 	}
 }
-
-bool Player::IsActive() const
-{
-	return Player::s_activePlayer == this;
-}
-
 void Player::SetActive(bool active)
 {
 	Object::SetActive(active);
@@ -299,28 +283,16 @@ void Player::SetActive(bool active)
 
 	if (active)
 	{
-		Input::AddCursorPosCallback(cursor_position_callback);
-		Input::AddKeyCallback(key_callback);
-
-		if (s_activePlayer && s_activePlayer != this)
-		{
-			// Disable the current active player
-			s_activePlayer->SetActive(false);
-		}
+		Input::AddCursorPosCallback(this);
+		Input::AddKeyCallback(this);
 
 		// Activate this player
-		s_activePlayer = this;
 		Camera::SetMain(m_camera);
 	}
-	else if (s_activePlayer == this)
+	else
 	{
-		Input::RemoveCursorPosCallback(cursor_position_callback);
-		Input::RemoveKeyCallback(key_callback);
-
-		// Remove the current active player
-		s_activePlayer = nullptr;
+		Input::RemoveCursorPosCallback(this);
+		Input::RemoveKeyCallback(this);
 		Camera::SetMain(nullptr);
 	}
 }
-
-Player* Player::s_activePlayer = nullptr;
