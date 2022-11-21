@@ -189,7 +189,11 @@ void Transform::SetLocalScale(glm::vec3 value)
 
 glm::vec3 Transform::GetForward() const
 {
-	return -1.f * GetBackward();
+	return -glm::vec3(
+		glm::sin(glm::radians(GetRotation().y)) * glm::cos(glm::radians(GetRotation().z)),
+		glm::sin(glm::radians(GetRotation().y)) * glm::sin(glm::radians(GetRotation().z)),
+		glm::cos(glm::radians(GetRotation().y))
+	);
 }
 
 glm::vec3 Transform::GetBackward() const
