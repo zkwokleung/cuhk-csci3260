@@ -209,6 +209,7 @@
     <ClCompile Include="src\api\lightings\shadow.cpp" />
     <ClCompile Include="src\api\lightings\spotLight.cpp" />
     <ClCompile Include="src\api\objects\coloredVerticesObject.cpp" />
+    <ClCompile Include="src\api\objects\component.cpp" />
     <ClCompile Include="src\api\objects\indexedColoredVerticesObject.cpp" />
     <ClCompile Include="src\api\objects\modelObject.cpp" />
     <ClCompile Include="src\api\objects\models.cpp" />

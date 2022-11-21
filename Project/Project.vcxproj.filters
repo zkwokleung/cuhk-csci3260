@@ -370,5 +370,8 @@
     <ClCompile Include="src\api\physics\sphereCollider.cpp">
       <Filter>Source Files\api\physics</Filter>
     </ClCompile>
+    <ClCompile Include="src\api\objects\component.cpp">
+      <Filter>Source Files\api\objects</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
