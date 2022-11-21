@@ -48,11 +48,9 @@ void Player::cursor_position_callback(int x, int y)
 
 	// Yaw (Rotate about up direction)
 	glm::vec3 deltaRot = glm::vec3();
-	deltaRot += deltaPos.x * PLAYER_ROTATION_SPEED * -1.f * glm::vec3(0.f, 1.f, 0.f);
+	deltaRot += Time::GetDeltaTime() * deltaPos.x * PLAYER_SENSITIVITY * -1.f * s_activePlayer->GetTransform().GetUp();
 	// Pitch (Rotate about right direction)
-	deltaRot += deltaPos.y * PLAYER_ROTATION_SPEED * -1.f * glm::vec3(1.f, 0.f, 0.f);
-
-	deltaRot = s_activePlayer->GetTransform().GetTransformMat4() * glm::vec4(deltaRot, 1.f);
+	deltaRot += Time::GetDeltaTime() * deltaPos.y * PLAYER_SENSITIVITY * -1.f * s_activePlayer->GetTransform().GetRight();
 
 	// Set the rotation of the player
 	s_activePlayer->GetTransform().Rotate(deltaRot);
@@ -311,9 +309,9 @@ void Player::OnUpdate(void)
 	GetTransform().Rotate(rollingVel);
 
 	std::stringstream msg;
-	msg << "Up vector: " << s_activePlayer->m_model->GetTransform().GetForward().x << ", "
-		<< s_activePlayer->m_model->GetTransform().GetForward().y << ", "
-		<< s_activePlayer->m_model->GetTransform().GetForward().z;
+	msg << "Up vector: " << s_activePlayer->m_model->GetTransform().GetUp().x << ", "
+		<< s_activePlayer->m_model->GetTransform().GetUp().y << ", "
+		<< s_activePlayer->m_model->GetTransform().GetUp().z;
 	Debug::Log(msg.str());
 }
 
