@@ -31,6 +31,148 @@ Player::~Player()
 {
 }
 
+void Player::OnUpdate(void)
+{
+	static glm::vec3 zDir = glm::vec3();
+	static glm::vec3 xDir = glm::vec3();
+	static float tT = 0.f;
+	static float rT = 0.f;
+
+	// Handle the translation state
+	switch (m_translationState)
+	{
+	case PLAYER_STATE_IDLE:
+		// Decelerate the spacecraft if it is moving
+		if (m_travelSpeed >= PLAYER_TRANSLATION_DECELERATION)
+		{
+			m_travelSpeed -= PLAYER_TRANSLATION_DECELERATION;
+		}
+		else if (m_travelSpeed <= -PLAYER_TRANSLATION_DECELERATION)
+		{
+			m_travelSpeed += PLAYER_TRANSLATION_DECELERATION;
+		}
+		else
+		{
+			m_travelSpeed = 0;
+		}
+		break;
+
+	case PLAYER_STATE_FORWARD:
+		// Accelerate the space craft
+		if (m_travelSpeed < PLAYER_MAX_TRAVEL_SPEED)
+		{
+			m_travelSpeed += PLAYER_TRANSLATION_ACCELERATION;
+		}
+		zDir = GetTransform().GetForward();
+		break;
+
+	case PLAYER_STATE_BACKWARD:
+		if (m_travelSpeed > -PLAYER_MAX_TRAVEL_SPEED)
+		{
+			m_travelSpeed -= PLAYER_TRANSLATION_ACCELERATION;
+
+		}
+		zDir = GetTransform().GetForward();
+		break;
+	}
+
+	// Handle the horizontal state
+	switch (m_horizontalState)
+	{
+	case PLAYER_STATE_IDLE:
+		if (m_horizontalSpeed >= PLAYER_TRANSLATION_DECELERATION)
+		{
+			m_horizontalSpeed -= PLAYER_TRANSLATION_DECELERATION;
+		}
+		else if (m_horizontalSpeed <= -PLAYER_TRANSLATION_DECELERATION)
+		{
+			m_horizontalSpeed += PLAYER_TRANSLATION_DECELERATION;
+		}
+		else
+		{
+			m_horizontalSpeed = 0;
+		}
+		break;
+
+	case PLAYER_STATE_MOVELEFT:
+		// Accelerate the space craft
+		if (m_horizontalSpeed > -PLAYER_MAX_TRAVEL_SPEED)
+		{
+			m_horizontalSpeed -= PLAYER_TRANSLATION_ACCELERATION;
+		}
+		xDir = GetTransform().GetRight();
+		break;
+
+	case PLAYER_STATE_MOVERIGHT:
+		if (m_horizontalSpeed < PLAYER_MAX_TRAVEL_SPEED)
+		{
+			m_horizontalSpeed += PLAYER_TRANSLATION_ACCELERATION;
+		}
+		xDir = GetTransform().GetRight();
+		break;
+	}
+	m_velocity = (Time::GetDeltaTime() * m_travelSpeed * zDir) + (Time::GetDeltaTime() * m_horizontalSpeed * xDir);
+
+	// Move the spacecraft
+	GetTransform().Translate(m_velocity);
+
+	// Handle Rolling
+	static glm::vec3 tranDir = glm::vec3();
+	m_velocity = Time::GetDeltaTime() * m_travelSpeed * tranDir;
+
+	// Handle the rotation state
+	switch (m_rollingState)
+	{
+	case PLAYER_STATE_IDLE:
+		// Decelerate the spacecraft if it is rolling
+		if (m_rollingSpeed > 1)
+		{
+			m_rollingSpeed -= PLAYER_ROLLING_DECELERATION;
+		}
+		else if (m_rollingSpeed < -1)
+		{
+			m_rollingSpeed -= -PLAYER_ROLLING_DECELERATION;
+		}
+		else
+		{
+			m_rollingSpeed = 0;
+		}
+		break;
+
+	case PLAYER_STATE_ROLLLEFT:
+		if (m_rollingSpeed > -PLAYER_MAX_ROLLING_SPEED)
+		{
+			m_rollingSpeed += -PLAYER_ROLLING_ACCELERATION;
+		}
+		break;
+
+	case PLAYER_STATE_ROLLRIGHT:
+		if (m_rollingSpeed < PLAYER_MAX_ROLLING_SPEED)
+		{
+			m_rollingSpeed += PLAYER_ROLLING_ACCELERATION;
+		}
+		break;
+	}
+
+	// Roll the spacecraft
+	glm::vec3 rollingVel = m_rollingSpeed * Time::GetDeltaTime() * GetTransform().GetForward();
+	GetTransform().Rotate(rollingVel);
+
+	std::stringstream msg;
+	msg << "Forward vector: " << GetTransform().GetForward().x << ", "
+		<< GetTransform().GetForward().y << ", "
+		<< GetTransform().GetForward().z << std::endl;
+	Debug::Log(msg.str());
+	msg << "Up vector: " << GetTransform().GetUp().x << ", "
+		<< GetTransform().GetUp().y << ", "
+		<< GetTransform().GetUp().z << std::endl;
+	Debug::Log(msg.str());
+	msg << "Right vector: " << GetTransform().GetRight().x << ", "
+		<< GetTransform().GetRight().y << ", "
+		<< GetTransform().GetRight().z << std::endl;
+	Debug::Log(msg.str());
+}
+
 void Player::OnPaint(Shader* shader)
 {
 }
@@ -179,134 +321,6 @@ void Player::SetActive(bool active)
 		s_activePlayer = nullptr;
 		Camera::SetMain(nullptr);
 	}
-}
-
-void Player::OnUpdate(void)
-{
-	static glm::vec3 zDir = glm::vec3();
-	static glm::vec3 xDir = glm::vec3();
-	static float tT = 0.f;
-	static float rT = 0.f;
-
-	// Handle the translation state
-	switch (m_translationState)
-	{
-	case PLAYER_STATE_IDLE:
-		// Decelerate the spacecraft if it is moving
-		if (m_travelSpeed >= PLAYER_TRANSLATION_DECELERATION)
-		{
-			m_travelSpeed -= PLAYER_TRANSLATION_DECELERATION;
-		}
-		else if (m_travelSpeed <= -PLAYER_TRANSLATION_DECELERATION)
-		{
-			m_travelSpeed += PLAYER_TRANSLATION_DECELERATION;
-		}
-		else
-		{
-			m_travelSpeed = 0;
-		}
-		break;
-
-	case PLAYER_STATE_FORWARD:
-		// Accelerate the space craft
-		if (m_travelSpeed < PLAYER_MAX_TRAVEL_SPEED)
-		{
-			m_travelSpeed += PLAYER_TRANSLATION_ACCELERATION;
-		}
-		zDir = GetTransform().GetForward();
-		break;
-
-	case PLAYER_STATE_BACKWARD:
-		if (m_travelSpeed > -PLAYER_MAX_TRAVEL_SPEED)
-		{
-			m_travelSpeed -= PLAYER_TRANSLATION_ACCELERATION;
-
-		}
-		zDir = GetTransform().GetForward();
-		break;
-	}
-
-	// Handle the horizontal state
-	switch (m_horizontalState)
-	{
-	case PLAYER_STATE_IDLE:
-		if (m_horizontalSpeed >= PLAYER_TRANSLATION_DECELERATION)
-		{
-			m_horizontalSpeed -= PLAYER_TRANSLATION_DECELERATION;
-		}
-		else if (m_horizontalSpeed <= -PLAYER_TRANSLATION_DECELERATION)
-		{
-			m_horizontalSpeed += PLAYER_TRANSLATION_DECELERATION;
-		}
-		else
-		{
-			m_horizontalSpeed = 0;
-		}
-		break;
-
-	case PLAYER_STATE_MOVELEFT:
-		// Accelerate the space craft
-		if (m_horizontalSpeed > -PLAYER_MAX_TRAVEL_SPEED)
-		{
-			m_horizontalSpeed -= PLAYER_TRANSLATION_ACCELERATION;
-		}
-		xDir = GetTransform().GetRight();
-		break;
-
-	case PLAYER_STATE_MOVERIGHT:
-		if (m_horizontalSpeed < PLAYER_MAX_TRAVEL_SPEED)
-		{
-			m_horizontalSpeed += PLAYER_TRANSLATION_ACCELERATION;
-		}
-		xDir = GetTransform().GetRight();
-		break;
-	}
-	m_velocity = (Time::GetDeltaTime() * m_travelSpeed * zDir) + (Time::GetDeltaTime() * m_horizontalSpeed * xDir);
-
-	// Move the spacecraft
-	GetTransform().SetLocalPosition(GetTransform().GetLocalPosition() + m_velocity);
-
-	// Handle Rolling
-	static glm::vec3 tranDir = glm::vec3();
-	m_velocity = Time::GetDeltaTime() * m_travelSpeed * tranDir;
-
-	// Handle the rotation state
-	switch (m_rollingState)
-	{
-	case PLAYER_STATE_IDLE:
-		// Decelerate the spacecraft if it is rolling
-		if (m_rollingSpeed > 1)
-		{
-			m_rollingSpeed -= PLAYER_ROLLING_DECELERATION;
-		}
-		else if (m_rollingSpeed < -1)
-		{
-			m_rollingSpeed -= -PLAYER_ROLLING_DECELERATION;
-		}
-		else
-		{
-			m_rollingSpeed = 0;
-		}
-		break;
-
-	case PLAYER_STATE_ROLLLEFT:
-		if (m_rollingSpeed > -PLAYER_MAX_ROLLING_SPEED)
-		{
-			m_rollingSpeed += -PLAYER_ROLLING_ACCELERATION;
-		}
-		break;
-
-	case PLAYER_STATE_ROLLRIGHT:
-		if (m_rollingSpeed < PLAYER_MAX_ROLLING_SPEED)
-		{
-			m_rollingSpeed += PLAYER_ROLLING_ACCELERATION;
-		}
-		break;
-	}
-
-	// Roll the spacecraft
-	glm::vec3 rollingVel = m_rollingSpeed * Time::GetDeltaTime() * GetTransform().GetForward();
-	GetTransform().Rotate(rollingVel);
 }
 
 Player* Player::s_activePlayer = nullptr;
