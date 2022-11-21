@@ -161,6 +161,20 @@ glm::vec3 Transform::GetLocalRotation() const
 void Transform::SetLocalRotation(glm::vec3 value)
 {
 	m_localRotation = value;
+	if (m_localRotation.x <= -360.f)
+		m_localRotation.x += 360.f;
+	else if (m_localRotation.x > 360.f)
+		m_localRotation.x -= 360.f;
+
+	if (m_localRotation.y <= -360.f)
+		m_localRotation.y += 360.f;
+	else if (m_localRotation.y > 360.f)
+		m_localRotation.y -= 360.f;
+
+	if (m_localRotation.z <= -360.f)
+		m_localRotation.z += 360.f;
+	else if (m_localRotation.z > 360.f)
+		m_localRotation.z -= 360.f;
 }
 
 glm::vec3 Transform::GetLocalScale() const
