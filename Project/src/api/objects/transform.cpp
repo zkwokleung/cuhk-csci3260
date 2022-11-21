@@ -96,9 +96,9 @@ glm::mat4 Transform::GetTransformMat4() const
 	model = glm::translate(model, GetLocalPosition());
 
 	// Rotate
-	model = glm::rotate(model, glm::radians(GetLocalRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(GetLocalRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(GetLocalRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::rotate(model, glm::radians(GetLocalRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(GetLocalRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
 
 	// Scale
 	model = glm::scale(model, GetLocalScale());
@@ -114,9 +114,9 @@ glm::mat4 Transform::GetTransformMat4() const
 glm::mat4 Transform::GetRotationMat4() const
 {
 	glm::mat4 r = glm::mat4(1.0f);
-	r = glm::rotate(r, glm::radians(GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
-	r = glm::rotate(r, glm::radians(GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
 	r = glm::rotate(r, glm::radians(GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
+	r = glm::rotate(r, glm::radians(GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+	r = glm::rotate(r, glm::radians(GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
 
 	if (m_parent != nullptr)
 	{
