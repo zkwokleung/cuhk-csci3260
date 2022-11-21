@@ -307,12 +307,6 @@ void Player::OnUpdate(void)
 	// Roll the spacecraft
 	glm::vec3 rollingVel = m_rollingSpeed * Time::GetDeltaTime() * GetTransform().GetForward();
 	GetTransform().Rotate(rollingVel);
-
-	std::stringstream msg;
-	msg << "Up vector: " << s_activePlayer->m_model->GetTransform().GetUp().x << ", "
-		<< s_activePlayer->m_model->GetTransform().GetUp().y << ", "
-		<< s_activePlayer->m_model->GetTransform().GetUp().z;
-	Debug::Log(msg.str());
 }
 
 Player* Player::s_activePlayer = nullptr;
