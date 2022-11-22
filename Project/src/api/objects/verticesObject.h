@@ -1,6 +1,8 @@
 #pragma once
 #include "object.h"
 
+#define DEFAULT_VERTIX_COLOR 0.8f, 0.8f, 0.8f, 1.0f
+
 class VerticesObject : public Object
 {
 public:

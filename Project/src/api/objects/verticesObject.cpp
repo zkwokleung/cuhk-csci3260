@@ -30,7 +30,7 @@ void VerticesObject::SetVertices(const GLfloat vertices[], int elementCount)
 void VerticesObject::OnPaint(Shader* shader)
 {
 	Object::OnPaint(shader);
-	glm::vec4 c = glm::vec4(DEFAULT_OBJECT_COLOR_VALUE);
+	glm::vec4 c = glm::vec4(DEFAULT_VERTIX_COLOR);
 	shader->SetVec4("u_VertColor", c);
 	Renderer::Draw(*m_vao, GL_TRIANGLES, m_elementCount / 3);
 }

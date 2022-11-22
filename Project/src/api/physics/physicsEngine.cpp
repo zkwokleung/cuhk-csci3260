@@ -56,8 +56,6 @@ bool PhysicsEngine::IsColliding(BoxCollider* box, SphereCollider* sphere)
 
 void PhysicsEngine::CheckCollisions()
 {
-	InitCollisionMap();
-
 	// Check collision for all colliders
 	for (int i = 0; i < s_colliders.size(); i++)
 	{
