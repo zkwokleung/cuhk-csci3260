@@ -1,25 +1,31 @@
 #pragma once
-#include "../objects/object.h"
+#include "../objects/component.h"
+#include <list>
 
-class Collider;
+class ICollisionCallback
+{
+public:
+	virtual void OnCollision(Collider* self, Collider* other) = 0;
+private:
+	friend class Collider;
+};
 
-typedef void(*CollisionCallbackFunc)(Collider other);
-
-class Collider : public Object
+class Collider : public Component
 {
 public:
 	Collider();
 	~Collider();
 
 	virtual void OnPaint(Shader* shader);
+	virtual bool IsCollidingWith(Collider* other);
 
-	virtual bool IsCollidingWith(Collider other);
-	void SetCollisionCallback(CollisionCallbackFunc func);
+	void AddCollisionCallback(ICollisionCallback* callback);
+	void RemoveCollisionCallback(ICollisionCallback* callback);
 
 protected:
 	friend class PhysicsEngine;
 
 private:
-	void OnCollide(Collider other);
-	CollisionCallbackFunc m_callback;
+	void OnCollide(Collider* other);
+	std::list<ICollisionCallback*> m_callbacks;
 };
