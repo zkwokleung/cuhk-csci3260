@@ -25,28 +25,20 @@ SpaceScene::SpaceScene()
 	for (unsigned int i = 0; i < SPACE_ROCK_NUM; i++)
 	{
 		m_rocks[i] = new ModelObject(rockMesh);
+		AddObject(m_rocks[i]);
 	}
 
 	// Initialize crafts
-	Mesh* craftMesh = Resources::LoadObject("object/craft.obj");
-	craftMesh->SetTexture(new Texture(Resources::LoadImageData("texture/vehicleTexture.bmp")));
 	for (unsigned int i = 0; i < SPACE_CRAFT_NUM; i++)
 	{
-		m_spaceCrafts[i] = new ModelObject(craftMesh);
-
-		// Initialize Lights
-		m_craftLights[i] = new PointLight();
+		m_spaceCrafts[i] = new Craft();
+		AddObject(m_spaceCrafts[i]);
 	}
 
 	AddObject(m_player);
 	AddObject(m_planet);
 	for (unsigned int i = 0; i < SPACE_ROCK_NUM; i++)
 	{
-		AddObject(m_rocks[i]);
-	}
-	for (unsigned int i = 0; i < SPACE_CRAFT_NUM; i++)
-	{
-		AddObject(m_spaceCrafts[i]);
 	}
 	AddObject(m_planetLight);
 }
@@ -109,30 +101,7 @@ void SpaceScene::OnInitialize()
 	// Initialize space crafts
 	for (unsigned int i = 0; i < SPACE_CRAFT_NUM; i++)
 	{
-		// Random scale
-		glm::vec3 scl = glm::vec3(Random::Range(SPACE_CRAFT_MIN_SCALE, SPACE_CRAFT_MAX_SCALE));
-		m_spaceCrafts[i]->GetTransform().SetLocalScale(scl);
-
-		m_spaceCrafts[i]->GetTransform().SetLocalPosition(
-			glm::vec3(
-				Random::Range(SPACE_CRAFT_MIN_POSITION_X, SPACE_CRAFT_MAX_POSITION_X),
-				Random::Range(SPACE_CRAFT_MIN_POSITION_Y, SPACE_CRAFT_MAX_POSITION_Y),
-				Random::Range(SPACE_CRAFT_MIN_POSITION_Z, SPACE_CRAFT_MAX_POSITION_Z)
-			)
-		);
-
 		m_spaceCrafts[i]->SetActive(true);
-
-		// Initialize Point Light for each Crafts
-		m_craftLights[i]->GetTransform().SetParent(&m_spaceCrafts[i]->GetTransform());
-		m_craftLights[i]->GetTransform().SetLocalPosition(glm::vec3(.0f, 2.f, .0f));
-		m_craftLights[i]->SetAmbient(glm::vec3(
-			Random::Range(0.f, 1.f),
-			Random::Range(0.f, 1.f),
-			Random::Range(0.f, 1.f)
-		));
-		m_craftLights[i]->SetPointLightParams(1.f, 0.0045f, 0.0001f);;
-		m_craftLights[i]->SetActive(true);
 	}
 
 	// Initialize Light
@@ -147,35 +116,6 @@ void SpaceScene::OnUpdate(void)
 	// Planet self-rotate
 	m_planet->GetTransform().SetLocalRotation(m_planet->GetTransform().GetLocalRotation() +
 		glm::vec3(0.f, 0.f, 1.f) * Time::GetDeltaTime());
-
-	// crafts self-rotate
-	for (unsigned int i = 0; i < SPACE_CRAFT_NUM; i++)
-	{
-
-		static float countDown = 0;
-
-		// Teleport the craft if times up
-		if (countDown <= 0)
-		{
-			// Random location
-			glm::vec3 newPos = glm::vec3(
-				Random::Range(SPACE_CRAFT_MIN_POSITION_X, SPACE_CRAFT_MAX_POSITION_X),
-				Random::Range(SPACE_CRAFT_MIN_POSITION_Y, SPACE_CRAFT_MAX_POSITION_Y),
-				Random::Range(SPACE_CRAFT_MIN_POSITION_Z, SPACE_CRAFT_MAX_POSITION_Z)
-			);
-			m_spaceCrafts[i]->GetTransform().SetLocalPosition(newPos);
-
-			countDown = SPACE_CRAFT_TELEPORT_INTERVAL;
-		}
-		else
-		{
-			// keep on counting
-			countDown -= Time::GetDeltaTime();
-		}
-
-		// self-rotate
-		m_spaceCrafts[i]->GetTransform().SetLocalRotation(m_spaceCrafts[i]->GetTransform().GetRotation() + SPACE_CRAFT_SELF_ROTATE_SPEED * Time::GetDeltaTime() * glm::vec3(0.f, 1.f, 0.f));
-	}
 }
 
 void SpaceScene::OnPaint(Shader* shader)

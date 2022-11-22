@@ -40,6 +40,8 @@ public:
 	virtual void SetActive(bool active);
 	virtual bool IsActive() const;
 
+	virtual void OnEnable(void);
+	virtual void OnDisable(void);
 	virtual void OnUpdate(void);
 	virtual void OnPaint(Shader* shader);
 

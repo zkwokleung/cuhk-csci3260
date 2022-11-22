@@ -20,21 +20,30 @@ Transform& Object::GetTransform()
 
 void Object::SetActive(bool active)
 {
+	m_isActive = active;
 	if (active)
 	{
 		ObjectRenderPipeline::AddObject(this);
+		OnEnable();
 	}
 	else
 	{
 		ObjectRenderPipeline::RemoveObject(this);
+		OnDisable();
 	}
-
-	m_isActive = active;
 }
 
 bool Object::IsActive() const
 {
 	return m_isActive;
+}
+
+void Object::OnEnable(void)
+{
+}
+
+void Object::OnDisable(void)
+{
 }
 
 void Object::OnUpdate(void)
@@ -93,14 +102,14 @@ std::list<Object*> ObjectRenderPipeline::s_objects;
 
 void ObjectRenderPipeline::AddObject(Object* object)
 {
-	if (object->IsActive())
+	if (std::find(s_objects.begin(), s_objects.end(), object) != s_objects.end())
 		return;
 	s_objects.push_back(object);
 }
 
 void ObjectRenderPipeline::RemoveObject(Object* object)
 {
-	if (!object->IsActive())
+	if (std::find(s_objects.begin(), s_objects.end(), object) == s_objects.end())
 		return;
 	s_objects.remove(object);
 }

@@ -91,6 +91,12 @@
     <Filter Include="Header Files\userfiles\scenes">
       <UniqueIdentifier>{3562f7a2-da12-4a6d-b203-464ce04d155a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\userfiles\elements">
+      <UniqueIdentifier>{33ec92cb-953d-41d5-a28e-28d3975c13f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\userfiles\elements">
+      <UniqueIdentifier>{2d53b1bb-a3a7-4552-b630-609761e1c6c2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\FragmentShaderCode.glsl">
@@ -251,6 +257,9 @@
     <ClInclude Include="src\api\physics\sphereCollider.h">
       <Filter>Header Files\api\physics</Filter>
     </ClInclude>
+    <ClInclude Include="src\userfiles\craft.h">
+      <Filter>Header Files\userfiles\elements</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\api\cameras\camera.cpp">
@@ -369,6 +378,9 @@
     </ClCompile>
     <ClCompile Include="src\api\objects\component.cpp">
       <Filter>Source Files\api\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userfiles\craft.cpp">
+      <Filter>Source Files\userfiles\elements</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
