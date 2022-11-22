@@ -6,4 +6,3 @@
 #include "objects/coloredVerticesObject.h"
 #include "objects/indexedColoredVerticesObject.h"
 #include "objects/modelObject.h"
-#include "objects/component.h"

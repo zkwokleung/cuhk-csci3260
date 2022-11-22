@@ -1,6 +1,7 @@
 #pragma once
-#include "../objects/component.h"
+#include "../objects/object.h"
 #include <list>
+class Collider;
 
 class ICollisionCallback
 {
@@ -16,6 +17,9 @@ public:
 	Collider();
 	~Collider();
 
+	virtual void OnEnable();
+	virtual void OnDisable();
+	virtual void OnUpdate();
 	virtual void OnPaint(Shader* shader);
 	virtual bool IsCollidingWith(Collider* other);
 

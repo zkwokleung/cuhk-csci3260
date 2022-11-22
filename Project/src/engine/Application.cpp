@@ -45,6 +45,7 @@ void Application::Setup(void)
 	Random::Init();
 	Input::Init();
 	Skybox::Init();
+	PhysicsEngine::Init();
 	InstallShader();
 	Renderer::SetClearColor(glm::vec4(1.f));
 
@@ -59,13 +60,16 @@ void Application::MainLoop(void)
 	// Call sandbox's OnUpdate
 	s_activeSandbox->OnUpdate();
 
-	// Draw skybox
-	Skybox::Draw();
+	// Handle Physics
+	PhysicsEngine::OnUpdate();
 
 	// Update the game
 	SceneManager::OnUpdate();
 	Camera::Update();
 	ObjectRenderPipeline::OnUpdate();
+
+	// Draw skybox
+	Skybox::Draw();
 
 	// Draw objects
 	s_defaultShader->Use();

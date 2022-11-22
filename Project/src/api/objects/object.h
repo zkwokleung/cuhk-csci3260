@@ -1,9 +1,32 @@
 #pragma once
 #include "../renderModule.h"
 #include "transform.h"
-#include "component.h"
 
-#define DEFAULT_OBJECT_COLOR_VALUE 0.8f, 0.8f, 0.8f, 1.0f
+class Component;
+class Object;
+
+class Component
+{
+public:
+	Component();
+	~Component();
+
+	virtual void OnEnable();
+	virtual void OnDisable();
+	virtual void OnUpdate();
+	virtual void OnPaint(Shader* shader);
+
+	bool Enabled() const;
+	void SetEnabled(bool enabled);
+
+	Object* GetObject() const;
+
+private:
+	friend class Object;
+
+	Object* m_object;
+	bool m_enabled;
+};
 
 class Object
 {

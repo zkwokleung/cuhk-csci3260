@@ -8,6 +8,21 @@ Collider::~Collider()
 {
 }
 
+void Collider::OnEnable()
+{
+	// Add to physics engine's collider list
+	
+}
+
+void Collider::OnDisable()
+{
+	// Remove from physics engine's list
+}
+
+void Collider::OnUpdate()
+{
+}
+
 void Collider::OnPaint(Shader* shader)
 {
 }

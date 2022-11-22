@@ -212,9 +212,6 @@
     <ClInclude Include="src\myapi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\api\objects\component.h">
-      <Filter>Header Files\api\objects</Filter>
-    </ClInclude>
     <ClInclude Include="src\api\physics\collider.h">
       <Filter>Header Files\api\physics</Filter>
     </ClInclude>

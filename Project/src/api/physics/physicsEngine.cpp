@@ -2,8 +2,13 @@
 
 std::vector<Collider*> PhysicsEngine::s_colliders;
 
+void PhysicsEngine::Init(void)
+{
+}
+
 void PhysicsEngine::OnUpdate()
 {
+	CheckCollisions();
 }
 
 bool PhysicsEngine::IsColliding(BoxCollider* a, BoxCollider* b)
@@ -21,9 +26,9 @@ bool PhysicsEngine::IsColliding(BoxCollider* a, BoxCollider* b)
 bool PhysicsEngine::IsColliding(SphereCollider* sphere, SphereCollider* other)
 {
 	float distance = glm::sqrt(
-		(sphere->GetTransform().GetPosition().x - other->GetTransform().GetPosition().x) * (sphere->GetTransform().GetPosition().x - other->GetTransform().GetPosition().x) +
-		(sphere->GetTransform().GetPosition().y - other->GetTransform().GetPosition().y) * (sphere->GetTransform().GetPosition().y - other->GetTransform().GetPosition().y) +
-		(sphere->GetTransform().GetPosition().z - other->GetTransform().GetPosition().z) * (sphere->GetTransform().GetPosition().z - other->GetTransform().GetPosition().z)
+		(sphere->GetObject()->GetTransform().GetPosition().x - other->GetObject()->GetTransform().GetPosition().x) * (sphere->GetObject()->GetTransform().GetPosition().x - other->GetObject()->GetTransform().GetPosition().x) +
+		(sphere->GetObject()->GetTransform().GetPosition().y - other->GetObject()->GetTransform().GetPosition().y) * (sphere->GetObject()->GetTransform().GetPosition().y - other->GetObject()->GetTransform().GetPosition().y) +
+		(sphere->GetObject()->GetTransform().GetPosition().z - other->GetObject()->GetTransform().GetPosition().z) * (sphere->GetObject()->GetTransform().GetPosition().z - other->GetObject()->GetTransform().GetPosition().z)
 	);
 
 	return distance < (sphere->GetRadius() + other->GetRadius());
@@ -31,14 +36,14 @@ bool PhysicsEngine::IsColliding(SphereCollider* sphere, SphereCollider* other)
 
 bool PhysicsEngine::IsColliding(SphereCollider* sphere, BoxCollider* box)
 {
-	float x = glm::max(box->GetMinX(), glm::min(sphere->GetTransform().GetPosition().x, box->GetMaxX()));
-	float y = glm::max(box->GetMinY(), glm::min(sphere->GetTransform().GetPosition().y, box->GetMaxY()));
-	float z = glm::max(box->GetMinZ(), glm::min(sphere->GetTransform().GetPosition().z, box->GetMaxZ()));
+	float x = glm::max(box->GetMinX(), glm::min(sphere->GetObject()->GetTransform().GetPosition().x, box->GetMaxX()));
+	float y = glm::max(box->GetMinY(), glm::min(sphere->GetObject()->GetTransform().GetPosition().y, box->GetMaxY()));
+	float z = glm::max(box->GetMinZ(), glm::min(sphere->GetObject()->GetTransform().GetPosition().z, box->GetMaxZ()));
 
 	float distance = glm::sqrt(
-		(x - sphere->GetTransform().GetPosition().x) * (x - sphere->GetTransform().GetPosition().x) +
-		(y - sphere->GetTransform().GetPosition().y) * (y - sphere->GetTransform().GetPosition().y) +
-		(z - sphere->GetTransform().GetPosition().z) * (z - sphere->GetTransform().GetPosition().z)
+		(x - sphere->GetObject()->GetTransform().GetPosition().x) * (x - sphere->GetObject()->GetTransform().GetPosition().x) +
+		(y - sphere->GetObject()->GetTransform().GetPosition().y) * (y - sphere->GetObject()->GetTransform().GetPosition().y) +
+		(z - sphere->GetObject()->GetTransform().GetPosition().z) * (z - sphere->GetObject()->GetTransform().GetPosition().z)
 	);
 
 	return distance < sphere->GetRadius();
@@ -51,6 +56,21 @@ bool PhysicsEngine::IsColliding(BoxCollider* box, SphereCollider* sphere)
 
 void PhysicsEngine::CheckCollisions()
 {
+	InitCollisionMap();
+
+	// Check collision for all colliders
+	for (int i = 0; i < s_colliders.size(); i++)
+	{
+		for (int j = i + 1; j < s_colliders.size(); j++)
+		{
+			if (IsColliding(s_colliders[i], s_colliders[j]))
+			{
+				// Invoke the collision callback
+				s_colliders[i]->OnCollide(s_colliders[j]);
+				s_colliders[j]->OnCollide(s_colliders[i]);
+			}
+		}
+	}
 }
 
 bool PhysicsEngine::IsColliding(Collider* a, Collider* b)
@@ -86,4 +106,24 @@ bool PhysicsEngine::IsColliding(Collider* a, Collider* b)
 
 	// Collider type unknown
 	return false;
+}
+
+void PhysicsEngine::AddCollider(Collider* collider)
+{
+	if (std::find(s_colliders.begin(), s_colliders.end(), collider) != s_colliders.end())
+	{
+		return;
+	}
+
+	s_colliders.push_back(collider);
+}
+
+void PhysicsEngine::RemoveCollider(Collider* collider)
+{
+	if (std::find(s_colliders.begin(), s_colliders.end(), collider) == s_colliders.end())
+	{
+		return;
+	}
+
+	s_colliders.erase(std::remove(s_colliders.begin(), s_colliders.end(), collider), s_colliders.end());
 }
