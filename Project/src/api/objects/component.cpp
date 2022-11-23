@@ -1,6 +1,6 @@
 #include "object.h"
 
-Component::Component(): m_object(nullptr)
+Component::Component() : m_object(nullptr), m_enabled(false)
 {
 }
 

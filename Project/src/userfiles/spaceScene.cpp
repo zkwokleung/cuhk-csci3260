@@ -66,6 +66,10 @@ void SpaceScene::OnInitialize()
 	m_planet->GetTransform().SetLocalScale(glm::vec3(500.f));
 	m_planet->GetTransform().SetLocalRotation(glm::vec3(90.f, .0f, .0f));
 	m_planet->SetActive(true);
+	SphereCollider* planetCollider = new SphereCollider();
+	m_planet->AddComponent(planetCollider);
+	planetCollider->SetAutoSize(true);
+	planetCollider->SetEnabled(true);
 
 	// Initialize rocks
 	m_rocksContainer->GetTransform().SetParent(&m_planet->GetTransform());

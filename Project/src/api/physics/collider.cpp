@@ -1,6 +1,6 @@
-#include "collider.h"
+#include "physicsEngine.h"
 
-Collider::Collider() : Component(), m_callbacks()
+Collider::Collider() : Component(), m_callbacks(), m_autoSize(false)
 {
 }
 
@@ -21,12 +21,13 @@ bool Collider::IsAutoSize() const
 void Collider::OnEnable()
 {
 	// Add to physics engine's collider list
-
+	PhysicsEngine::AddCollider(this);
 }
 
 void Collider::OnDisable()
 {
 	// Remove from physics engine's list
+	PhysicsEngine::RemoveCollider(this);
 }
 
 void Collider::OnUpdate()

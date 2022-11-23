@@ -25,6 +25,13 @@ Player::Player(void)
 	m_model->GetTransform().SetLocalScale(glm::vec3(.01f));
 	m_model->GetTransform().SetLocalRotation(glm::vec3(.0f, 180.f, .0f));
 	m_model->GetTransform().SetParent(&GetTransform());
+
+	// Set Collider
+	BoxCollider* collider = new BoxCollider();
+	AddComponent(collider);
+	collider->AddCollisionCallback(this);
+	collider->SetAutoSize(true);
+	collider->SetEnabled(true);
 }
 
 Player::~Player()
@@ -175,6 +182,11 @@ void Player::OnUpdate(void)
 
 void Player::OnPaint(Shader* shader)
 {
+}
+
+void Player::OnCollision(Collider* self, Collider* other)
+{
+	Debug::Log("Fuck");
 }
 
 void Player::cursor_position_callback(int x, int y)

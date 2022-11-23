@@ -218,9 +218,6 @@
     <ClInclude Include="src\myapi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\api\physics\collider.h">
-      <Filter>Header Files\api\physics</Filter>
-    </ClInclude>
     <ClInclude Include="src\api\physicsModule.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
@@ -250,12 +247,6 @@
     </ClInclude>
     <ClInclude Include="src\engine\Random.h">
       <Filter>Header Files\engine</Filter>
-    </ClInclude>
-    <ClInclude Include="src\api\physics\boxCollider.h">
-      <Filter>Header Files\api\physics</Filter>
-    </ClInclude>
-    <ClInclude Include="src\api\physics\sphereCollider.h">
-      <Filter>Header Files\api\physics</Filter>
     </ClInclude>
     <ClInclude Include="src\userfiles\craft.h">
       <Filter>Header Files\userfiles\elements</Filter>

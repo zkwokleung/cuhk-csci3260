@@ -172,10 +172,7 @@
     <ClInclude Include="src\api\objects\transform.h" />
     <ClInclude Include="src\api\objects\verticesObject.h" />
     <ClInclude Include="src\api\physicsModule.h" />
-    <ClInclude Include="src\api\physics\boxCollider.h" />
-    <ClInclude Include="src\api\physics\collider.h" />
     <ClInclude Include="src\api\physics\physicsEngine.h" />
-    <ClInclude Include="src\api\physics\sphereCollider.h" />
     <ClInclude Include="src\api\renderModule.h" />
     <ClInclude Include="src\api\renders\ebo.h" />
     <ClInclude Include="src\api\renders\material.h" />

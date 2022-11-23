@@ -24,7 +24,7 @@
 #define PLAYER_STATE_ROLLLEFT 0x3
 #define PLAYER_STATE_ROLLRIGHT 0x4
 
-class Player : public Object, private IKeyCallback, private ICursorPosCallback
+class Player : public Object, private IKeyCallback, private ICursorPosCallback, private ICollisionCallback
 {
 public:
 	Player(void);
@@ -33,6 +33,7 @@ public:
 	virtual void SetActive(bool active);
 	virtual void OnUpdate(void);
 	virtual void OnPaint(Shader* shader);
+	virtual void OnCollision(Collider* self, Collider* other);
 
 private:
 	PerspectiveCamera* m_camera;

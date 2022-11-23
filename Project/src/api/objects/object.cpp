@@ -11,6 +11,12 @@ Object::Object(std::string name) : m_transform(), m_isActive(false), m_name(name
 
 Object::~Object()
 {
+	// Delete all components
+	for (unsigned int i = 0; i < m_components.size(); i++)
+	{
+		delete m_components.front();
+		m_components.pop_front();
+	}
 }
 
 Transform& Object::GetTransform()
