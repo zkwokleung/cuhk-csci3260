@@ -8,10 +8,20 @@ Collider::~Collider()
 {
 }
 
+void Collider::SetAutoSize(bool value)
+{
+	m_autoSize = value;
+}
+
+bool Collider::IsAutoSize() const
+{
+	return m_autoSize;
+}
+
 void Collider::OnEnable()
 {
 	// Add to physics engine's collider list
-	
+
 }
 
 void Collider::OnDisable()
@@ -56,7 +66,7 @@ void Collider::OnCollide(Collider* other)
 {
 	// Invoke all listener
 	std::list<ICollisionCallback*>::iterator it;
-	for(it = m_callbacks.begin(); it != m_callbacks.end(); it++)
+	for (it = m_callbacks.begin(); it != m_callbacks.end(); it++)
 	{
 		(*it)->OnCollision(this, other);
 	}
