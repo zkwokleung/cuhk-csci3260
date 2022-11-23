@@ -18,6 +18,7 @@ SpaceScene::SpaceScene()
 	planetMesh->SetTexture(new Texture(Resources::LoadImageData("texture/earthTexture.bmp")));
 	planetMesh->SetNormalMap(new Texture(Resources::LoadImageData("texture/earthNormal.bmp")));
 	m_planet = new ModelObject(planetMesh);
+	m_planet->SetName("planet");
 
 	// Initialize Rocks
 	Mesh* rockMesh = Resources::LoadObject("object/rock.obj");
@@ -66,9 +67,8 @@ void SpaceScene::OnInitialize()
 	m_planet->GetTransform().SetLocalScale(glm::vec3(500.f));
 	m_planet->GetTransform().SetLocalRotation(glm::vec3(90.f, .0f, .0f));
 	m_planet->SetActive(true);
-	SphereCollider* planetCollider = new SphereCollider();
+	SphereCollider* planetCollider = new SphereCollider(50000.f);
 	m_planet->AddComponent(planetCollider);
-	planetCollider->SetAutoSize(true);
 	planetCollider->SetEnabled(true);
 
 	// Initialize rocks
@@ -118,8 +118,7 @@ void SpaceScene::OnInitialize()
 void SpaceScene::OnUpdate(void)
 {
 	// Planet self-rotate
-	m_planet->GetTransform().SetLocalRotation(m_planet->GetTransform().GetLocalRotation() +
-		glm::vec3(0.f, 0.f, 1.f) * Time::GetDeltaTime());
+	m_planet->GetTransform().Rotate(glm::vec3(0.f, 10.f, .0f) * Time::GetDeltaTime());
 }
 
 void SpaceScene::OnPaint(Shader* shader)

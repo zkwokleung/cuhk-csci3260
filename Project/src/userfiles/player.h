@@ -4,7 +4,7 @@
 #include "../myapi.h"
 #include <glm/gtx/compatibility.hpp>
 
-#define PLAYER_MAX_TRAVEL_SPEED 1000.f
+#define PLAYER_MAX_TRAVEL_SPEED 5000.f
 #define PLAYER_TRANSLATION_ACCELERATION 100.f
 #define PLAYER_TRANSLATION_DECELERATION 50.f
 
