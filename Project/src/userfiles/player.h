@@ -30,7 +30,8 @@ public:
 	Player(void);
 	~Player();
 
-	virtual void SetActive(bool active);
+	virtual void OnEnable(void);
+	virtual void OnDisable(void);
 	virtual void OnUpdate(void);
 	virtual void OnPaint(Shader* shader);
 	virtual void OnCollision(Collider* self, Collider* other);

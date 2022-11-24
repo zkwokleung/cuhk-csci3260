@@ -32,7 +32,6 @@ void OceanScene::OnInitialize()
 	m_player->GetTransform().SetLocalPosition(glm::vec3());
 	m_player->GetTransform().SetLocalRotation(glm::vec3());
 	m_player->SetActive(true);
-
 }
 
 void OceanScene::OnUpdate(void)

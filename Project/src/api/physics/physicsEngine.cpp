@@ -1,6 +1,6 @@
 #include "physicsEngine.h"
 
-std::vector<Collider*> PhysicsEngine::s_colliders;
+std::list<Collider*> PhysicsEngine::s_colliders;
 
 void PhysicsEngine::Init(void)
 {
@@ -57,15 +57,15 @@ bool PhysicsEngine::IsColliding(BoxCollider* box, SphereCollider* sphere)
 void PhysicsEngine::CheckCollisions()
 {
 	// Check collision for all colliders
-	for (int i = 0; i < s_colliders.size(); i++)
+	for (auto it1 = s_colliders.begin(); it1 != s_colliders.end(); it1++)
 	{
-		for (int j = i + 1; j < s_colliders.size(); j++)
+		for (auto it2 = s_colliders.begin(); it2 != s_colliders.end(); it2++)
 		{
-			if (IsColliding(s_colliders[i], s_colliders[j]))
+			if (IsColliding((*it1), (*it2)))
 			{
 				// Invoke the collision callback
-				s_colliders[i]->OnCollide(s_colliders[j]);
-				s_colliders[j]->OnCollide(s_colliders[i]);
+				(*it1)->OnCollide((*it2));
+				(*it2)->OnCollide((*it1));
 			}
 		}
 	}
@@ -123,5 +123,5 @@ void PhysicsEngine::RemoveCollider(Collider* collider)
 		return;
 	}
 
-	s_colliders.erase(std::remove(s_colliders.begin(), s_colliders.end(), collider), s_colliders.end());
+	s_colliders.remove(collider);
 }

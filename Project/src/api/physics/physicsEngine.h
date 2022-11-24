@@ -1,6 +1,6 @@
 #pragma once
 #include "../objectModule.h"
-#include <vector>
+#include <list>
 
 class Collider;
 class BoxCollider;
@@ -91,5 +91,5 @@ public:
 private:
 	// Check the collisions for all active colliders
 	static void CheckCollisions();
-	static std::vector<Collider*> s_colliders;
+	static std::list<Collider*> s_colliders;
 };

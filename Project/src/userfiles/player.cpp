@@ -37,6 +37,38 @@ Player::~Player()
 {
 }
 
+void Player::OnEnable(void)
+{
+	Object::OnEnable();
+
+	m_light->SetActive(true);
+	m_model->SetActive(true);
+
+	Input::SetCursorLock(true);
+	Input::SetCursorDisplay(false);
+
+	Input::AddCursorPosCallback(this);
+	Input::AddKeyCallback(this);
+
+	// Activate this player
+	Camera::SetMain(m_camera);
+}
+
+void Player::OnDisable(void)
+{
+	Object::OnDisable();
+
+	m_light->SetActive(false);
+	m_model->SetActive(false);
+
+	Input::SetCursorLock(false);
+	Input::SetCursorDisplay(true);
+
+	Input::RemoveCursorPosCallback(this);
+	Input::RemoveKeyCallback(this);
+	Camera::SetMain(nullptr);
+}
+
 void Player::OnUpdate(void)
 {
 	static glm::vec3 zDir = glm::vec3();
@@ -285,29 +317,5 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 				m_rollingState = PLAYER_STATE_IDLE;
 			}
 		}
-	}
-}
-void Player::SetActive(bool active)
-{
-	Object::SetActive(active);
-	m_light->SetActive(active);
-	m_model->SetActive(active);
-
-	Input::SetCursorLock(active);
-	Input::SetCursorDisplay(!active);
-
-	if (active)
-	{
-		Input::AddCursorPosCallback(this);
-		Input::AddKeyCallback(this);
-
-		// Activate this player
-		Camera::SetMain(m_camera);
-	}
-	else
-	{
-		Input::RemoveCursorPosCallback(this);
-		Input::RemoveKeyCallback(this);
-		Camera::SetMain(nullptr);
 	}
 }
