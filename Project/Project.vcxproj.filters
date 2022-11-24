@@ -209,9 +209,6 @@
     <ClInclude Include="src\api\objects\modelObject.h">
       <Filter>Header Files\api\objects</Filter>
     </ClInclude>
-    <ClInclude Include="src\api\scenes\sceneManager.h">
-      <Filter>Header Files\api\scenes</Filter>
-    </ClInclude>
     <ClInclude Include="src\api\cameras\perspectiveCamera.h">
       <Filter>Header Files\api\cameras</Filter>
     </ClInclude>
@@ -250,6 +247,9 @@
     </ClInclude>
     <ClInclude Include="src\userfiles\craft.h">
       <Filter>Header Files\userfiles\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userfiles\oceanScene.h">
+      <Filter>Header Files\userfiles\scenes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -372,6 +372,9 @@
     </ClCompile>
     <ClCompile Include="src\userfiles\craft.cpp">
       <Filter>Source Files\userfiles\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userfiles\oceanScene.cpp">
+      <Filter>Source Files\userfiles\scenes</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

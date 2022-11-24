@@ -2,6 +2,7 @@
 
 Scene::Scene() : m_objects(), m_initialized(false)
 {
+	SceneManager::AddScene(this);
 }
 
 Scene::~Scene()

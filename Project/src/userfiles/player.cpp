@@ -185,7 +185,11 @@ void Player::OnPaint(Shader* shader)
 
 void Player::OnCollision(Collider* self, Collider* other)
 {
-	Debug::Log("FUCK");
+	if (other->GetObject()->GetName() == "planet")
+	{
+		// Switch to ocean scene
+		SceneManager::SetActiveScene(1);
+	}
 }
 
 void Player::cursor_position_callback(int x, int y)

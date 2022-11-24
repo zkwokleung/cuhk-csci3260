@@ -184,7 +184,6 @@
     <ClInclude Include="src\api\renders\vbo.h" />
     <ClInclude Include="src\api\sceneModule.h" />
     <ClInclude Include="src\api\scenes\scene.h" />
-    <ClInclude Include="src\api\scenes\sceneManager.h" />
     <ClInclude Include="src\engine\Application.h" />
     <ClInclude Include="src\engine\Random.h" />
     <ClInclude Include="src\engine\Resources.h" />
@@ -192,6 +191,7 @@
     <ClInclude Include="src\engine\Time.h" />
     <ClInclude Include="src\myapi.h" />
     <ClInclude Include="src\userfiles\craft.h" />
+    <ClInclude Include="src\userfiles\oceanScene.h" />
     <ClInclude Include="src\userfiles\player.h" />
     <ClInclude Include="src\userfiles\spaceScene.h" />
   </ItemGroup>
@@ -234,6 +234,7 @@
     <ClCompile Include="src\engine\Time.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\userfiles\craft.cpp" />
+    <ClCompile Include="src\userfiles\oceanScene.cpp" />
     <ClCompile Include="src\userfiles\player.cpp" />
     <ClCompile Include="src\userfiles\spaceScene.cpp" />
   </ItemGroup>

@@ -2,7 +2,7 @@
 
 // Design the game logic here, and the application will handle the rendering
 
-Sandbox::Sandbox() : m_scene(new SpaceScene())
+Sandbox::Sandbox() : m_space(new SpaceScene()), m_ocean(new OceanScene())
 {
 }
 
@@ -12,7 +12,10 @@ Sandbox::~Sandbox()
 
 void Sandbox::Initialize(void)
 {
-	SceneManager::SetActiveScene(m_scene);
+	SceneManager::AddScene(m_space);
+	SceneManager::AddScene(m_ocean);
+
+	SceneManager::SetActiveScene(m_space);
 }
 
 void Sandbox::OnUpdate(void)

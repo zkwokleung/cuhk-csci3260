@@ -1,13 +1,13 @@
 #include "spaceScene.h"
 
 SpaceScene::SpaceScene()
-	: m_player(new Player()),
+	: Scene(), m_player(new Player()),
 	m_planetLight(new PointLight(glm::vec3(1.f), glm::vec3(1.f), glm::vec3(1.f), 1, .007f, .008f)),
 	m_rocksContainer(new Object("rocks container"))
 {
 	// Initialize Skybox
-	std::vector<std::string> faces = { "skybox/right.bmp",  "skybox/left.bmp",  "skybox/top.bmp",
-									  "skybox/bottom.bmp", "skybox/front.bmp", "skybox/back.bmp" };
+	std::vector<std::string> faces = { "skybox/space/right.bmp",  "skybox/space/left.bmp",  "skybox/space/top.bmp",
+									  "skybox/space/bottom.bmp", "skybox/space/front.bmp", "skybox/space/back.bmp" };
 
 	GLuint cubemap = Resources::LoadCubemap(faces);
 	m_skybox = new Skybox(cubemap, new Shader(Resources::LoadTextFile("shaders/SkyboxVert.glsl"),

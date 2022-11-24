@@ -60,7 +60,7 @@ void Skybox::Draw()
 
 	// Render skybox
 	s_vao->Bind();
-	s_activeSkybox->m_shader->SetHandleui64ARB("cubemap", s_activeSkybox->m_cubemap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, s_activeSkybox->m_cubemap);
 	glDrawArrays(GL_TRIANGLES, 0, 48);
 
 	// Enable depth mask again

@@ -2,6 +2,7 @@
 #include "../myapi.h"
 #include "Resources.h"
 #include "../userfiles/spaceScene.h"
+#include "../userfiles/oceanScene.h"
 
 // Design the game logic here, and the application will handle the rendering
 class Sandbox
@@ -20,5 +21,6 @@ public:
 	void OnEnd(void);
 
 private:
-	Scene* m_scene;
+	SpaceScene* m_space;
+	OceanScene* m_ocean;
 };
