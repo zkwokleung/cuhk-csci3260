@@ -6,18 +6,18 @@ class ModelObject : public Object
 {
 public:
 	ModelObject();
-	ModelObject(Mesh* mesh);
-	ModelObject(Mesh* mesh, Material material);
+	ModelObject(Model* mesh);
+	ModelObject(Model* mesh, Material material);
 	~ModelObject();
 
-	Mesh* GetMesh();
-	void SetMesh(Mesh* model);
+	Model* GetMesh();
+	void SetMesh(Model* model);
 
 	Material& GetMaterial();
 
 	virtual void OnPaint(Shader* shader);
 
 private:
-	Mesh* m_mesh;
+	Model* m_mesh;
 	Material m_material;
 };

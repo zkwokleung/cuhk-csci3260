@@ -28,11 +28,6 @@ void Collider::OnPaint(Shader* shader)
 {
 }
 
-bool Collider::IsCollidingWith(Collider* other)
-{
-	return false;
-}
-
 void Collider::AddCollisionCallback(ICollisionCallback* callback)
 {
 	if ((std::find(m_callbacks.begin(), m_callbacks.end(), callback) != m_callbacks.end()))

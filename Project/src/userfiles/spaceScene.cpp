@@ -14,14 +14,14 @@ SpaceScene::SpaceScene()
 		Resources::LoadTextFile("shaders/SkyboxFrag.glsl")));
 
 	// Initialize Planet
-	Mesh* planetMesh = Resources::LoadObject("object/planet.obj");
+	Model* planetMesh = Resources::LoadObject("object/planet.obj");
 	planetMesh->SetTexture(new Texture(Resources::LoadImageData("texture/earthTexture.bmp")));
 	planetMesh->SetNormalMap(new Texture(Resources::LoadImageData("texture/earthNormal.bmp")));
 	m_planet = new ModelObject(planetMesh);
 	m_planet->SetName("planet");
 
 	// Initialize Rocks
-	Mesh* rockMesh = Resources::LoadObject("object/rock.obj");
+	Model* rockMesh = Resources::LoadObject("object/rock.obj");
 	rockMesh->SetTexture(new Texture(Resources::LoadImageData("texture/rockTexture.bmp")));
 	for (unsigned int i = 0; i < SPACE_ROCK_NUM; i++)
 	{

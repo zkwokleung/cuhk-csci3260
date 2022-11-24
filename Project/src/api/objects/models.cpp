@@ -1,10 +1,10 @@
 #include "models.h"
 
-Mesh::Mesh() : m_vertices(), m_indices(), m_texture(nullptr), m_vao(), m_vbo(), m_ebo()
+Model::Model() : m_vertices(), m_indices(), m_texture(nullptr), m_vao(), m_vbo(), m_ebo()
 {
 }
 
-Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, Texture* texture) :
+Model::Model(std::vector<Vertex> vertices, std::vector<unsigned int> indices, Texture* texture) :
 	m_vertices(vertices), m_indices(indices), m_texture(texture), m_vao(),
 	m_vbo(&m_vertices[0], vertices.size() * sizeof(Vertex)),
 	m_ebo(&m_indices[0], indices.size())
@@ -14,14 +14,14 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, Text
 	m_vao.LinkAttrib(m_vbo, 2, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, normal));
 }
 
-Mesh::~Mesh()
+Model::~Model()
 {
 	m_vao.Delete();
 	m_ebo.Delete();
 	m_vbo.Delete();
 }
 
-void Mesh::SetData(std::vector<Vertex> vertices, std::vector<unsigned int> indices)
+void Model::SetData(std::vector<Vertex> vertices, std::vector<unsigned int> indices)
 {
 	m_vertices = vertices;
 	m_indices = indices;
@@ -32,17 +32,17 @@ void Mesh::SetData(std::vector<Vertex> vertices, std::vector<unsigned int> indic
 	m_vao.LinkAttrib(m_vbo, 2, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, normal));
 }
 
-void Mesh::SetTexture(Texture* texture)
+void Model::SetTexture(Texture* texture)
 {
 	m_texture = texture;
 }
 
-void Mesh::SetNormalMap(Texture* texture)
+void Model::SetNormalMap(Texture* texture)
 {
 	m_normalMap = texture;
 }
 
-void Mesh::Draw(Shader* shader)
+void Model::Draw(Shader* shader)
 {
 	// Draw Texture
 	if (m_texture)

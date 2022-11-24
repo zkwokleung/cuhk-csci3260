@@ -18,7 +18,7 @@ Player::Player(void)
 	m_light->SetPointLightParams(1.f, 0.07f, 0.08f);
 
 	// Set model
-	Mesh* spaceCraft = Resources::LoadObject("object/spacecraft.obj");
+	Model* spaceCraft = Resources::LoadObject("object/spacecraft.obj");
 	spaceCraft->SetTexture(new Texture(Resources::LoadImageData("texture/spacecraftTexture.bmp")));
 	m_model = new ModelObject(spaceCraft);
 	m_model->GetTransform().SetLocalPosition(glm::vec3(.0f));
@@ -27,7 +27,7 @@ Player::Player(void)
 	m_model->GetTransform().SetParent(&GetTransform());
 
 	// Set Collider
-	BoxCollider* collider = new BoxCollider(glm::vec3(1.f));
+	SphereCollider* collider = new SphereCollider(1.f);
 	AddComponent(collider);
 	collider->AddCollisionCallback(this);
 	collider->SetEnabled(true);
@@ -185,7 +185,7 @@ void Player::OnPaint(Shader* shader)
 
 void Player::OnCollision(Collider* self, Collider* other)
 {
-
+	Debug::Log("FUCK");
 }
 
 void Player::cursor_position_callback(int x, int y)

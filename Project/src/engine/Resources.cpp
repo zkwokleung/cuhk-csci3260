@@ -15,7 +15,7 @@ std::string Resources::LoadTextFile(std::string path)
 
 }
 
-Mesh* Resources::LoadObject(std::string path)
+Model* Resources::LoadObject(std::string path)
 {
 	// Create an instance of the Importer class
 	Assimp::Importer importer;
@@ -79,7 +79,7 @@ Mesh* Resources::LoadObject(std::string path)
 		}
 	}
 
-	return new Mesh(vertices, indices, nullptr);
+	return new Model(vertices, indices, nullptr);
 }
 
 ImageData* Resources::LoadImageData(std::string path)

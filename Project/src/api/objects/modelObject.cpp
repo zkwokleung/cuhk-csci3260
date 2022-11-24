@@ -5,12 +5,12 @@ ModelObject::ModelObject() : Object(), m_mesh()
 
 }
 
-ModelObject::ModelObject(Mesh* model) : Object(),
+ModelObject::ModelObject(Model* model) : Object(),
 m_mesh(model), m_material()
 {
 }
 
-ModelObject::ModelObject(Mesh* mesh, Material material) : Object(),
+ModelObject::ModelObject(Model* mesh, Material material) : Object(),
 m_mesh(mesh), m_material(material)
 {
 }
@@ -20,12 +20,12 @@ ModelObject::~ModelObject()
 	delete m_mesh;
 }
 
-Mesh* ModelObject::GetMesh()
+Model* ModelObject::GetMesh()
 {
 	return m_mesh;
 }
 
-void ModelObject::SetMesh(Mesh* mesh)
+void ModelObject::SetMesh(Model* mesh)
 {
 	m_mesh = mesh;
 }

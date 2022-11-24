@@ -30,6 +30,6 @@ private:
 	ModelObject* m_model;
 	PointLight* m_light;
 
-	static Mesh* s_mesh;
+	static Model* s_mesh;
 	static Texture* s_texture;
 };

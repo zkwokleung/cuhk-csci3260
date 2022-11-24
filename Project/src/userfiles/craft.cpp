@@ -1,6 +1,6 @@
 #include "craft.h"
 
-Mesh* Craft::s_mesh = nullptr;
+Model* Craft::s_mesh = nullptr;
 Texture* Craft::s_texture = nullptr;
 
 Craft::Craft() : m_light(new PointLight())

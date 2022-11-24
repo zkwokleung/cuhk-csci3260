@@ -12,11 +12,11 @@ struct Vertex {
 	glm::vec3 normal;
 };
 
-class Mesh {
+class Model {
 public:
-	Mesh();
-	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, Texture* texture);
-	~Mesh();
+	Model();
+	Model(std::vector<Vertex> vertices, std::vector<unsigned int> indices, Texture* texture);
+	~Model();
 
 	void SetData(std::vector<Vertex> vertices, std::vector<unsigned int> indices);
 	void SetTexture(Texture* texture);

@@ -25,7 +25,6 @@ public:
 	virtual void OnDisable();
 	virtual void OnUpdate();
 	virtual void OnPaint(Shader* shader);
-	virtual bool IsCollidingWith(Collider* other);
 
 	void AddCollisionCallback(ICollisionCallback* callback);
 	void RemoveCollisionCallback(ICollisionCallback* callback);
