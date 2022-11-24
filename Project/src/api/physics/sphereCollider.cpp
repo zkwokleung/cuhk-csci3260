@@ -14,15 +14,5 @@ SphereCollider::~SphereCollider()
 
 float SphereCollider::GetRadius() const
 {
-	if (IsAutoSize());
-	{
-		return glm::max(
-			glm::max(
-				glm::abs(GetObject()->GetTransform().GetScale().x),
-				glm::abs(GetObject()->GetTransform().GetScale().y)
-			),
-			glm::abs(GetObject()->GetTransform().GetScale().z)
-		);
-	}
 	return m_radius;
 }

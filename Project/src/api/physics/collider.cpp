@@ -1,21 +1,11 @@
 #include "physicsEngine.h"
 
-Collider::Collider() : Component(), m_callbacks(), m_autoSize(false)
+Collider::Collider() : Component(), m_callbacks()
 {
 }
 
 Collider::~Collider()
 {
-}
-
-void Collider::SetAutoSize(bool value)
-{
-	m_autoSize = value;
-}
-
-bool Collider::IsAutoSize() const
-{
-	return m_autoSize;
 }
 
 void Collider::OnEnable()

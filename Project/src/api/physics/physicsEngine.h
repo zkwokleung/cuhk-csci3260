@@ -21,8 +21,6 @@ public:
 	Collider();
 	~Collider();
 
-	virtual void SetAutoSize(bool value);
-	virtual bool IsAutoSize() const;
 	virtual void OnEnable();
 	virtual void OnDisable();
 	virtual void OnUpdate();
@@ -36,7 +34,6 @@ protected:
 	friend class PhysicsEngine;
 
 private:
-	bool m_autoSize;
 	void OnCollide(Collider* other);
 	std::list<ICollisionCallback*> m_callbacks;
 };

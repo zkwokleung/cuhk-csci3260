@@ -27,7 +27,7 @@ Player::Player(void)
 	m_model->GetTransform().SetParent(&GetTransform());
 
 	// Set Collider
-	BoxCollider* collider = new BoxCollider(glm::vec3(10.f));
+	BoxCollider* collider = new BoxCollider(glm::vec3(1.f));
 	AddComponent(collider);
 	collider->AddCollisionCallback(this);
 	collider->SetEnabled(true);
@@ -185,6 +185,7 @@ void Player::OnPaint(Shader* shader)
 
 void Player::OnCollision(Collider* self, Collider* other)
 {
+
 }
 
 void Player::cursor_position_callback(int x, int y)

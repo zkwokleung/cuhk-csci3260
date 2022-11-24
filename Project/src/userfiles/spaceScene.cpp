@@ -52,6 +52,8 @@ SpaceScene::~SpaceScene()
 
 void SpaceScene::OnInitialize()
 {
+	Scene::OnInitialize();
+
 	Input::AddKeyCallback(this);
 
 	// Enable skybox
@@ -67,7 +69,7 @@ void SpaceScene::OnInitialize()
 	m_planet->GetTransform().SetLocalScale(glm::vec3(500.f));
 	m_planet->GetTransform().SetLocalRotation(glm::vec3(90.f, .0f, .0f));
 	m_planet->SetActive(true);
-	SphereCollider* planetCollider = new SphereCollider(50000.f);
+	SphereCollider* planetCollider = new SphereCollider(500.f);
 	m_planet->AddComponent(planetCollider);
 	planetCollider->SetEnabled(true);
 
@@ -117,6 +119,8 @@ void SpaceScene::OnInitialize()
 
 void SpaceScene::OnUpdate(void)
 {
+	Scene::OnUpdate();
+
 	// Planet self-rotate
 	m_planet->GetTransform().Rotate(glm::vec3(0.f, 10.f, .0f) * Time::GetDeltaTime());
 }
@@ -128,6 +132,8 @@ void SpaceScene::OnPaint(Shader* shader)
 void SpaceScene::OnEnd()
 {
 	Scene::OnEnd();
+
+	Input::RemoveKeyCallback(this);
 }
 
 void SpaceScene::key_callback(unsigned char key, unsigned int action, int x, int y)
