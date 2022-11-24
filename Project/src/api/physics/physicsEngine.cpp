@@ -59,8 +59,17 @@ void PhysicsEngine::CheckCollisions()
 	// Check collision for all colliders
 	for (auto it1 = s_colliders.begin(); it1 != s_colliders.end(); it1++)
 	{
+		if (!(*it1)->GetObject()->IsActive())
+		{
+			continue;
+		}
 		for (auto it2 = s_colliders.begin(); it2 != s_colliders.end(); it2++)
 		{
+			if (!(*it2)->GetObject()->IsActive())
+			{
+				continue;
+			}
+
 			if (IsColliding((*it1), (*it2)))
 			{
 				// Invoke the collision callback

@@ -46,10 +46,22 @@ bool Object::IsActive() const
 
 void Object::OnEnable(void)
 {
+	// Enable all components
+	//std::list<Component*>::iterator it;
+	//for (it = m_components.begin(); it != m_components.end(); it++)
+	//{
+	//	(*it)->SetEnabled(true);
+	//}
 }
 
 void Object::OnDisable(void)
 {
+	// Disable all components
+	//std::list<Component*>::iterator it;
+	//for (it = m_components.begin(); it != m_components.end(); it++)
+	//{
+	//	(*it)->SetEnabled(false);
+	//}
 }
 
 void Object::OnUpdate(void)
