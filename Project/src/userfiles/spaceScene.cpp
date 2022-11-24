@@ -69,7 +69,7 @@ void SpaceScene::OnInitialize()
 	m_planet->GetTransform().SetLocalScale(glm::vec3(500.f));
 	m_planet->GetTransform().SetLocalRotation(glm::vec3(90.f, .0f, .0f));
 	m_planet->SetActive(true);
-	SphereCollider* planetCollider = new SphereCollider(500.f);
+	SphereCollider* planetCollider = new SphereCollider(1500.f);
 	m_planet->AddComponent(planetCollider);
 	planetCollider->SetEnabled(true);
 
