@@ -16,6 +16,7 @@ public:
 private:
 	Skybox* m_skybox;
 	Player* m_player;
+	ModelObject* m_terrain;
 
 	void key_callback(unsigned char key, unsigned int action, int x, int y);
 };

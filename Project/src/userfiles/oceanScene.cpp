@@ -10,7 +10,13 @@ OceanScene::OceanScene() : Scene(), m_player(new Player())
 	m_skybox = new Skybox(cubemap, new Shader(Resources::LoadTextFile("shaders/SkyboxVert.glsl"),
 		Resources::LoadTextFile("shaders/SkyboxFrag.glsl")));
 
+	// Initialize terrain
+	Model* terrainModel = Resources::LoadObject("object/MountainTerrain.obj");
+	terrainModel->SetTexture(new Texture(Resources::LoadImageData("texture/soil.jpg")));
+	m_terrain = new ModelObject(terrainModel);
+
 	AddObject(m_player);
+	AddObject(m_terrain);
 }
 
 OceanScene::~OceanScene()
@@ -30,8 +36,13 @@ void OceanScene::OnInitialize()
 
 	// InitializePlayer
 	m_player->GetTransform().SetLocalPosition(glm::vec3());
-	m_player->GetTransform().SetLocalRotation(glm::vec3());
+	m_player->GetTransform().SetLocalRotation(glm::vec3(-90.0f, .0f, .0f));
 	m_player->SetActive(true);
+
+	// Initialize terrain
+	m_terrain->GetTransform().SetLocalPosition(glm::vec3(.0f, -10000.f, .0f));
+	m_terrain->GetTransform().SetLocalScale(glm::vec3(1000.f));
+	m_terrain->SetActive(true);
 }
 
 void OceanScene::OnUpdate(void)

@@ -25,7 +25,7 @@ Model* Resources::LoadObject(std::string path)
 
 	// If the import failed, report it
 	std::string errorString = importer.GetErrorString();
-	if (scene != nullptr && errorString != "") {
+	if (scene == nullptr && errorString != "") {
 		Debug::LogError(errorString);
 		return nullptr;
 	}

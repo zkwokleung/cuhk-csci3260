@@ -234,7 +234,7 @@ void Player::cursor_position_callback(int x, int y)
 	glm::vec3 deltaRot = glm::vec3();
 	deltaRot += Time::GetDeltaTime() * deltaPos.x * PLAYER_SENSITIVITY * -1.f * GetTransform().GetUp();
 	// Pitch (Rotate about right direction)
-	deltaRot += Time::GetDeltaTime() * deltaPos.y * PLAYER_SENSITIVITY * -1.f * GetTransform().GetRight();
+	//deltaRot += Time::GetDeltaTime() * deltaPos.y * PLAYER_SENSITIVITY * -1.f * GetTransform().GetRight();
 
 	// Set the rotation of the player
 	GetTransform().Rotate(deltaRot);
