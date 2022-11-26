@@ -3,7 +3,7 @@
 Model* Craft::s_mesh = nullptr;
 Texture* Craft::s_texture = nullptr;
 
-Craft::Craft() : m_light(new PointLight())
+Craft::Craft() : Object(), m_light(new PointLight())
 {
 	// Initialize the static model and texture if havent
 	if (s_texture == nullptr)

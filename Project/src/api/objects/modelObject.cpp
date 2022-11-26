@@ -17,7 +17,6 @@ m_mesh(mesh), m_material(material)
 
 ModelObject::~ModelObject()
 {
-	delete m_mesh;
 }
 
 Model* ModelObject::GetMesh()

@@ -49,6 +49,7 @@ void Player::OnEnable(void)
 
 	Input::AddCursorPosCallback(this);
 	Input::AddKeyCallback(this);
+	Input::AddMouseButtonCallback(this);
 
 	// Activate this player
 	Camera::SetMain(m_camera);
@@ -66,6 +67,8 @@ void Player::OnDisable(void)
 
 	Input::RemoveCursorPosCallback(this);
 	Input::RemoveKeyCallback(this);
+	Input::RemoveMouseButtonCallback(this);
+
 	Camera::SetMain(nullptr);
 }
 
@@ -317,5 +320,17 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 				m_rollingState = PLAYER_STATE_IDLE;
 			}
 		}
+	}
+}
+
+void Player::mouse_button_callbak(int button, int state, int x, int y)
+{
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+	{
+		// Shoot laser
+		Laser* l = new Laser();
+		l->GetTransform().SetLocalPosition(GetTransform().GetLocalPosition());
+		l->GetTransform().SetLocalRotation(GetTransform().GetLocalRotation());
+		l->SetActive(true);
 	}
 }

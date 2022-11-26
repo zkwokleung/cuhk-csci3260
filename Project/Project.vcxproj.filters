@@ -251,6 +251,9 @@
     <ClInclude Include="src\userfiles\oceanScene.h">
       <Filter>Header Files\userfiles\scenes</Filter>
     </ClInclude>
+    <ClInclude Include="src\userfiles\laser.h">
+      <Filter>Header Files\userfiles\players</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\api\cameras\camera.cpp">
@@ -375,6 +378,9 @@
     </ClCompile>
     <ClCompile Include="src\userfiles\oceanScene.cpp">
       <Filter>Source Files\userfiles\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userfiles\laser.cpp">
+      <Filter>Source Files\userfiles\players</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

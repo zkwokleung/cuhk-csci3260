@@ -191,6 +191,7 @@
     <ClInclude Include="src\engine\Time.h" />
     <ClInclude Include="src\myapi.h" />
     <ClInclude Include="src\userfiles\craft.h" />
+    <ClInclude Include="src\userfiles\laser.h" />
     <ClInclude Include="src\userfiles\oceanScene.h" />
     <ClInclude Include="src\userfiles\player.h" />
     <ClInclude Include="src\userfiles\spaceScene.h" />
@@ -234,6 +235,7 @@
     <ClCompile Include="src\engine\Time.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\userfiles\craft.cpp" />
+    <ClCompile Include="src\userfiles\laser.cpp" />
     <ClCompile Include="src\userfiles\oceanScene.cpp" />
     <ClCompile Include="src\userfiles\player.cpp" />
     <ClCompile Include="src\userfiles\spaceScene.cpp" />

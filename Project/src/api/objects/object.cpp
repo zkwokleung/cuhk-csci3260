@@ -3,10 +3,12 @@
 Object::Object() :
 	m_transform(), m_isActive(false), m_name(""), m_components()
 {
+	ObjectRenderPipeline::AddObject(this);
 }
 
 Object::Object(std::string name) : m_transform(), m_isActive(false), m_name(name), m_components()
 {
+	ObjectRenderPipeline::AddObject(this);
 }
 
 Object::~Object()
@@ -17,6 +19,7 @@ Object::~Object()
 		delete m_components.front();
 		m_components.pop_front();
 	}
+	ObjectRenderPipeline::RemoveObject(this);
 }
 
 Transform& Object::GetTransform()
@@ -69,7 +72,8 @@ void Object::OnUpdate(void)
 	std::list<Component*>::iterator it;
 	for (it = m_components.begin(); it != m_components.end(); it++)
 	{
-		(*it)->OnUpdate();
+		if (*it != nullptr && (*it)->Enabled())
+			(*it)->OnUpdate();
 	}
 }
 
@@ -117,6 +121,8 @@ void Object::RemoveComponent(Component* component)
 }
 
 std::list<Object*> ObjectRenderPipeline::s_objects;
+std::list<Object*> ObjectRenderPipeline::s_toBeRemoved;
+bool ObjectRenderPipeline::s_updating = false;
 
 void ObjectRenderPipeline::AddObject(Object* object)
 {
@@ -127,6 +133,13 @@ void ObjectRenderPipeline::AddObject(Object* object)
 
 void ObjectRenderPipeline::RemoveObject(Object* object)
 {
+	// If it is in the update loop, store the object first and remove it on the next loop
+	if (s_updating)
+	{
+		s_toBeRemoved.push_back(object);
+		return;
+	}
+
 	if (std::find(s_objects.begin(), s_objects.end(), object) == s_objects.end())
 		return;
 	s_objects.remove(object);
@@ -137,11 +150,26 @@ void ObjectRenderPipeline::OnUpdate(void)
 	if (s_objects.size() < 1)
 		return;
 
-	std::list<Object*>::iterator it;
-	for (it = s_objects.begin(); it != s_objects.end(); it++)
+	// Check if there are anything to remove
+	for (std::list<Object*>::iterator it = s_toBeRemoved.begin(); s_toBeRemoved.size() != 0; )
 	{
-		(*it)->OnUpdate();
+		if (*it != nullptr && (*it)->IsActive())
+		{
+			RemoveObject(*it);
+			s_toBeRemoved.remove(*it);
+		}
 	}
+
+	// Start the update loop
+	s_updating = true;
+	for (std::list<Object*>::iterator it = s_objects.begin(); it != s_objects.end(); it++)
+	{
+		if (*it != nullptr && (*it)->IsActive())
+		{
+			(*it)->OnUpdate();
+		}
+	}
+	s_updating = false;
 }
 
 void ObjectRenderPipeline::OnPaint(Shader* shader)
@@ -152,6 +180,9 @@ void ObjectRenderPipeline::OnPaint(Shader* shader)
 	std::list<Object*>::iterator it;
 	for (it = s_objects.begin(); it != s_objects.end(); it++)
 	{
-		(*it)->OnPaint(shader);
+		if (*it != nullptr && (*it)->IsActive())
+		{
+			(*it)->OnPaint(shader);
+		}
 	}
 }

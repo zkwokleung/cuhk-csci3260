@@ -3,8 +3,9 @@
 #include "../engine/Time.h"
 #include "../myapi.h"
 #include <glm/gtx/compatibility.hpp>
+#include "laser.h"
 
-#define PLAYER_MAX_TRAVEL_SPEED 5000.f
+#define PLAYER_MAX_TRAVEL_SPEED 1000.f
 #define PLAYER_TRANSLATION_ACCELERATION 100.f
 #define PLAYER_TRANSLATION_DECELERATION 50.f
 
@@ -24,7 +25,7 @@
 #define PLAYER_STATE_ROLLLEFT 0x3
 #define PLAYER_STATE_ROLLRIGHT 0x4
 
-class Player : public Object, private IKeyCallback, private ICursorPosCallback, private ICollisionCallback
+class Player : public Object, private IKeyCallback, private ICursorPosCallback, private ICollisionCallback, private IMouseButtonCallback
 {
 public:
 	Player(void);
@@ -43,6 +44,7 @@ private:
 
 	void cursor_position_callback(int x, int y);
 	void key_callback(unsigned char key, unsigned int action, int x, int y);
+	virtual void mouse_button_callbak(int button, int state, int x, int y);
 
 	float m_travelSpeed, m_horizontalSpeed, m_rollingSpeed;
 	glm::vec3 m_velocity;
