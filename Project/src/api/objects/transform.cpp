@@ -189,25 +189,17 @@ void Transform::SetLocalScale(glm::vec3 value)
 
 glm::vec3 Transform::GetForward() const
 {
-	return -glm::vec3(
-		glm::sin(glm::radians(GetRotation().y)) * glm::cos(glm::radians(GetRotation().z)),
-		glm::sin(glm::radians(GetRotation().y)) * glm::sin(glm::radians(GetRotation().z)),
-		glm::cos(glm::radians(GetRotation().y))
-	);
+	return -GetRotationMat4()[2];
 }
 
 glm::vec3 Transform::GetBackward() const
 {
-	return glm::vec3(glm::cos(glm::radians(GetRotation().x)) * glm::sin(glm::radians(GetRotation().y)),
-		-1.f * glm::sin(glm::radians(GetRotation().x)),
-		glm::cos(glm::radians(GetRotation().x)) * glm::cos(glm::radians(GetRotation().y)));
+	return -GetForward();
 }
 
 glm::vec3 Transform::GetRight() const
 {
-	return glm::vec3(glm::cos(glm::radians(GetRotation().y)),
-		0,
-		-1.f * glm::sin(glm::radians(GetRotation().y)));
+	return GetRotationMat4()[0];
 }
 
 glm::vec3 Transform::GetLeft() const
@@ -217,10 +209,7 @@ glm::vec3 Transform::GetLeft() const
 
 glm::vec3 Transform::GetUp() const
 {
-	return glm::vec3(glm::sin(glm::radians(GetRotation().x)) * glm::sin(glm::radians(GetRotation().y)),
-		glm::cos(glm::radians(GetRotation().x)),
-		glm::sin(glm::radians(GetRotation().x)) * glm::cos(glm::radians(GetRotation().y))
-	);
+	return GetRotationMat4()[1];
 }
 
 glm::vec3 Transform::GetDown() const

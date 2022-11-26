@@ -44,11 +44,9 @@ void Laser::OnEnable(void)
 	m_light->GetTransform().SetParent(&GetTransform());
 	m_light->GetTransform().SetLocalPosition(glm::vec3(.0f, 2.f, .0f));
 	m_light->SetAmbient(glm::vec3(
-		Random::Range(0.f, 1.f),
-		Random::Range(0.f, 1.f),
-		Random::Range(0.f, 1.f)
+		.0f, 1.f, .0f
 	));
-	m_light->SetPointLightParams(1.f, 0.000045f, 0.000001f);;
+	m_light->SetPointLightParams(.5f, 0.0045f, 0.0001f);;
 }
 
 void Laser::OnUpdate(void)
