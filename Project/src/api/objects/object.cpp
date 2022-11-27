@@ -121,6 +121,7 @@ void Object::RemoveComponent(Component* component)
 }
 
 std::list<Object*> ObjectRenderPipeline::s_objects;
+std::list<Object*> ObjectRenderPipeline::s_renderPipeline;
 std::list<Object*> ObjectRenderPipeline::s_toBeRemoved;
 bool ObjectRenderPipeline::s_updating = false;
 
@@ -150,6 +151,8 @@ void ObjectRenderPipeline::OnUpdate(void)
 	if (s_objects.size() < 1)
 		return;
 
+	s_renderPipeline = std::list<Object*>(s_objects);
+
 	// Check if there are anything to remove
 	for (std::list<Object*>::iterator it = s_toBeRemoved.begin(); s_toBeRemoved.size() != 0; )
 	{
@@ -162,7 +165,7 @@ void ObjectRenderPipeline::OnUpdate(void)
 
 	// Start the update loop
 	s_updating = true;
-	for (std::list<Object*>::iterator it = s_objects.begin(); it != s_objects.end(); it++)
+	for (std::list<Object*>::iterator it = s_renderPipeline.begin(); it != s_renderPipeline.end(); it++)
 	{
 		if (*it != nullptr && (*it)->IsActive())
 		{
@@ -178,7 +181,7 @@ void ObjectRenderPipeline::OnPaint(Shader* shader)
 		return;
 
 	std::list<Object*>::iterator it;
-	for (it = s_objects.begin(); it != s_objects.end(); it++)
+	for (it = s_renderPipeline.begin(); it != s_renderPipeline.end(); it++)
 	{
 		if (*it != nullptr && (*it)->IsActive())
 		{

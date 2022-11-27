@@ -3,6 +3,11 @@
 float Time::s_lastFrameTime = 0;
 float Time::s_deltaTime = 0;
 
+float Time::GetTime()
+{
+	return glutGet(GLUT_ELAPSED_TIME);
+}
+
 float Time::GetDeltaTime()
 {
 	return Time::s_deltaTime;
@@ -10,7 +15,7 @@ float Time::GetDeltaTime()
 
 void Time::OnFrameStart(void)
 {
-	float currentTime = glutGet(GLUT_ELAPSED_TIME) * 0.001;
+	float currentTime = GetTime() * 0.001;
 
 	s_deltaTime = currentTime - s_lastFrameTime;
 

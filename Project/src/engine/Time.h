@@ -6,6 +6,8 @@
 class Time
 {
 public:
+	// Get the time elasped since the game started
+	static float GetTime();
 	// The time elasped between the last frame and this frame
 	static float GetDeltaTime();
 

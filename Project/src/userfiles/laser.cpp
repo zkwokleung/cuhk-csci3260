@@ -66,8 +66,7 @@ void Laser::OnUpdate(void)
 	if (countDown <= 0)
 	{
 		// Destroy the bullet
-		//this->SetActive(false);
-		//delete this;
+		//GetComponent<SphereCollider>()->SetEnabled(false);
 	}
 	else
 	{

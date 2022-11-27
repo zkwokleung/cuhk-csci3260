@@ -87,6 +87,7 @@ public:
 	static void OnPaint(Shader* shader);
 private:
 	static std::list<Object*> s_objects;
+	static std::list<Object*> s_renderPipeline;
 	// Store the objects that are to be removed and perform the removal on the next update loop
 	static std::list<Object*> s_toBeRemoved;
 	static bool s_updating;

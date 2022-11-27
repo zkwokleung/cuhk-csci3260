@@ -55,7 +55,6 @@ void Application::Setup(void)
 void Application::MainLoop(void)
 {
 	Time::OnFrameStart();
-	Renderer::Clear();
 
 	// Call sandbox's OnUpdate
 	s_activeSandbox->OnUpdate();
@@ -68,17 +67,26 @@ void Application::MainLoop(void)
 	Camera::Update();
 	ObjectRenderPipeline::OnUpdate();
 
-	// Draw skybox
-	Skybox::Draw();
+	// Limit FPS
+	static double lastTime = 0.0;
+	static double time = Time::GetTime();
+	static double deltaTime = time - lastTime;
+	if (deltaTime >= MAX_PERIOD)
+	{
+		Renderer::Clear();
 
-	// Draw objects
-	s_defaultShader->Use();
-	SceneManager::OnPaint(s_defaultShader);
-	Camera::Paint(s_defaultShader);
-	ObjectRenderPipeline::OnPaint(s_defaultShader);
+		// Draw skybox
+		Skybox::Draw();
 
-	glFlush();
-	glutPostRedisplay();
+		// Draw objects
+		s_defaultShader->Use();
+		SceneManager::OnPaint(s_defaultShader);
+		Camera::Paint(s_defaultShader);
+		ObjectRenderPipeline::OnPaint(s_defaultShader);
+
+		glFlush();
+		glutPostRedisplay();
+	}
 }
 
 void Application::End(void)

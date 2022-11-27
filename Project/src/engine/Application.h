@@ -10,6 +10,9 @@
 #include "../myapi.h"
 #include "Sandbox.h"
 
+#define MAX_FPS 60.0
+#define MAX_PERIOD 1.0 / MAX_FPS
+
 class Application
 {
 public:
