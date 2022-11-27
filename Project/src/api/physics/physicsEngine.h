@@ -44,6 +44,7 @@ public:
 	SphereCollider(float radius);
 	~SphereCollider();
 
+	void SetRadius(float radius);
 	float GetRadius() const;
 
 private:

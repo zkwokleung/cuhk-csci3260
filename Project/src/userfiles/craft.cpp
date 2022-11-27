@@ -3,7 +3,7 @@
 Model* Craft::s_mesh = nullptr;
 Texture* Craft::s_texture = nullptr;
 
-Craft::Craft() : Object(), m_light(new PointLight())
+Craft::Craft() : Object("craft"), m_light(new PointLight()), m_move(true)
 {
 	// Initialize the static model and texture if havent
 	if (s_texture == nullptr)
@@ -19,6 +19,11 @@ Craft::Craft() : Object(), m_light(new PointLight())
 	m_model = new ModelObject(s_mesh);
 	m_model->GetTransform().SetParent(&GetTransform());
 	m_light->GetTransform().SetParent(&GetTransform());
+
+	SphereCollider* cld = new SphereCollider();
+	AddComponent(cld);
+	cld->AddCollisionCallback(this);
+	cld->SetEnabled(true);
 }
 
 Craft::~Craft()
@@ -39,7 +44,9 @@ void Craft::OnEnable(void)
 	// Random scale
 	glm::vec3 scl = glm::vec3(Random::Range(SPACE_CRAFT_MIN_SCALE, SPACE_CRAFT_MAX_SCALE));
 	GetTransform().SetLocalScale(scl);
+	GetComponent<SphereCollider>()->SetRadius(scl.x * 5.f);
 
+	// Random Starting Position
 	GetTransform().SetLocalPosition(
 		glm::vec3(
 			Random::Range(SPACE_CRAFT_MIN_POSITION_X, SPACE_CRAFT_MAX_POSITION_X),
@@ -62,6 +69,9 @@ void Craft::OnEnable(void)
 void Craft::OnUpdate(void)
 {
 	Object::OnUpdate();
+
+	if (!m_move)
+		return;
 
 	// Count down and teleport
 	static float countDown = 0;
@@ -87,4 +97,17 @@ void Craft::OnUpdate(void)
 	// self-rotate
 	GetTransform().Rotate(SPACE_CRAFT_SELF_ROTATE_SPEED * Time::GetDeltaTime() * glm::vec3(0.f, 1.f, 0.f));
 
+}
+
+void Craft::OnCollision(Collider* self, Collider* other)
+{
+	if (other->GetObject()->GetName() == "laser")
+	{
+		Debug::Log("Hit");
+		m_light->SetAmbient(glm::vec3(
+			1.f, .3f, .3f
+		));
+		m_light->SetPointLightParams(.5f, .000004f, .0000075f);
+		m_move = false;
+	}
 }

@@ -19,6 +19,10 @@ Laser::Laser() : Object("laser"), m_light(new PointLight())
 	m_model = new ModelObject(s_mesh);
 	m_model->GetTransform().SetParent(&GetTransform());
 	m_light->GetTransform().SetParent(&GetTransform());
+
+	SphereCollider* cld = new SphereCollider();
+	AddComponent(cld);
+	cld->SetEnabled(true);
 }
 
 Laser::~Laser()

@@ -12,6 +12,11 @@ SphereCollider::~SphereCollider()
 {
 }
 
+void SphereCollider::SetRadius(float radius)
+{
+	m_radius = radius;
+}
+
 float SphereCollider::GetRadius() const
 {
 	return m_radius;

@@ -51,12 +51,32 @@ public:
 	void AddComponent(Component* component);
 	void RemoveComponent(Component* component);
 
+	// Get the first component found of type T
+	template<class T>
+	T* GetComponent(void);
+
 protected:
 	std::string m_name;
 	Transform m_transform;
 	bool m_isActive;
 	std::list<Component*> m_components;
 };
+
+template<class T>
+inline T* Object::GetComponent(void)
+{
+	for (std::list<Component*>::iterator it = m_components.begin(); it != m_components.end(); it++)
+	{
+		if (dynamic_cast<T*>(*it) != nullptr)
+		{
+			return (T*)(*it);
+		}
+	}
+	std::stringstream msg;
+	msg << "No compoent of type \"" << typeid(T).name() << "\" found.";
+	Debug::LogWarning(msg.str());
+	return nullptr;
+}
 
 class ObjectRenderPipeline
 {
