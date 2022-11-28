@@ -26,6 +26,9 @@ Player::Player(void)
 	m_model->GetTransform().SetLocalRotation(glm::vec3(.0f, 180.f, .0f));
 	m_model->GetTransform().SetParent(&GetTransform());
 
+	
+
+
 	// Set Collider
 	SphereCollider* collider = new SphereCollider(1.f);
 	AddComponent(collider);

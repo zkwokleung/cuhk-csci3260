@@ -33,6 +33,7 @@ private:
 	ModelObject* m_planet, * m_rocks[SPACE_ROCK_NUM];
 	Craft* m_spaceCrafts[SPACE_CRAFT_NUM];
 	PointLight* m_planetLight;
+	Object* spacestation_model;
 
 	void key_callback(unsigned char key, unsigned int action, int x, int y);
 };

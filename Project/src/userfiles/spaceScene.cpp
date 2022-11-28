@@ -20,6 +20,11 @@ SpaceScene::SpaceScene()
 	m_planet = new ModelObject(planetMesh);
 	m_planet->SetName("planet");
 
+	Model* spaceStation = Resources::LoadObject("object/spacestation.obj");
+	spaceStation->SetTexture(new Texture(Resources::LoadImageData("texture/spacestationTexture.jpg")));
+	spacestation_model = new ModelObject(spaceStation);
+	
+
 	// Initialize Rocks
 	Model* rockMesh = Resources::LoadObject("object/rock.obj");
 	rockMesh->SetTexture(new Texture(Resources::LoadImageData("texture/rockTexture.bmp")));
@@ -72,6 +77,11 @@ void SpaceScene::OnInitialize()
 	SphereCollider* planetCollider = new SphereCollider(1500.f);
 	m_planet->AddComponent(planetCollider);
 	planetCollider->SetEnabled(true);
+
+	spacestation_model->GetTransform().SetLocalPosition(glm::vec3(1000.0f, .0f, 19000.f));
+	spacestation_model->GetTransform().SetLocalScale(glm::vec3(5.0f));
+	spacestation_model->GetTransform().SetLocalRotation(glm::vec3(.0f, .0f, .0f));
+	spacestation_model->SetActive(true);
 
 	// Initialize rocks
 	m_rocksContainer->GetTransform().SetParent(&m_planet->GetTransform());
