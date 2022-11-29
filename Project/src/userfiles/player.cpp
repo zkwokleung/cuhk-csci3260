@@ -269,13 +269,13 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 			m_horizontalState = PLAYER_STATE_MOVERIGHT;
 			break;
 
-		case 'q':
-			m_rollingState = PLAYER_STATE_ROLLLEFT;
-			break;
+		//case 'q':
+		//	m_rollingState = PLAYER_STATE_ROLLLEFT;
+		//	break;
 
-		case 'e':
-			m_rollingState = PLAYER_STATE_ROLLRIGHT;
-			break;
+		//case 'e':
+		//	m_rollingState = PLAYER_STATE_ROLLRIGHT;
+		//	break;
 		}
 	}
 	else if (action == KEYBOARD_ACTION_RELEASE)
@@ -310,18 +310,19 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 			}
 			break;
 
-		case 'q':
-			if (m_rollingState == PLAYER_STATE_ROLLLEFT)
-			{
-				m_rollingState = PLAYER_STATE_IDLE;
-			}
-			break;
+		//case 'q':
+		//	if (m_rollingState == PLAYER_STATE_ROLLLEFT)
+		//	{
+		//		m_rollingState = PLAYER_STATE_IDLE;
+		//	}
+		//	break;
 
-		case 'e':
-			if (m_rollingState == PLAYER_STATE_ROLLRIGHT)
-			{
-				m_rollingState = PLAYER_STATE_IDLE;
-			}
+		//case 'e':
+		//	if (m_rollingState == PLAYER_STATE_ROLLRIGHT)
+		//	{
+		//		m_rollingState = PLAYER_STATE_IDLE;
+		//	}
+		//	break;
 		}
 	}
 }
