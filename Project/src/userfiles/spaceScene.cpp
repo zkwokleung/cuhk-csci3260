@@ -47,6 +47,7 @@ SpaceScene::SpaceScene()
 	{
 	}
 	AddObject(m_planetLight);
+	AddObject(spacestation_model);
 }
 
 SpaceScene::~SpaceScene()

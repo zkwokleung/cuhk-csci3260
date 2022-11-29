@@ -36,7 +36,7 @@ void OceanScene::OnInitialize()
 
 	// InitializePlayer
 	m_player->GetTransform().SetLocalPosition(glm::vec3());
-	m_player->GetTransform().SetLocalRotation(glm::vec3(-90.0f, .0f, .0f));
+	m_player->GetTransform().SetLocalRotation(glm::vec3(0.0f, .0f, .0f));
 	m_player->SetActive(true);
 
 	// Initialize terrain
