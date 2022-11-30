@@ -254,6 +254,9 @@
     <ClInclude Include="src\userfiles\laser.h">
       <Filter>Header Files\userfiles\players</Filter>
     </ClInclude>
+    <ClInclude Include="src\userfiles\mountain.h">
+      <Filter>Header Files\userfiles\elements</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\api\cameras\camera.cpp">
@@ -381,6 +384,9 @@
     </ClCompile>
     <ClCompile Include="src\userfiles\laser.cpp">
       <Filter>Source Files\userfiles\players</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userfiles\mountain.cpp">
+      <Filter>Source Files\userfiles\elements</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

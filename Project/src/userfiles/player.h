@@ -5,7 +5,7 @@
 #include <glm/gtx/compatibility.hpp>
 #include "laser.h"
 
-#define PLAYER_MAX_TRAVEL_SPEED 1000.f
+#define PLAYER_MAX_TRAVEL_SPEED 5000.f
 #define PLAYER_TRANSLATION_ACCELERATION 100.f
 #define PLAYER_TRANSLATION_DECELERATION 50.f
 
