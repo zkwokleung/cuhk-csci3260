@@ -1,5 +1,7 @@
 #include "player.h"
 
+bool swapTexture = false;
+
 Player::Player(void)
 	: Object(),
 	m_camera(new PerspectiveCamera()),
@@ -25,8 +27,6 @@ Player::Player(void)
 	m_model->GetTransform().SetLocalScale(glm::vec3(.01f));
 	m_model->GetTransform().SetLocalRotation(glm::vec3(.0f, 180.f, .0f));
 	m_model->GetTransform().SetParent(&GetTransform());
-
-	
 
 
 	// Set Collider
@@ -75,6 +75,17 @@ void Player::OnDisable(void)
 	Camera::SetMain(nullptr);
 }
 
+void Player::OnSwapTexture(void)
+{
+	if (swapTexture == false)
+	{
+		m_model->GetMesh()->SetTexture(new Texture(Resources::LoadImageData("texture/spacecraftTexture.bmp")));
+	}
+	else
+	{
+		m_model->GetMesh()->SetTexture(new Texture(Resources::LoadImageData("texture/spacecraftTexture2.bmp")));
+	}
+}
 void Player::OnUpdate(void)
 {
 	static glm::vec3 xDir = glm::vec3();
@@ -83,7 +94,13 @@ void Player::OnUpdate(void)
 	static float tT = 0.f;
 	static float rT = 0.f;
 
-	// Handle the translation state
+	/*std::stringstream msg;
+	msg << "Forward vector: " << GetTransform().GetLocalPosition().x << ", "
+		<< GetTransform().GetLocalPosition().y << ", "
+		<< GetTransform().GetLocalPosition().z << std::endl;
+	Debug::Log(msg.str());*/
+
+
 	switch (m_translationState)
 	{
 	case PLAYER_STATE_IDLE:
@@ -292,18 +309,21 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 	{
 		switch (key)
 		{
+		case 'W':
 		case 'w':
 			m_translationState = PLAYER_STATE_FORWARD;
 			break;
 
+		case 'A':
 		case 'a':
 			m_horizontalState = PLAYER_STATE_MOVELEFT;
 			break;
-
+		case 'S':
 		case 's':
 			m_translationState = PLAYER_STATE_BACKWARD;
 			break;
-
+		
+		case 'D':
 		case 'd':
 			m_horizontalState = PLAYER_STATE_MOVERIGHT;
 			break;
@@ -316,19 +336,40 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 			//	m_rollingState = PLAYER_STATE_ROLLRIGHT;
 			//	break;
 
+		case 'Z':
 		case 'z':
 			m_verticalState = PLAYER_STATE_UPWARD;
 			break;
 
+		case 'X':
 		case 'x':
 			m_verticalState = PLAYER_STATE_DOWNWARD;
 			break;
+
+		case 'C':
+		case 'c':
+			if ((GetTransform().GetLocalPosition().x < 2644) && (GetTransform().GetLocalPosition().x > -3751) && (GetTransform().GetLocalPosition().y < -300) && (GetTransform().GetLocalPosition().y > -1000) && (GetTransform().GetLocalPosition().z > 13860) && (GetTransform().GetLocalPosition().z < 15968)) {
+				if (swapTexture == false)
+				{
+					swapTexture = true;
+					OnSwapTexture();
+				}
+				else
+				{
+					swapTexture = false;
+					OnSwapTexture();
+				}
+			}
+			break;
+			
 		}
+		
 	}
 	else if (action == KEYBOARD_ACTION_RELEASE)
 	{
 		switch (key)
 		{
+		case 'W':
 		case 'w':
 			if (m_translationState == PLAYER_STATE_FORWARD)
 			{
@@ -336,6 +377,7 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 			}
 			break;
 
+		case 'A':
 		case 'a':
 			if (m_horizontalState == PLAYER_STATE_MOVELEFT)
 			{
@@ -343,6 +385,7 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 			}
 			break;
 
+		case 'S':
 		case 's':
 			if (m_translationState == PLAYER_STATE_BACKWARD)
 			{
@@ -350,6 +393,7 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 			}
 			break;
 
+		case 'D':
 		case 'd':
 			if (m_horizontalState == PLAYER_STATE_MOVERIGHT)
 			{
@@ -371,6 +415,7 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 			//	}
 			//	break;
 
+		case 'Z':
 		case 'z':
 			if (m_verticalState == PLAYER_STATE_UPWARD)
 			{
@@ -378,6 +423,7 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 			}
 			break;
 
+		case 'X':
 		case 'x':
 			if (m_verticalState == PLAYER_STATE_DOWNWARD)
 			{

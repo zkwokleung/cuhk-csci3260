@@ -39,6 +39,7 @@ public:
 	virtual void OnUpdate(void);
 	virtual void OnPaint(Shader* shader);
 	virtual void OnCollision(Collider* self, Collider* other);
+	virtual void OnSwapTexture(void);
 
 private:
 	PerspectiveCamera* m_camera;
