@@ -5,7 +5,7 @@ Player::Player(void)
 	m_camera(new PerspectiveCamera()),
 	m_light(new PointLight(glm::vec3(1.f), glm::vec3(1.f), glm::vec3(1.f), 1, .007f, .008f)), m_travelSpeed(0.f),
 	m_velocity(glm::vec3(.0f)), m_translationState(PLAYER_STATE_IDLE), m_rollingSpeed(0.f), m_horizontalSpeed(0.f),
-	m_horizontalState(PLAYER_STATE_IDLE), m_rollingState(PLAYER_STATE_IDLE)
+	m_horizontalState(PLAYER_STATE_IDLE), m_rollingState(PLAYER_STATE_IDLE), m_verticalState(PLAYER_STATE_IDLE)
 {
 	// Set camera
 	m_camera->GetTransform().SetLocalPosition(glm::vec3(0.f, 5.0f, 20.f));
@@ -77,8 +77,9 @@ void Player::OnDisable(void)
 
 void Player::OnUpdate(void)
 {
-	static glm::vec3 zDir = glm::vec3();
 	static glm::vec3 xDir = glm::vec3();
+	static glm::vec3 zDir = glm::vec3();
+	static glm::vec3 yDir = glm::vec3();
 	static float tT = 0.f;
 	static float rT = 0.f;
 
@@ -155,7 +156,45 @@ void Player::OnUpdate(void)
 		xDir = GetTransform().GetRight();
 		break;
 	}
-	m_velocity = (Time::GetDeltaTime() * m_travelSpeed * zDir) + (Time::GetDeltaTime() * m_horizontalSpeed * xDir);
+
+	// Handle the vertical state
+	switch (m_verticalState)
+	{
+	case PLAYER_STATE_IDLE:
+		if (m_verticalSpeed >= PLAYER_TRANSLATION_DECELERATION)
+		{
+			m_verticalSpeed -= PLAYER_TRANSLATION_DECELERATION;
+		}
+		else if (m_verticalSpeed <= -PLAYER_TRANSLATION_DECELERATION)
+		{
+			m_verticalSpeed += PLAYER_TRANSLATION_DECELERATION;
+		}
+		else
+		{
+			m_verticalSpeed = 0;
+		}
+		break;
+
+	case PLAYER_STATE_UPWARD:
+		// Accelerate the space craft
+		if (m_verticalSpeed < PLAYER_MAX_TRAVEL_SPEED)
+		{
+			m_verticalSpeed += PLAYER_TRANSLATION_ACCELERATION;
+		}
+		yDir = GetTransform().GetUp();
+		break;
+
+	case PLAYER_STATE_DOWNWARD:
+		if (m_verticalSpeed > -PLAYER_MAX_TRAVEL_SPEED)
+		{
+			m_verticalSpeed -= PLAYER_TRANSLATION_ACCELERATION;
+		}
+		yDir = GetTransform().GetUp();
+		break;
+	}
+	m_velocity = (Time::GetDeltaTime() * m_travelSpeed * zDir) +
+		(Time::GetDeltaTime() * m_horizontalSpeed * xDir) +
+		(Time::GetDeltaTime() * m_verticalSpeed * yDir);
 
 	// Move the spacecraft
 	GetTransform().Translate(m_velocity);
@@ -269,13 +308,21 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 			m_horizontalState = PLAYER_STATE_MOVERIGHT;
 			break;
 
-		//case 'q':
-		//	m_rollingState = PLAYER_STATE_ROLLLEFT;
-		//	break;
+			//case 'q':
+			//	m_rollingState = PLAYER_STATE_ROLLLEFT;
+			//	break;
 
-		//case 'e':
-		//	m_rollingState = PLAYER_STATE_ROLLRIGHT;
-		//	break;
+			//case 'e':
+			//	m_rollingState = PLAYER_STATE_ROLLRIGHT;
+			//	break;
+
+		case 'z':
+			m_verticalState = PLAYER_STATE_UPWARD;
+			break;
+
+		case 'x':
+			m_verticalState = PLAYER_STATE_DOWNWARD;
+			break;
 		}
 	}
 	else if (action == KEYBOARD_ACTION_RELEASE)
@@ -310,19 +357,33 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 			}
 			break;
 
-		//case 'q':
-		//	if (m_rollingState == PLAYER_STATE_ROLLLEFT)
-		//	{
-		//		m_rollingState = PLAYER_STATE_IDLE;
-		//	}
-		//	break;
+			//case 'q':
+			//	if (m_rollingState == PLAYER_STATE_ROLLLEFT)
+			//	{
+			//		m_rollingState = PLAYER_STATE_IDLE;
+			//	}
+			//	break;
 
-		//case 'e':
-		//	if (m_rollingState == PLAYER_STATE_ROLLRIGHT)
-		//	{
-		//		m_rollingState = PLAYER_STATE_IDLE;
-		//	}
-		//	break;
+			//case 'e':
+			//	if (m_rollingState == PLAYER_STATE_ROLLRIGHT)
+			//	{
+			//		m_rollingState = PLAYER_STATE_IDLE;
+			//	}
+			//	break;
+
+		case 'z':
+			if (m_verticalState == PLAYER_STATE_UPWARD)
+			{
+				m_verticalState = PLAYER_STATE_IDLE;
+			}
+			break;
+
+		case 'x':
+			if (m_verticalState == PLAYER_STATE_DOWNWARD)
+			{
+				m_verticalState = PLAYER_STATE_IDLE;
+			}
+			break;
 		}
 	}
 }
