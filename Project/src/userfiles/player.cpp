@@ -1,7 +1,8 @@
 #include "player.h"
 
-bool swapTexture = false;
 
+bool swapTexture = false;
+bool closeAirCraftLight = false;
 Player::Player(void)
 	: Object(),
 	m_camera(new PerspectiveCamera()),
@@ -86,6 +87,7 @@ void Player::OnSwapTexture(void)
 		m_model->GetMesh()->SetTexture(new Texture(Resources::LoadImageData("texture/spacecraftTexture2.bmp")));
 	}
 }
+
 void Player::OnUpdate(void)
 {
 	static glm::vec3 xDir = glm::vec3();
@@ -322,7 +324,7 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 		case 's':
 			m_translationState = PLAYER_STATE_BACKWARD;
 			break;
-		
+
 		case 'D':
 		case 'd':
 			m_horizontalState = PLAYER_STATE_MOVERIGHT;
@@ -341,10 +343,7 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 			m_verticalState = PLAYER_STATE_UPWARD;
 			break;
 
-		case 'X':
-		case 'x':
-			m_verticalState = PLAYER_STATE_DOWNWARD;
-			break;
+
 
 		case 'C':
 		case 'c':
@@ -361,9 +360,22 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 				}
 			}
 			break;
-			
+		case 'B':
+		case 'b':
+		if (closeAirCraftLight == false)
+		{
+			closeAirCraftLight = true;
+			m_light->SetAmbient(glm::vec3(0.0f, 0.0f, 0.0f));
 		}
-		
+		else
+		{
+			closeAirCraftLight = false;
+			m_light->SetAmbient(glm::vec3(1.0f, 1.0f, 0.0f));
+		}
+	
+			break;
+
+		}
 	}
 	else if (action == KEYBOARD_ACTION_RELEASE)
 	{
@@ -430,6 +442,7 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 				m_verticalState = PLAYER_STATE_IDLE;
 			}
 			break;
+
 		}
 	}
 }
