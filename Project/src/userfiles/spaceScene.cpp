@@ -122,7 +122,7 @@ void SpaceScene::OnInitialize()
 	}
 
 	// Initialize Light
-	m_planetLight->GetTransform().SetLocalPosition(PLANET_INITIAL_POSITION + glm::vec3(1000.0f, 1000.f, 1000.f));
+	m_planetLight->GetTransform().SetLocalPosition(PLANET_INITIAL_POSITION);// +glm::vec3(1000.0f, 1000.f, 1000.f));
 	m_planetLight->SetAmbient(glm::vec3(1.f, 1.f, .5f));
 	m_planetLight->SetPointLightParams(1.f, 0.0000045f, 0.00000025f);
 	m_planetLight->SetActive(true);

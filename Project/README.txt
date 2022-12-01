@@ -1,7 +1,7 @@
-CSCI3260 Assignment 2 Texture Mapping/ Lighting Control  
+CSCI3260 Project 
 
-Name: SZE-TO Kwok Leung
-Student ID: 1155149068
+Name: SZE-TO Kwok Leung, Wong Lap Yin
+Student ID: 1155149068, 1155147798
 
 Manipulation:
 	Key "Esc": exit;
