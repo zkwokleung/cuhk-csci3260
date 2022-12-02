@@ -8,30 +8,23 @@ Manipulation:
 
 	Mouse Left Click + Move the Mouse: Look around
 
-	Key "W": increase brightness of directional light
+	Key "W": Move the craft forward
 
-	Key "S": decrease brightness of directional light
+	Key "S": Move the craft backward
 
-	Key "1", "2": switch between textures of the tiger
+	Key "A": Move the craft to the left
 
-	Key "3", "4": switch between textures of the ground
+	Key "D": Move the craft to the right
 
-	Key "Up": move up the tiger
+	Key "Z": Move the craft upward
 
-	Key "Down": move down the tiger
+	Key "X": Move the craft downward
 
-	Key "Left": rotate the tiger left
+	Key "R": Reset the scene
 
-	Key "Right": rotate the tiger right
+	Mouse Left click: Shoot lasers
 
-	Key "L": randomly move around the tiger
+Features:
+	- Entering the planet will enter the ocean scene
 
-	Key "I": Increase the intensity of the green point light on the tower
-
-	Key "J": Decrease the intensity of the green point light on the tower
-
-	Key "M": Increase the drifting speed of the car
-
-	Key "N": Decrease the drifting speed of the car
-
-	Key "Space": Toggle the disco mode of the house in the back
+	- Shooting the other crafts will cause them to stop moving and turn red
