@@ -343,7 +343,10 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 			m_verticalState = PLAYER_STATE_UPWARD;
 			break;
 
-
+		case 'X':
+		case 'x':
+			m_verticalState = PLAYER_STATE_DOWNWARD;
+			break;
 
 		case 'C':
 		case 'c':
@@ -362,17 +365,17 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 			break;
 		case 'B':
 		case 'b':
-		if (closeAirCraftLight == false)
-		{
-			closeAirCraftLight = true;
-			m_light->SetAmbient(glm::vec3(0.0f, 0.0f, 0.0f));
-		}
-		else
-		{
-			closeAirCraftLight = false;
-			m_light->SetAmbient(glm::vec3(1.0f, 1.0f, 0.0f));
-		}
-	
+			if (closeAirCraftLight == false)
+			{
+				closeAirCraftLight = true;
+				m_light->SetAmbient(glm::vec3(0.0f, 0.0f, 0.0f));
+			}
+			else
+			{
+				closeAirCraftLight = false;
+				m_light->SetAmbient(glm::vec3(1.0f, 1.0f, 0.0f));
+			}
+
 			break;
 
 		}
