@@ -3,6 +3,7 @@
 std::list<Scene*> SceneManager::s_scenes;
 Scene* SceneManager::s_activeScene = nullptr;
 bool SceneManager::s_busying = false;
+Scene* SceneManager::s_nextScene = nullptr;
 
 void SceneManager::OnInitialize()
 {
@@ -17,6 +18,27 @@ void SceneManager::OnUpdate(void)
 	if (s_busying)
 	{
 		return;
+	}
+
+	// If there is a pending scene change action, change the scene before updating the scene
+	if (s_nextScene != nullptr)
+	{
+		// End the current scene
+		if (s_activeScene != nullptr)
+		{
+			s_activeScene->OnEnd();
+		}
+
+		// Set the current scene
+		s_activeScene = s_nextScene;
+
+		// Initialize the current scene
+		if (s_activeScene != nullptr)
+		{
+			s_activeScene->OnInitialize();
+		}
+
+		s_nextScene = nullptr;
 	}
 
 	if (s_activeScene != nullptr)
@@ -49,24 +71,7 @@ void SceneManager::OnEnd()
 
 void SceneManager::SetActiveScene(Scene* scene)
 {
-	s_busying = true;
-
-	// End the current scene
-	if (s_activeScene != nullptr)
-	{
-		s_activeScene->OnEnd();
-	}
-
-	// Set the current scene
-	s_activeScene = scene;
-
-	// Initialize the current scene
-	if (s_activeScene != nullptr)
-	{
-		s_activeScene->OnInitialize();
-	}
-
-	s_busying = false;
+	s_nextScene = scene;
 }
 
 void SceneManager::SetActiveScene(int index)
@@ -78,9 +83,11 @@ void SceneManager::SetActiveScene(int index)
 		Debug::LogWarning(msg.str());
 		return;
 	}
+
+
 	std::list<Scene*>::iterator it = s_scenes.begin();
 	std::advance(it, index);
-	SetActiveScene(*it);
+	s_nextScene = *it;
 }
 
 Scene* SceneManager::GetActiveScene()

@@ -51,4 +51,5 @@ private:
 	static std::list<Scene*> s_scenes;
 	static Scene* s_activeScene;
 	static bool s_busying;
+	static Scene* s_nextScene;
 };
