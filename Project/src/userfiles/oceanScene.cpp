@@ -100,8 +100,20 @@ void OceanScene::OnEnd()
 
 void OceanScene::key_callback(unsigned char key, unsigned int action, int x, int y)
 {
-	if (key == 'r' && action == KEYBOARD_ACTION_PRESS)
+	if (action == KEYBOARD_ACTION_PRESS)
 	{
-		SceneManager::SetActiveScene(0);
+		switch (key)
+		{
+		case 27: // Esc
+			// Stop the game
+			glutLeaveMainLoop();
+			break;
+
+		case 'R':
+		case 'r':
+			// Go back to space
+			SceneManager::SetActiveScene(0);
+			break;
+		}
 	}
 }

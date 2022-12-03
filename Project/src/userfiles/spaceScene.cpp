@@ -25,7 +25,7 @@ SpaceScene::SpaceScene()
 	Model* spaceStation = Resources::LoadObject("object/spacestation.obj");
 	spaceStation->SetTexture(new Texture(Resources::LoadImageData("texture/spacestationTexture.jpg")));
 	spacestation_model = new ModelObject(spaceStation);
-	
+
 
 	// Initialize Rocks
 	Model* rockMesh = Resources::LoadObject("object/rock.obj");
@@ -155,21 +155,33 @@ void SpaceScene::OnEnd()
 
 void SpaceScene::key_callback(unsigned char key, unsigned int action, int x, int y)
 {
-	if (key == 'r' && action == KEYBOARD_ACTION_PRESS)
+	if (action == KEYBOARD_ACTION_PRESS)
 	{
-		// Reset the scene
-		OnInitialize();
-	}
-	if ((key == 'm' || key == 'M') && action == KEYBOARD_ACTION_PRESS)
-	{
-		planetLightIntensity += 1;
-		if (planetLightIntensity >3) planetLightIntensity = 3;
-	}
-	if ((key == 'n' || key == 'N') && action == KEYBOARD_ACTION_PRESS)
-	{
-		planetLightIntensity -= 1;
-		if (planetLightIntensity < -1) planetLightIntensity = -1;
+		switch (key)
+		{
+		case 27: // Esc
+			// Stop the game
+			glutLeaveMainLoop();
+			break;
 
+		case 'R':
+		case 'r':
+			// Reset the scene
+			OnInitialize();
+			break;
+
+		case 'M':
+		case 'm':
+			planetLightIntensity += 1;
+			if (planetLightIntensity > 3) planetLightIntensity = 3;
+			break;
+
+		case 'N':
+		case 'n':
+			planetLightIntensity -= 1;
+			if (planetLightIntensity < -1) planetLightIntensity = -1;
+			break;
+		}
 	}
 }
 
