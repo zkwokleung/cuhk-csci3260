@@ -6,25 +6,35 @@ Student ID: 1155149068, 1155147798
 Manipulation:
 	Key "Esc": exit;
 
-	Mouse Left Click + Move the Mouse: Look around
+	Move the Mouse: Look around
 
-	Key "Up Arrow": Move the craft forward
+	Mouse Left Click: shoot the laser bullet
 
-	Key "Down Arrow": Move the craft backward
+	Key "Up Arrow": Move the spacecraft forward
 
-	Key "Left Arrow": Move the craft to the left
+	Key "Down Arrow": Move the spacecraft backward
 
-	Key "Right Arrow": Move the craft to the right
+	Key "Left Arrow": Move the spacecraft to the left
 
-	Key "Z": Move the craft upward
+	Key "Right Arrow": Move the spacecraft to the right
 
-	Key "X": Move the craft downward
+	Key "Z": Move the spacecraft upward
+
+	Key "X": Move the spacecraft downward
 
 	Key "R": 
 		- In Space: Reset the scene
 		- Inside the planet: Go back to space
 
-	Mouse Left click: Shoot lasers
+	Key "C": When you get closer to the space station, you can change the spacecraft texture
+
+	// key setting for demo
+
+	Key "M": Increase the point light intensity
+
+	Key "N": Decrease the point light intensity
+
+	Key "B": Close the light of the spacecraft
 
 Features:
 	- Entering the planet will enter the ocean scene
