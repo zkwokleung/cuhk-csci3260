@@ -100,4 +100,8 @@ void OceanScene::OnEnd()
 
 void OceanScene::key_callback(unsigned char key, unsigned int action, int x, int y)
 {
+	if (key == 'r' && action == KEYBOARD_ACTION_PRESS)
+	{
+		SceneManager::SetActiveScene(0);
+	}
 }

@@ -149,6 +149,8 @@ private:
 	static void glut_mouse_callback(int button, int state, int x, int y);
 	static void glut_cursor_callback(int x, int y);
 	static void glut_wheel_callback(int button, int dir, int x, int y);
+	static void glut_special_key_callback(int key, int x, int y);
+	static void glut_special_key_up_callback(int key, int x, int y);
 #endif // USE_GLUT
 
 };

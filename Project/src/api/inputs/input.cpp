@@ -70,6 +70,8 @@ void Input::Init()
 	// Keyboard
 	glutKeyboardFunc(glut_keyboard_callback);
 	glutKeyboardUpFunc(glut_keyboard_up_callback);
+	glutSpecialFunc(glut_special_key_callback);
+	glutSpecialUpFunc(glut_special_key_up_callback);
 
 	// Mouse
 	glutMouseFunc(glut_mouse_callback);
@@ -134,6 +136,24 @@ void Input::glut_wheel_callback(int button, int dir, int x, int y)
 	for (it = s_scrollCallbacks.begin(); it != s_scrollCallbacks.end(); it++)
 	{
 		(*it)->scroll_callback(button, dir, x, y);
+	}
+}
+void Input::glut_special_key_callback(int key, int x, int y)
+{
+	// Invoke all the callback listeners
+	std::list<IKeyCallback*>::iterator it;
+	for (it = s_keyCallbacks.begin(); it != s_keyCallbacks.end(); it++)
+	{
+		(*it)->key_callback(key, KEYBOARD_ACTION_PRESS, x, y);
+	}
+}
+void Input::glut_special_key_up_callback(int key, int x, int y)
+{
+	// Invoke all the callback listeners
+	std::list<IKeyCallback*>::iterator it;
+	for (it = s_keyCallbacks.begin(); it != s_keyCallbacks.end(); it++)
+	{
+		(*it)->key_callback(key, KEYBOARD_ACTION_RELEASE, x, y);
 	}
 }
 #endif // USE_GLUT

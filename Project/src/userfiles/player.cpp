@@ -311,22 +311,19 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 	{
 		switch (key)
 		{
-		case 'W':
-		case 'w':
+		case GLUT_KEY_UP:
 			m_translationState = PLAYER_STATE_FORWARD;
 			break;
 
-		case 'A':
-		case 'a':
+		case GLUT_KEY_LEFT:
 			m_horizontalState = PLAYER_STATE_MOVELEFT;
 			break;
-		case 'S':
-		case 's':
+
+		case GLUT_KEY_DOWN:
 			m_translationState = PLAYER_STATE_BACKWARD;
 			break;
 
-		case 'D':
-		case 'd':
+		case GLUT_KEY_RIGHT:
 			m_horizontalState = PLAYER_STATE_MOVERIGHT;
 			break;
 
@@ -384,32 +381,28 @@ void Player::key_callback(unsigned char key, unsigned int action, int x, int y)
 	{
 		switch (key)
 		{
-		case 'W':
-		case 'w':
+		case GLUT_KEY_UP:
 			if (m_translationState == PLAYER_STATE_FORWARD)
 			{
 				m_translationState = PLAYER_STATE_IDLE;
 			}
 			break;
 
-		case 'A':
-		case 'a':
+		case GLUT_KEY_LEFT:
 			if (m_horizontalState == PLAYER_STATE_MOVELEFT)
 			{
 				m_horizontalState = PLAYER_STATE_IDLE;
 			}
 			break;
 
-		case 'S':
-		case 's':
+		case GLUT_KEY_DOWN:
 			if (m_translationState == PLAYER_STATE_BACKWARD)
 			{
 				m_translationState = PLAYER_STATE_IDLE;
 			}
 			break;
 
-		case 'D':
-		case 'd':
+		case GLUT_KEY_RIGHT:
 			if (m_horizontalState == PLAYER_STATE_MOVERIGHT)
 			{
 				m_horizontalState = PLAYER_STATE_IDLE;
