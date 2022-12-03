@@ -8,19 +8,21 @@ Manipulation:
 
 	Mouse Left Click + Move the Mouse: Look around
 
-	Key "W": Move the craft forward
+	Key "Up Arrow": Move the craft forward
 
-	Key "S": Move the craft backward
+	Key "Down Arrow": Move the craft backward
 
-	Key "A": Move the craft to the left
+	Key "Left Arrow": Move the craft to the left
 
-	Key "D": Move the craft to the right
+	Key "Right Arrow": Move the craft to the right
 
 	Key "Z": Move the craft upward
 
 	Key "X": Move the craft downward
 
-	Key "R": Reset the scene
+	Key "R": 
+		- In Space: Reset the scene
+		- Inside the planet: Go back to space
 
 	Mouse Left click: Shoot lasers
 
