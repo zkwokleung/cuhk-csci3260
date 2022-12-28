@@ -5,7 +5,7 @@ This Repository contains the demo code provided by CUHK, the two assignments don
 The codes are no where near perfect, but I have tried my best to make them as structured as possible.
 
 ## Assignment 1
-![image of assignment 1](https://imgur.com/c3rKylB)
+![image of assignment 1](https://imgur.com/c3rKylB.png)
 
 ```diff
 + Score: 100/100
@@ -31,7 +31,7 @@ Manipulation:
   
   
 ## Assignment 2
-![image of assignment 2](https://imgur.com/v5IFfHJ)
+![image of assignment 2](https://imgur.com/v5IFfHJ.png)
 
 
 ```diff
@@ -74,13 +74,13 @@ Manipulation:
 
 ## Final Project
 
-![img1 of project](https://imgur.com/TYeeNRG)
+![img1 of project](https://imgur.com/TYeeNRG.png)
 
-![img2 of project](https://imgur.com/fDSkNIU)
+![img2 of project](https://imgur.com/fDSkNIU.png)
 
-![img3 of project](https://imgur.com/OjArTMl)
+![img3 of project](https://imgur.com/OjArTMl.png)
 
-![img4 of project](https://imgur.com/tSatWPQ)
+![img4 of project](https://imgur.com/tSatWPQ.png)
 
 ```diff
 + Score: completely overkilled the project
