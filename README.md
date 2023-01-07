@@ -83,7 +83,7 @@ Manipulation:
 ![img4 of project](https://imgur.com/tSatWPQ.png)
 
 ```diff
-+ Score: completely overkilled the project
++ Score: 100
 ```
 
 Manipulation: 
